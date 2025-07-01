@@ -9,7 +9,7 @@ SHIP_COLOR = (255, 255, 255)
 SHIP_SIZE = 20
 SHIP_SPEED = 5
 # Base factor used to calculate orbital speed. Lower values mean slower orbits.
-ORBIT_SPEED_FACTOR = 0.05
+ORBIT_SPEED_FACTOR = 0.005
 
 class Star:
     """Represents a star in the star system."""
