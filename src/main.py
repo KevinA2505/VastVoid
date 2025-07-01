@@ -5,9 +5,12 @@ import math
 # Screen dimensions
 WINDOW_WIDTH, WINDOW_HEIGHT = 800, 600
 BACKGROUND_COLOR = (0, 0, 20)  # near black
+# Ship appearance and movement parameters
 SHIP_COLOR = (255, 255, 255)
 SHIP_SIZE = 20
-SHIP_SPEED = 5
+SHIP_SPEED = 5  # legacy constant kept for reference
+SHIP_ACCELERATION = 300  # pixels per second squared
+SHIP_FRICTION = 0.92  # velocity retained each frame
 # Base factor used to calculate orbital speed. Lower values mean slower orbits.
 ORBIT_SPEED_FACTOR = 0.005
 
@@ -83,18 +86,27 @@ class Ship:
     """Simple controllable ship."""
 
     def __init__(self, x, y):
-        self.x = x
-        self.y = y
+        self.x = float(x)
+        self.y = float(y)
+        self.vx = 0.0
+        self.vy = 0.0
 
-    def update(self, keys):
+    def update(self, keys, dt):
         if keys[pygame.K_w]:
-            self.y -= SHIP_SPEED
+            self.vy -= SHIP_ACCELERATION * dt
         if keys[pygame.K_s]:
-            self.y += SHIP_SPEED
+            self.vy += SHIP_ACCELERATION * dt
         if keys[pygame.K_a]:
-            self.x -= SHIP_SPEED
+            self.vx -= SHIP_ACCELERATION * dt
         if keys[pygame.K_d]:
-            self.x += SHIP_SPEED
+            self.vx += SHIP_ACCELERATION * dt
+
+        self.vx *= SHIP_FRICTION
+        self.vy *= SHIP_FRICTION
+
+        self.x += self.vx * dt
+        self.y += self.vy * dt
+
         self.x = max(0, min(WINDOW_WIDTH - SHIP_SIZE, self.x))
         self.y = max(0, min(WINDOW_HEIGHT - SHIP_SIZE, self.y))
 
@@ -122,12 +134,13 @@ def main():
     clock = pygame.time.Clock()
     running = True
     while running:
+        dt = clock.tick(60) / 1000.0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
         keys = pygame.key.get_pressed()
-        ship.update(keys)
+        ship.update(keys, dt)
         for system in systems:
             system.update()
 
@@ -137,7 +150,6 @@ def main():
         ship.draw(screen)
 
         pygame.display.flip()
-        clock.tick(60)
 
     pygame.quit()
 
