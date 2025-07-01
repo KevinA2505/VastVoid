@@ -25,3 +25,11 @@ python src/space_objects.py
 ```
 
 Displays a simple procedurally generated star system with stars, planets and asteroids.
+
+## Colliding Star Systems
+
+```
+python src/colliding_star_systems.py
+```
+
+Generates multiple star systems that move and bounce when their central stars collide.
