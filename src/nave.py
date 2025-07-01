@@ -5,7 +5,7 @@ WINDOW_WIDTH, WINDOW_HEIGHT = 600, 600
 BACKGROUND_COLOR = (0, 0, 0)  # black
 SHIP_COLOR = (255, 255, 255)  # white
 SHIP_SIZE = 20
-SPEED = 5
+SPEED = 10
 
 def main():
     pygame.init()
