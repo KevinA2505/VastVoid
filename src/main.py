@@ -8,6 +8,8 @@ BACKGROUND_COLOR = (0, 0, 20)  # near black
 SHIP_COLOR = (255, 255, 255)
 SHIP_SIZE = 20
 SHIP_SPEED = 5
+# Base factor used to calculate orbital speed. Lower values mean slower orbits.
+ORBIT_SPEED_FACTOR = 0.05
 
 class Star:
     """Represents a star in the star system."""
@@ -51,8 +53,9 @@ class StarSystem:
     def __init__(self, x, y):
         self.star = Star(x, y, random.randint(15, 30))
         self.planets = []
-        for _ in range(random.randint(2, 5)):
-            distance = random.randint(40, 120)
+        num_planets = random.randint(2, 5)
+        distances = sorted(random.randint(40, 120) for _ in range(num_planets))
+        for distance in distances:
             radius = random.randint(4, 10)
             color = (
                 random.randint(50, 255),
@@ -60,8 +63,11 @@ class StarSystem:
                 random.randint(50, 255),
             )
             angle = random.uniform(0, 2 * math.pi)
-            speed = random.uniform(0.01, 0.03)
-            self.planets.append(Planet(self.star, distance, radius, color, angle, speed))
+            # Planets farther away move slower.
+            speed = ORBIT_SPEED_FACTOR / math.sqrt(distance)
+            self.planets.append(
+                Planet(self.star, distance, radius, color, angle, speed)
+            )
 
     def update(self):
         for planet in self.planets:
