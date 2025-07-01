@@ -1,35 +1,14 @@
 # VastVoid
 
-This repository contains small Python scripts demonstrating visualizations.
+`VastVoid` is a small Pygame project that displays a world of star systems.
+You can control a ship and travel across a plane populated by stars with
+orbiting planets.
 
-## Black Plane
+## Running the game
 
-```
-python src/black_plane.py
-```
-
-Displays a black plane using `matplotlib`.
-
-## Nave Movement
-
-```
-python src/nave.py
+```bash
+python src/main.py
 ```
 
-Opens a window with a white square representing a *nave* (ship). Use `W`, `A`, `S`, `D` keys to move the ship around the black plane.
-
-## Procedural Star System
-
-```
-python src/space_objects.py
-```
-
-Displays a simple procedurally generated star system with stars, planets and asteroids.
-
-## Colliding Star Systems
-
-```
-python src/colliding_star_systems.py
-```
-
-Generates multiple star systems that move and bounce when their central stars collide.
+The original example scripts (`black_plane.py`, `nave.py`, `space_objects.py`
+and `colliding_star_systems.py`) remain in the `src` directory for reference.
