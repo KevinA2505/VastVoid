@@ -12,8 +12,10 @@ class StarSystem:
         self.star = Star(x, y, random.randint(15, 30))
         self.planets = []
         num_planets = random.randint(2, 5)
-        distances = sorted(random.randint(40, 120) for _ in range(num_planets))
-        for distance in distances:
+
+        # Starting distance ensures planets don't overlap the star
+        distance = self.star.radius + 40
+        for _ in range(num_planets):
             radius = random.randint(4, 10)
             color = (
                 random.randint(50, 255),
@@ -21,10 +23,15 @@ class StarSystem:
                 random.randint(50, 255),
             )
             angle = random.uniform(0, 2 * math.pi)
-            speed = config.ORBIT_SPEED_FACTOR / math.sqrt(distance)
+            # Randomize direction so planets don't all rotate the same way
+            speed = random.choice([-1, 1]) * config.ORBIT_SPEED_FACTOR / math.sqrt(distance)
+
             self.planets.append(
                 Planet(self.star, distance, radius, color, angle, speed)
             )
+
+            # Increment distance so orbits are spaced apart
+            distance += random.randint(30, 50)
 
     def update(self) -> None:
         for planet in self.planets:
@@ -41,4 +48,12 @@ class StarSystem:
     def draw(self, screen: pygame.Surface, offset_x: float = 0, offset_y: float = 0) -> None:
         self.star.draw(screen, offset_x, offset_y)
         for planet in self.planets:
+            # Draw orbit path for visualization
+            pygame.draw.circle(
+                screen,
+                (80, 80, 120),
+                (int(self.star.x - offset_x), int(self.star.y - offset_y)),
+                int(planet.distance),
+                1,
+            )
             planet.draw(screen, offset_x, offset_y)
