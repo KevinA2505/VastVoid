@@ -21,10 +21,17 @@ class Planet:
         self.x = self.star.x + self.distance * math.cos(self.angle)
         self.y = self.star.y + self.distance * math.sin(self.angle)
 
-    def draw(self, screen: pygame.Surface, offset_x: float = 0, offset_y: float = 0) -> None:
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0,
+        offset_y: float = 0,
+        zoom: float = 1.0,
+    ) -> None:
+        scaled_radius = max(1, int(self.radius * zoom))
         pygame.draw.circle(
             screen,
             self.color,
-            (int(self.x - offset_x), int(self.y - offset_y)),
-            self.radius,
+            (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom)),
+            scaled_radius,
         )

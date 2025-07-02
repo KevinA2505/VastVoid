@@ -21,9 +21,15 @@ class Sector:
         for system in self.systems:
             system.update()
 
-    def draw(self, screen: pygame.Surface, offset_x: float, offset_y: float) -> None:
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float,
+        offset_y: float,
+        zoom: float = 1.0,
+    ) -> None:
         for system in self.systems:
-            system.draw(screen, offset_x, offset_y)
+            system.draw(screen, offset_x, offset_y, zoom)
 
     def collides_with_point(self, x: float, y: float, radius: float) -> bool:
         if not (self.x <= x <= self.x + self.width and self.y <= y <= self.y + self.height):

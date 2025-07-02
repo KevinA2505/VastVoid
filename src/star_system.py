@@ -45,15 +45,24 @@ class StarSystem:
                 return True
         return False
 
-    def draw(self, screen: pygame.Surface, offset_x: float = 0, offset_y: float = 0) -> None:
-        self.star.draw(screen, offset_x, offset_y)
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0,
+        offset_y: float = 0,
+        zoom: float = 1.0,
+    ) -> None:
+        self.star.draw(screen, offset_x, offset_y, zoom)
         for planet in self.planets:
             # Draw orbit path for visualization
             pygame.draw.circle(
                 screen,
                 (80, 80, 120),
-                (int(self.star.x - offset_x), int(self.star.y - offset_y)),
-                int(planet.distance),
+                (
+                    int((self.star.x - offset_x) * zoom),
+                    int((self.star.y - offset_y) * zoom),
+                ),
+                int(planet.distance * zoom),
                 1,
             )
-            planet.draw(screen, offset_x, offset_y)
+            planet.draw(screen, offset_x, offset_y, zoom)
