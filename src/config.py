@@ -8,6 +8,11 @@ SHIP_FRICTION = 0.92  # velocity retained each frame
 AUTOPILOT_SPEED = 200  # pixels per second when auto moving
 PLANET_LANDING_SPEED = 100  # slower speed when approaching a planet
 
+# --- Explorer/Boat movement -------------------------------------------------
+EXPLORER_SPEED = 150  # base walking speed on a planet surface
+BOAT_SPEED_LAND = 60  # slow boat speed when on land
+BOAT_SPEED_WATER = 200  # slightly faster than walking when on water
+
 ORBIT_SPEED_FACTOR = 0.005  # base factor used to calculate orbital speed
 
 SECTOR_WIDTH = 2000

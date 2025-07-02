@@ -57,8 +57,14 @@ class Explorer:
         self.size = 8
         self.color = (255, 255, 255)
 
-    def update(self, keys: pygame.key.ScancodeWrapper, dt: float, width: int, height: int) -> None:
-        speed = 150
+    def update(
+        self,
+        keys: pygame.key.ScancodeWrapper,
+        dt: float,
+        width: int,
+        height: int,
+        speed: float = config.EXPLORER_SPEED,
+    ) -> None:
         if keys[pygame.K_w]:
             self.y -= speed * dt
         if keys[pygame.K_s]:
@@ -78,6 +84,25 @@ class Explorer:
             self.size,
         )
         pygame.draw.rect(screen, self.color, rect)
+
+
+class Boat:
+    """Simple structure spawned when using a boat."""
+
+    def __init__(self, x: float, y: float) -> None:
+        self.x = x
+        self.y = y
+        self.width = 24
+        self.height = 12
+
+    def draw(self, screen: pygame.Surface, offset_x: float, offset_y: float) -> None:
+        rect = pygame.Rect(
+            int(self.x - offset_x - self.width / 2),
+            int(self.y - offset_y - self.height / 2),
+            self.width,
+            self.height,
+        )
+        pygame.draw.rect(screen, (180, 120, 60), rect)
 
 
 class PlanetSurface:
@@ -103,6 +128,7 @@ class PlanetSurface:
         # Store river segments along with their drawn width
         self.rivers: list[tuple[list[tuple[int, int]], int]] = []
         self.boat_active = False
+        self.boat: Boat | None = None
         self._generate_map()
         self.ship_pos = (self.width // 2, self.height // 2)
         self.explorer = Explorer(*self.ship_pos)
@@ -284,6 +310,10 @@ class PlanetSurface:
             return not self.blocked[cy][cx]
         return False
 
+    def is_water(self, x: float, y: float) -> bool:
+        """Return ``True`` if ``(x, y)`` is water based on the collision mask."""
+        return bool(self.collision_mask and self.collision_mask.get_at((int(x), int(y))))
+
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.exit_rect.collidepoint(event.pos):
@@ -294,13 +324,25 @@ class PlanetSurface:
             if event.key == pygame.K_b:
                 if self.boat_active:
                     self.boat_active = False
+                    self.boat = None
                 elif self.player.inventory.get("boat", 0) > 0:
                     self.boat_active = True
+                    self.boat = Boat(self.explorer.x, self.explorer.y)
         return False
 
     def update(self, keys: pygame.key.ScancodeWrapper, dt: float) -> None:
         old_x, old_y = self.explorer.x, self.explorer.y
-        self.explorer.update(keys, dt, self.width, self.height)
+        speed = config.EXPLORER_SPEED
+        on_water = self.is_water(self.explorer.x, self.explorer.y)
+        if self.boat_active:
+            if on_water:
+                speed = config.BOAT_SPEED_WATER
+            else:
+                speed = config.BOAT_SPEED_LAND
+            if self.boat:
+                self.boat.x = self.explorer.x
+                self.boat.y = self.explorer.y
+        self.explorer.update(keys, dt, self.width, self.height, speed)
         if not self.is_walkable(self.explorer.x, self.explorer.y):
             self.explorer.x, self.explorer.y = old_x, old_y
         self.camera_x = self.explorer.x
@@ -331,16 +373,8 @@ class PlanetSurface:
             20,
         )
         pygame.draw.rect(screen, (200, 200, 200), ship_rect)
-        if self.boat_active:
-            pygame.draw.circle(
-                screen,
-                (180, 120, 60),
-                (
-                    int(self.explorer.x - offset_x),
-                    int(self.explorer.y - offset_y),
-                ),
-                10,
-            )
+        if self.boat_active and self.boat:
+            self.boat.draw(screen, offset_x, offset_y)
         self.explorer.draw(screen, offset_x, offset_y)
         # exit button
         pygame.draw.rect(screen, (60, 60, 90), self.exit_rect)
