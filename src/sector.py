@@ -25,6 +25,14 @@ class Sector:
         for system in self.systems:
             system.draw(screen, offset_x, offset_y)
 
+    def collides_with_point(self, x: float, y: float, radius: float) -> bool:
+        if not (self.x <= x <= self.x + self.width and self.y <= y <= self.y + self.height):
+            return False
+        for system in self.systems:
+            if system.collides_with_point(x, y, radius):
+                return True
+        return False
+
 
 def create_sectors(grid_size: int, width: int, height: int) -> list:
     """Generate a grid of sectors filled with random star systems."""

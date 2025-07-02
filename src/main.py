@@ -23,7 +23,7 @@ def main():
                 running = False
 
         keys = pygame.key.get_pressed()
-        ship.update(keys, dt, world_width, world_height)
+        ship.update(keys, dt, world_width, world_height, sectors)
         for sector in sectors:
             sector.update()
 
