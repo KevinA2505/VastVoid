@@ -234,7 +234,7 @@ def main():
                 approaching_planet.y - ship.y,
             )
             if dist <= approaching_planet.radius + 20:
-                current_surface = PlanetSurface(approaching_planet)
+                current_surface = PlanetSurface(approaching_planet, player)
                 approaching_planet = None
                 camera_x = current_surface.camera_x
                 camera_y = current_surface.camera_y

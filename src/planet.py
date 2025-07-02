@@ -4,6 +4,7 @@ import pygame
 import config
 from star import Star
 from names import get_planet_name, PLANET_ENVIRONMENTS
+from biome import BIOMES
 
 
 class Planet:
@@ -20,6 +21,7 @@ class Planet:
         angle: float,
         speed: float,
         environment: str = "rocky",
+        biomes: list[str] | None = None,
     ) -> None:
         self.name = get_planet_name()
         Planet._id_counter += 1
@@ -30,6 +32,7 @@ class Planet:
         self.angle = angle
         self.speed = speed
         self.environment = environment
+        self.biomes = biomes if biomes is not None else []
         self.x = 0.0
         self.y = 0.0
         self.update()
@@ -46,7 +49,12 @@ class Planet:
         angle = random.uniform(0, 2 * math.pi)
         speed = random.choice([-1, 1]) * config.ORBIT_SPEED_FACTOR / math.sqrt(distance)
         environment = random.choice(PLANET_ENVIRONMENTS)
-        return Planet(star, distance, radius, color, angle, speed, environment)
+        biome_names = list(BIOMES.keys())
+        num_biomes = random.randint(1, min(3, len(biome_names)))
+        biomes = random.sample(biome_names, k=num_biomes)
+        return Planet(
+            star, distance, radius, color, angle, speed, environment, biomes
+        )
 
     def update(self) -> None:
         self.angle += self.speed

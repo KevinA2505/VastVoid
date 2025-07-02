@@ -1,6 +1,8 @@
 import pygame
 import random
 import config
+from biome import BIOMES, Biome
+from items import ITEM_NAMES
 
 
 ENV_COLORS = {
@@ -13,6 +15,25 @@ ENV_COLORS = {
     "gas giant": (160, 120, 180),
     "toxic": (100, 150, 80),
 }
+
+
+class ItemPickup:
+    """Collectible item placed on the surface."""
+
+    def __init__(self, name: str, x: float, y: float) -> None:
+        self.name = name
+        self.x = x
+        self.y = y
+        self.size = 6
+
+    def draw(self, screen: pygame.Surface, offset_x: float, offset_y: float) -> None:
+        rect = pygame.Rect(
+            int(self.x - offset_x - self.size / 2),
+            int(self.y - offset_y - self.size / 2),
+            self.size,
+            self.size,
+        )
+        pygame.draw.rect(screen, (200, 200, 50), rect)
 
 
 class Explorer:
@@ -50,11 +71,13 @@ class Explorer:
 class PlanetSurface:
     """Procedurally generated 2D map tied to a specific planet."""
 
-    def __init__(self, planet) -> None:
+    def __init__(self, planet, player) -> None:
         self.planet = planet
+        self.player = player
         self.width = 3000
         self.height = 3000
         self.surface = pygame.Surface((self.width, self.height))
+        self.pickups: list[ItemPickup] = []
         self._generate_map()
         self.ship_pos = (self.width // 2, self.height // 2)
         self.explorer = Explorer(*self.ship_pos)
@@ -66,13 +89,26 @@ class PlanetSurface:
         return tuple(min(255, max(0, c + random.randint(-30, 30))) for c in base)
 
     def _generate_map(self) -> None:
-        base = ENV_COLORS.get(self.planet.environment, (90, 90, 90))
-        self.surface.fill(base)
-        for _ in range(2000):
-            x = random.randint(0, self.width)
-            y = random.randint(0, self.height)
-            r = random.randint(20, 60)
-            pygame.draw.circle(self.surface, self._random_variation(base), (x, y), r)
+        cell = 300
+        self.surface.fill((0, 0, 0))
+        for i in range(self.width // cell):
+            for j in range(self.height // cell):
+                biome_name = random.choice(self.planet.biomes) if self.planet.biomes else self.planet.environment
+                biome = BIOMES.get(biome_name, Biome(ENV_COLORS.get(biome_name, (90, 90, 90)), [], 0))
+                rect = pygame.Rect(i * cell, j * cell, cell, cell)
+                pygame.draw.rect(self.surface, biome.color, rect)
+                for _ in range(20):
+                    x = random.randint(rect.left, rect.right)
+                    y = random.randint(rect.top, rect.bottom)
+                    r = random.randint(20, 60)
+                    pygame.draw.circle(
+                        self.surface, self._random_variation(biome.color), (x, y), r
+                    )
+                if biome.spawn_items and random.random() < biome.spawn_rate:
+                    name = random.choice(biome.spawn_items)
+                    px = random.randint(rect.left, rect.right)
+                    py = random.randint(rect.top, rect.bottom)
+                    self.pickups.append(ItemPickup(name, px, py))
 
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -86,11 +122,20 @@ class PlanetSurface:
         self.explorer.update(keys, dt, self.width, self.height)
         self.camera_x = self.explorer.x
         self.camera_y = self.explorer.y
+        for pickup in self.pickups[:]:
+            if (
+                abs(self.explorer.x - pickup.x) < 10
+                and abs(self.explorer.y - pickup.y) < 10
+            ):
+                self.player.add_item(pickup.name)
+                self.pickups.remove(pickup)
 
     def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
         offset_x = self.camera_x - config.WINDOW_WIDTH / 2
         offset_y = self.camera_y - config.WINDOW_HEIGHT / 2
         screen.blit(self.surface, (-offset_x, -offset_y))
+        for pickup in self.pickups:
+            pickup.draw(screen, offset_x, offset_y)
         # draw landing ship
         ship_rect = pygame.Rect(
             int(self.ship_pos[0] - offset_x - 10),
