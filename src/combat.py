@@ -26,6 +26,13 @@ class Weapon:
         self._timer = 0.0
         return Projectile(x, y, tx, ty, self.speed, self.damage)
 
+    def fire_homing(self, x: float, y: float, target, turn_rate: float = config.HOMING_PROJECTILE_TURN_RATE):
+        """Fire a projectile that homes in on ``target``."""
+        if not self.can_fire():
+            return None
+        self._timer = 0.0
+        return HomingProjectile(x, y, target, self.speed, self.damage, turn_rate)
+
 
 class Projectile:
     """Projectile fired by a weapon with optional curvature and range."""
@@ -73,6 +80,40 @@ class Projectile:
         pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
         radius = max(1, int(3 * zoom))
         pygame.draw.circle(screen, (255, 50, 50), pos, radius)
+
+
+class HomingProjectile(Projectile):
+    """Projectile that gradually turns to follow a moving target."""
+
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        target,
+        speed: float,
+        damage: int,
+        turn_rate: float = config.HOMING_PROJECTILE_TURN_RATE,
+        max_distance: float = config.PROJECTILE_MAX_DISTANCE,
+    ) -> None:
+        super().__init__(x, y, target.x, target.y, speed, damage, 0.0, max_distance)
+        self.target = target
+        self.turn_rate = turn_rate
+
+    def update(self, dt: float) -> None:
+        dx = self.target.x - self.x
+        dy = self.target.y - self.y
+        desired = math.atan2(dy, dx)
+        current = math.atan2(self.vy, self.vx)
+        diff = (desired - current + math.pi) % (2 * math.pi) - math.pi
+        max_turn = self.turn_rate * dt
+        if abs(diff) > max_turn:
+            current += max_turn if diff > 0 else -max_turn
+        else:
+            current = desired
+        speed = math.hypot(self.vx, self.vy)
+        self.vx = math.cos(current) * speed
+        self.vy = math.sin(current) * speed
+        super().update(dt)
 
 
 @dataclass
