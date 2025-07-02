@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import config
 from planet import Planet
 from names import get_ship_name
+from combat import Weapon, Projectile, Shield
 
 
 @dataclass
@@ -38,6 +39,10 @@ class Ship:
         self.boost_time = 0.0
         self.model = model
         self.name = get_ship_name()
+        self.weapons: list[Weapon] = [Weapon("Laser", 10, 400)]
+        self.projectiles: list[Projectile] = []
+        self.shield = Shield()
+        self.hull = 100
         if model:
             self.brand = model.brand
             self.classification = model.classification
@@ -64,6 +69,9 @@ class Ship:
             self._update_autopilot(dt, world_width, world_height, sectors, blackholes)
             return
         accel = config.SHIP_ACCELERATION * self.accel_factor
+        self.shield.recharge(dt)
+        for weapon in self.weapons:
+            weapon.update(dt)
         if self.boost_time > 0:
             self.boost_time -= dt
             if self.boost_time <= 0:
@@ -105,6 +113,8 @@ class Ship:
             self.x, self.y = old_x, old_y
             self.vx = 0
             self.vy = 0
+
+        self._update_projectiles(dt, world_width, world_height)
 
     def start_autopilot(self, target) -> None:
         self.autopilot_target = target
@@ -150,6 +160,8 @@ class Ship:
             self.x, self.y = old_x, old_y
             self.autopilot_target = None
 
+        self._update_projectiles(dt, world_width, world_height)
+
     def _check_collision(self, sectors: list) -> bool:
         half_size = self.size / 2
         for sector in sectors:
@@ -174,6 +186,23 @@ class Ship:
         if self.boost_time > 0:
             return 0.0
         return self.boost_charge
+
+    def fire(self, tx: float, ty: float) -> None:
+        if not self.weapons:
+            return
+        proj = self.weapons[0].fire(self.x, self.y, tx, ty)
+        if proj:
+            self.projectiles.append(proj)
+
+    def _update_projectiles(self, dt: float, world_width: int, world_height: int) -> None:
+        for proj in list(self.projectiles):
+            proj.update(dt)
+            if not (0 <= proj.x <= world_width and 0 <= proj.y <= world_height):
+                self.projectiles.remove(proj)
+
+    def draw_projectiles(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
+        for proj in self.projectiles:
+            proj.draw(screen, offset_x, offset_y, zoom)
 
 
 def choose_ship(screen: pygame.Surface) -> ShipModel:

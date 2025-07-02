@@ -234,6 +234,13 @@ def main():
                     selected_object = None
                 elif event.key == pygame.K_i:
                     inventory_window = InventoryWindow(player)
+                elif event.key == pygame.K_SPACE:
+                    mx, my = pygame.mouse.get_pos()
+                    offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
+                    offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
+                    tx = mx / zoom + offset_x
+                    ty = my / zoom + offset_y
+                    ship.fire(tx, ty)
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
                 offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
@@ -345,6 +352,7 @@ def main():
         offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
         for sector in sectors:
             sector.draw(screen, offset_x, offset_y, zoom)
+        ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         ship.draw(screen, zoom)
         route_planner.draw(screen, info_font, ship, offset_x, offset_y, zoom)
 
@@ -437,6 +445,13 @@ def main():
         fill_width = int(bar_width * ship.boost_ratio)
         if fill_width > 0:
             pygame.draw.rect(screen, (0, 150, 0), (bar_x, bar_y, fill_width, bar_height))
+
+        shield_y = bar_y - 15
+        pygame.draw.rect(screen, (60, 60, 90), (bar_x, shield_y, bar_width, bar_height))
+        pygame.draw.rect(screen, (200, 200, 200), (bar_x, shield_y, bar_width, bar_height), 1)
+        shield_fill = int(bar_width * ship.shield.strength / ship.shield.max_strength)
+        if shield_fill > 0:
+            pygame.draw.rect(screen, (0, 0, 150), (bar_x, shield_y, shield_fill, bar_height))
 
         menu.draw(screen, info_font)
 
