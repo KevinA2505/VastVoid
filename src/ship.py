@@ -2,6 +2,7 @@ import pygame
 import math
 from dataclasses import dataclass
 import config
+from planet import Planet
 from names import get_ship_name
 
 
@@ -124,6 +125,8 @@ class Ship:
         dy = dest_y - self.y
         distance = math.hypot(dx, dy)
         step = config.AUTOPILOT_SPEED * dt
+        if isinstance(self.autopilot_target, Planet):
+            step = config.PLANET_LANDING_SPEED * dt
         if distance <= step:
             self.x = dest_x
             self.y = dest_y
