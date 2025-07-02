@@ -5,7 +5,7 @@ SHIP_COLOR = (255, 255, 255)
 SHIP_SIZE = 20
 SHIP_ACCELERATION = 300  # pixels per second squared
 SHIP_FRICTION = 0.92  # velocity retained each frame
-AUTOPILOT_SPEED = 200  # pixels per second when auto moving
+AUTOPILOT_SPEED = 120  # pixels per second when auto moving
 PLANET_LANDING_SPEED = 100  # slower speed when approaching a planet
 
 # --- Explorer/Boat movement -------------------------------------------------

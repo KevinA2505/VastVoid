@@ -200,6 +200,17 @@ class Ship:
             if not (0 <= proj.x <= world_width and 0 <= proj.y <= world_height):
                 self.projectiles.remove(proj)
 
+    def take_damage(self, amount: float) -> None:
+        """Apply damage to the shield and hull."""
+        if self.shield.strength > 0:
+            before = self.shield.strength
+            self.shield.take_damage(amount)
+            overflow = amount - before
+            if overflow > 0:
+                self.hull = max(0, self.hull - overflow)
+        else:
+            self.hull = max(0, self.hull - amount)
+
     def draw_projectiles(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
         for proj in self.projectiles:
             proj.draw(screen, offset_x, offset_y, zoom)
