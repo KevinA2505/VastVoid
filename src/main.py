@@ -254,6 +254,16 @@ def main():
                             nearest = en
                     if nearest and min_dist <= 350:
                         ship.start_orbit(nearest.ship, speed=config.SHIP_ORBIT_SPEED * 0.5)
+                elif event.key == pygame.K_h:
+                    nearest = None
+                    min_dist = float("inf")
+                    for en in enemies:
+                        d = math.hypot(en.ship.x - ship.x, en.ship.y - ship.y)
+                        if d < min_dist:
+                            min_dist = d
+                            nearest = en
+                    if nearest:
+                        ship.fire_homing(nearest.ship)
                 elif event.key == pygame.K_SPACE:
                     mx, my = pygame.mouse.get_pos()
                     offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)

@@ -75,3 +75,5 @@ is a short cooldown before it can be triggered again.
 Projectiles now vanish after travelling around 1200 pixels. Shots fired during
 an orbit curve slightly thanks to a gentle angular adjustment applied every
 frame.
+Press **H** to launch a guided projectile that continually turns towards the
+nearest enemy.

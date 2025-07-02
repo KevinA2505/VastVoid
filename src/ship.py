@@ -300,6 +300,15 @@ class Ship:
         if proj:
             self.projectiles.append(proj)
 
+    def fire_homing(self, target) -> None:
+        """Fire a homing projectile at ``target`` using the first weapon."""
+        if not self.weapons:
+            return
+        weapon = self.weapons[0]
+        proj = weapon.fire_homing(self.x, self.y, target)
+        if proj:
+            self.projectiles.append(proj)
+
     def _update_projectiles(self, dt: float, world_width: int, world_height: int) -> None:
         for proj in list(self.projectiles):
             proj.update(dt)
