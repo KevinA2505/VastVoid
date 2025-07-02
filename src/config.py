@@ -43,3 +43,5 @@ WORMHOLE_MIN_DISTANCE = 400  # minimum distance from star systems and black hole
 WORMHOLE_RADIUS = 20         # visible size of a worm hole
 WORMHOLE_COLOR = (150, 100, 200)
 WORMHOLE_DELAY = 5.0         # seconds before teleport occurs
+WORMHOLE_COOLDOWN = 3.0      # delay after teleport before re-entry allowed
+WORMHOLE_FLASH_TIME = 0.75   # duration of post-teleport flash effect

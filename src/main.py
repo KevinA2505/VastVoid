@@ -72,6 +72,8 @@ def main():
     approaching_planet = None
     teleport_target = None
     teleport_timer = 0.0
+    wormhole_cooldown = 0.0
+    teleport_flash_timer = 0.0
     camera_x = ship.x
     camera_y = ship.y
 
@@ -80,12 +82,19 @@ def main():
     while running:
         dt = clock.tick(60) / 1000.0
 
+        if wormhole_cooldown > 0:
+            wormhole_cooldown -= dt
+        if teleport_flash_timer > 0:
+            teleport_flash_timer -= dt
+
         if teleport_timer > 0:
             teleport_timer -= dt
             if teleport_timer <= 0 and teleport_target:
                 ship.x = teleport_target.x
                 ship.y = teleport_target.y
                 teleport_target = None
+                wormhole_cooldown = config.WORMHOLE_COOLDOWN
+                teleport_flash_timer = config.WORMHOLE_FLASH_TIME
 
         if current_surface:
             for event in pygame.event.get():
@@ -308,7 +317,7 @@ def main():
         if not running:
             continue
 
-        if teleport_timer <= 0:
+        if teleport_timer <= 0 and wormhole_cooldown <= 0:
             for wh in wormholes:
                 if math.hypot(wh.x - ship.x, wh.y - ship.y) < wh.radius:
                     if wh.pair:
@@ -430,7 +439,13 @@ def main():
             pygame.draw.rect(screen, (0, 150, 0), (bar_x, bar_y, fill_width, bar_height))
 
         menu.draw(screen, info_font)
-        
+
+        if teleport_flash_timer > 0:
+            alpha = int(255 * (teleport_flash_timer / config.WORMHOLE_FLASH_TIME))
+            flash = pygame.Surface((config.WINDOW_WIDTH, config.WINDOW_HEIGHT), pygame.SRCALPHA)
+            flash.fill((255, 255, 255, alpha))
+            screen.blit(flash, (0, 0))
+
         pygame.display.flip()
 
     pygame.quit()
