@@ -110,3 +110,35 @@ class RoutePlanner:
                 text = font.render(line, True, (255, 255, 255))
                 screen.blit(text, (rect.x + 5, rect.y + 5 + i * 20))
 
+
+class InventoryWindow:
+    """Display the player's inventory in a simple window."""
+
+    def __init__(self, player) -> None:
+        self.player = player
+        self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
+
+    def handle_event(self, event) -> bool:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.close_rect.collidepoint(event.pos):
+                return True
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            return True
+        return False
+
+    def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        screen.fill((20, 20, 40))
+        title = font.render("Inventory", True, (255, 255, 255))
+        screen.blit(title, (20, 20))
+        y = 60
+        for name, qty in self.player.inventory.items():
+            if qty > 0:
+                text = font.render(f"{name}: {qty}", True, (255, 255, 255))
+                screen.blit(text, (40, y))
+                y += 20
+        pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
+        exit_txt = font.render("Close", True, (255, 255, 255))
+        exit_rect = exit_txt.get_rect(center=self.close_rect.center)
+        screen.blit(exit_txt, exit_rect)
+
