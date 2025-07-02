@@ -30,7 +30,7 @@ class StarSystem:
             distance += random.randint(30, 50)
 
         self.stations = []
-        num_stations = random.randint(1, 2)
+        num_stations = 1  # fewer stations generated
         station_distance = distance
         for _ in range(num_stations):
             self.stations.append(

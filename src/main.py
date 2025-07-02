@@ -7,6 +7,7 @@ from star import Star
 from planet import Planet
 from station import SpaceStation
 from ui import DropdownMenu, RoutePlanner
+from character import create_player
 
 
 def draw_station_ui(screen: pygame.Surface, station: SpaceStation, font: pygame.font.Font) -> pygame.Rect:
@@ -33,6 +34,8 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((config.WINDOW_WIDTH, config.WINDOW_HEIGHT))
     pygame.display.set_caption("VastVoid")
+
+    player = create_player(screen)
 
     sectors = create_sectors(
         config.GRID_SIZE, config.SECTOR_WIDTH, config.SECTOR_HEIGHT
