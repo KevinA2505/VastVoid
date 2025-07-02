@@ -1,0 +1,37 @@
+import random
+import pygame
+from star_system import StarSystem
+
+class Sector:
+    """Large region containing multiple star systems."""
+
+    def __init__(self, x: int, y: int, width: int, height: int) -> None:
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        num_systems = random.randint(3, 4)
+        self.systems = []
+        for _ in range(num_systems):
+            sx = random.randint(self.x + 100, self.x + self.width - 100)
+            sy = random.randint(self.y + 100, self.y + self.height - 100)
+            self.systems.append(StarSystem(sx, sy))
+
+    def update(self) -> None:
+        for system in self.systems:
+            system.update()
+
+    def draw(self, screen: pygame.Surface, offset_x: float, offset_y: float) -> None:
+        for system in self.systems:
+            system.draw(screen, offset_x, offset_y)
+
+
+def create_sectors(grid_size: int, width: int, height: int) -> list:
+    """Generate a grid of sectors filled with random star systems."""
+    sectors = []
+    for row in range(grid_size):
+        for col in range(grid_size):
+            x = col * width
+            y = row * height
+            sectors.append(Sector(x, y, width, height))
+    return sectors
