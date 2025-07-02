@@ -1,5 +1,6 @@
 import pygame
 import config
+from fraction import FRACTIONS, Fraction
 
 class Alien:
     """Basic Alien species."""
@@ -18,10 +19,11 @@ class Robot:
 
 class Player:
     """The player controlled character."""
-    def __init__(self, name: str, age: int, species):
+    def __init__(self, name: str, age: int, species, fraction: Fraction):
         self.name = name
         self.age = age
         self.species = species
+        self.fraction = fraction
 
 
 def create_player(screen: pygame.Surface) -> Player:
@@ -30,8 +32,9 @@ def create_player(screen: pygame.Surface) -> Player:
     clock = pygame.time.Clock()
     name = ""
     age = ""
-    step = 0  # 0-name,1-age,2-species
+    step = 0  # 0-name,1-age,2-species,3-fraction
     species = None
+    fraction = None
 
     while True:
         for event in pygame.event.get():
@@ -64,7 +67,13 @@ def create_player(screen: pygame.Surface) -> Player:
                     elif key == 'r':
                         species = Robot()
                     if species:
-                        return Player(name, int(age or 0), species)
+                        step = 3
+                elif step == 3:
+                    if event.unicode.isdigit():
+                        index = int(event.unicode) - 1
+                        if 0 <= index < len(FRACTIONS):
+                            fraction = FRACTIONS[index]
+                            return Player(name, int(age or 0), species, fraction)
 
         screen.fill(config.BACKGROUND_COLOR)
         if step == 0:
@@ -77,10 +86,16 @@ def create_player(screen: pygame.Surface) -> Player:
             msg2 = font.render(age + "|", True, (255, 255, 255))
             screen.blit(msg1, (50, 100))
             screen.blit(msg2, (50, 140))
-        else:
+        elif step == 2:
             lines = [
                 "Choose species:",
                 "H - Human", "A - Alien", "R - Robot"]
+            for i, line in enumerate(lines):
+                msg = font.render(line, True, (255, 255, 255))
+                screen.blit(msg, (50, 100 + i * 30))
+        else:
+            lines = ["Choose fraction:"]
+            lines += [f"{i+1} - {frac.name}" for i, frac in enumerate(FRACTIONS)]
             for i, line in enumerate(lines):
                 msg = font.render(line, True, (255, 255, 255))
                 screen.blit(msg, (50, 100 + i * 30))

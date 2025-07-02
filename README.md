@@ -6,6 +6,12 @@ orbiting planets.
 The core game classes now live in separate modules within `src` and are
 initialized from a single entry point (`main.py`).
 
+## Character creation
+
+When starting the game you can personalise the player by entering a name,
+age, species and a **fraction** (faction). Five fictional fractions are
+available, each with a short description and a small boost for its members.
+
 ## Running the game
 
 ```bash
