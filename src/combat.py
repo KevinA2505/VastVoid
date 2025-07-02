@@ -53,7 +53,8 @@ class Projectile:
 class Shield:
     """Basic energy shield that absorbs damage and recharges over time."""
     max_strength: int = 100
-    recharge_rate: float = 10.0
+    # Regeneration slowed down so shields take longer to recover
+    recharge_rate: float = 1.0
     strength: float = field(init=False)
 
     def __post_init__(self) -> None:
