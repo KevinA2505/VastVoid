@@ -7,6 +7,7 @@ import py_trees
 from character import Alien, Human, Robot
 from ship import Ship, SHIP_MODELS
 from sector import Sector
+import config
 
 
 class _NullKeys:
@@ -51,6 +52,9 @@ class Flee(_EnemyBehaviour):
             dest_y = ship.y + math.sin(angle) * enemy.detection_range
             enemy._flee_target = _Point(dest_x, dest_y)
             ship.start_autopilot(enemy._flee_target)
+            if ship.boost_charge >= 1.0:
+                ship.boost_time = config.BOOST_DURATION
+                ship.boost_charge = 0.0
         return py_trees.common.Status.SUCCESS
 
 
@@ -135,6 +139,9 @@ class Pursue(_EnemyBehaviour):
             return py_trees.common.Status.FAILURE
         enemy.state = "pursue"
         ship.start_autopilot(player)
+        if ship.boost_charge >= 1.0:
+            ship.boost_time = config.BOOST_DURATION
+            ship.boost_charge = 0.0
         return py_trees.common.Status.SUCCESS
 
 
