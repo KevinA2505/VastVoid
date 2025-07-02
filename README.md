@@ -51,3 +51,10 @@ Enemy logic now runs on a small behavior tree built with `py_trees`. Each
 enemy ticks its tree every frame to decide whether to idle, pursue, attack or
 flee. Actions inside the tree call the same ship methods as before so combat
 and navigation work exactly like the earlier state machine implementation.
+
+### Learning enemies
+An experimental `LearningEnemy` class in `src/enemy_learning.py` replaces the
+behaviour tree with a simple Q-learning algorithm. Each enemy chooses actions
+like pursue or attack based on a learned Q-table updated every frame. Use the
+helper `create_learning_enemy()` to spawn this variant if you want opponents
+that adapt slightly to the player's tactics.
