@@ -24,5 +24,11 @@ small catalogue of models, each with its own brand and classification.
 python src/main.py
 ```
 
+### Planet surfaces
+
+Biomes now create irregular terrain patches instead of simple circles and
+generate multiple item pickups. Approach an item to see its name displayed on
+screen and know exactly what you are collecting.
+
 The original example scripts (`black_plane.py`, `nave.py`, `space_objects.py`
 and `colliding_star_systems.py`) remain in the `src` directory for reference.
