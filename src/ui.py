@@ -161,3 +161,62 @@ class InventoryWindow:
         exit_rect = exit_txt.get_rect(center=self.close_rect.center)
         screen.blit(exit_txt, exit_rect)
 
+
+class AbilityBar:
+    """Display up to five ability slots at the bottom of the screen."""
+
+    SLOT_COUNT = 5
+    SLOT_W = 60
+    SLOT_H = 30
+    MARGIN = 5
+
+    def __init__(self) -> None:
+        self.slots: list[tuple[str, str]] = [
+            ("Boost", "LShift"),
+            ("Orbit", "R"),
+            ("", ""),
+            ("", ""),
+            ("", ""),
+        ]
+        self.rects: list[pygame.Rect] = []
+        total_w = self.SLOT_COUNT * (self.SLOT_W + self.MARGIN) - self.MARGIN
+        start_x = (config.WINDOW_WIDTH - total_w) // 2
+        y = config.WINDOW_HEIGHT - self.SLOT_H - 80
+        for i in range(self.SLOT_COUNT):
+            rect = pygame.Rect(
+                start_x + i * (self.SLOT_W + self.MARGIN), y, self.SLOT_W, self.SLOT_H
+            )
+            self.rects.append(rect)
+
+    def handle_event(self, event, ship, enemies: list) -> None:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            for idx, rect in enumerate(self.rects):
+                if rect.collidepoint(event.pos):
+                    if idx == 0:
+                        if ship.boost_charge >= 1.0:
+                            ship.boost_time = config.BOOST_DURATION
+                            ship.boost_charge = 0.0
+                    elif idx == 1:
+                        self._trigger_orbit(ship, enemies)
+
+    def _trigger_orbit(self, ship, enemies: list) -> None:
+        nearest = None
+        min_dist = float("inf")
+        for en in enemies:
+            d = math.hypot(en.ship.x - ship.x, en.ship.y - ship.y)
+            if d < min_dist:
+                min_dist = d
+                nearest = en
+        if nearest:
+            ship.start_orbit(nearest.ship, speed=config.SHIP_ORBIT_SPEED * 0.5)
+
+    def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        for i, rect in enumerate(self.rects):
+            pygame.draw.rect(screen, (60, 60, 90), rect)
+            pygame.draw.rect(screen, (200, 200, 200), rect, 1)
+            name, key = self.slots[i]
+            if name:
+                txt = font.render(f"{name} ({key})", True, (255, 255, 255))
+                txt_rect = txt.get_rect(center=rect.center)
+                screen.blit(txt, txt_rect)
+
