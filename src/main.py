@@ -6,7 +6,7 @@ from sector import create_sectors
 from star import Star
 from planet import Planet
 from station import SpaceStation
-from ui import DropdownMenu, RoutePlanner
+from ui import DropdownMenu, RoutePlanner, InventoryWindow
 from planet_surface import PlanetSurface
 from character import create_player
 
@@ -54,8 +54,9 @@ def main():
     zoom = 1.0
     selected_object = None
     info_font = pygame.font.Font(None, 20)
-    menu = DropdownMenu(10, 10, 100, 25, ["Plan Route"])
+    menu = DropdownMenu(10, 10, 100, 25, ["Plan Route", "Inventory"])
     route_planner = RoutePlanner()
+    inventory_window = None
     current_station = None
     current_surface = None
     approaching_planet = None
@@ -84,6 +85,19 @@ def main():
                 keys = pygame.key.get_pressed()
                 current_surface.update(keys, dt)
                 current_surface.draw(screen, info_font)
+                pygame.display.flip()
+                continue
+
+        if inventory_window:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+                if inventory_window.handle_event(event):
+                    inventory_window = None
+                    break
+            if inventory_window:
+                inventory_window.draw(screen, info_font)
                 pygame.display.flip()
                 continue
 
@@ -133,6 +147,8 @@ def main():
             selection = menu.handle_event(event)
             if selection == "Plan Route":
                 route_planner.start()
+            elif selection == "Inventory":
+                inventory_window = InventoryWindow(player)
 
             route_planner.handle_event(event, sectors, (camera_x, camera_y), zoom)
 
