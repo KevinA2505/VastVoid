@@ -1,9 +1,14 @@
 import pygame
 
+
 class Star:
     """Represents a star in the star system."""
 
+    _id_counter = 1
+
     def __init__(self, x: float, y: float, radius: int, color=(255, 255, 0)) -> None:
+        self.name = f"Star {Star._id_counter}"
+        Star._id_counter += 1
         self.x = x
         self.y = y
         self.radius = radius

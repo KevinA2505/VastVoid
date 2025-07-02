@@ -8,7 +8,11 @@ import config
 class StarSystem:
     """Collection of a star with orbiting planets."""
 
+    _id_counter = 1
+
     def __init__(self, x: int, y: int) -> None:
+        self.name = f"System {StarSystem._id_counter}"
+        StarSystem._id_counter += 1
         self.star = Star(x, y, random.randint(15, 30))
         self.planets = []
         num_planets = random.randint(2, 5)
@@ -44,6 +48,15 @@ class StarSystem:
             if math.hypot(planet.x - x, planet.y - y) < planet.radius + radius:
                 return True
         return False
+
+    def get_object_at_point(self, x: float, y: float, radius: float):
+        """Return the star or planet under the point if any."""
+        if math.hypot(self.star.x - x, self.star.y - y) < self.star.radius + radius:
+            return self.star
+        for planet in self.planets:
+            if math.hypot(planet.x - x, planet.y - y) < planet.radius + radius:
+                return planet
+        return None
 
     def draw(
         self,
