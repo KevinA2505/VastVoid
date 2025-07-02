@@ -26,7 +26,14 @@ class ItemPickup:
         self.y = y
         self.size = 6
 
-    def draw(self, screen: pygame.Surface, offset_x: float, offset_y: float) -> None:
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float,
+        offset_y: float,
+        font: pygame.font.Font | None = None,
+        show_name: bool = False,
+    ) -> None:
         rect = pygame.Rect(
             int(self.x - offset_x - self.size / 2),
             int(self.y - offset_y - self.size / 2),
@@ -34,6 +41,10 @@ class ItemPickup:
             self.size,
         )
         pygame.draw.rect(screen, (200, 200, 50), rect)
+        if show_name and font:
+            txt = font.render(self.name, True, (255, 255, 255))
+            txt_rect = txt.get_rect(midbottom=(rect.centerx, rect.top - 2))
+            screen.blit(txt, txt_rect)
 
 
 class Explorer:
@@ -88,27 +99,59 @@ class PlanetSurface:
     def _random_variation(self, base: tuple[int, int, int]) -> tuple[int, int, int]:
         return tuple(min(255, max(0, c + random.randint(-30, 30))) for c in base)
 
+    def _draw_patch(self, rect: pygame.Rect, biome: Biome) -> None:
+        """Draw a more organic looking patch of terrain."""
+        # Randomly choose between an ellipse or an irregular polygon
+        if random.random() < 0.5:
+            w = random.randint(40, 120)
+            h = random.randint(30, 80)
+            x = random.randint(rect.left, rect.right)
+            y = random.randint(rect.top, rect.bottom)
+            shape = pygame.Rect(x - w // 2, y - h // 2, w, h)
+            pygame.draw.ellipse(
+                self.surface,
+                self._random_variation(biome.color),
+                shape,
+            )
+        else:
+            points = [
+                (
+                    random.randint(rect.left, rect.right),
+                    random.randint(rect.top, rect.bottom),
+                )
+                for _ in range(random.randint(3, 6))
+            ]
+            pygame.draw.polygon(
+                self.surface,
+                self._random_variation(biome.color),
+                points,
+            )
+
     def _generate_map(self) -> None:
         cell = 300
         self.surface.fill((0, 0, 0))
         for i in range(self.width // cell):
             for j in range(self.height // cell):
-                biome_name = random.choice(self.planet.biomes) if self.planet.biomes else self.planet.environment
-                biome = BIOMES.get(biome_name, Biome(ENV_COLORS.get(biome_name, (90, 90, 90)), [], 0))
+                biome_name = (
+                    random.choice(self.planet.biomes)
+                    if self.planet.biomes
+                    else self.planet.environment
+                )
+                biome = BIOMES.get(
+                    biome_name,
+                    Biome(ENV_COLORS.get(biome_name, (90, 90, 90)), [], 0),
+                )
                 rect = pygame.Rect(i * cell, j * cell, cell, cell)
                 pygame.draw.rect(self.surface, biome.color, rect)
-                for _ in range(20):
-                    x = random.randint(rect.left, rect.right)
-                    y = random.randint(rect.top, rect.bottom)
-                    r = random.randint(20, 60)
-                    pygame.draw.circle(
-                        self.surface, self._random_variation(biome.color), (x, y), r
-                    )
-                if biome.spawn_items and random.random() < biome.spawn_rate:
-                    name = random.choice(biome.spawn_items)
-                    px = random.randint(rect.left, rect.right)
-                    py = random.randint(rect.top, rect.bottom)
-                    self.pickups.append(ItemPickup(name, px, py))
+                for _ in range(25):
+                    self._draw_patch(rect, biome)
+                if biome.spawn_items:
+                    for _ in range(random.randint(1, 3)):
+                        if random.random() < biome.spawn_rate:
+                            name = random.choice(biome.spawn_items)
+                            px = random.randint(rect.left, rect.right)
+                            py = random.randint(rect.top, rect.bottom)
+                            self.pickups.append(ItemPickup(name, px, py))
 
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -135,7 +178,11 @@ class PlanetSurface:
         offset_y = self.camera_y - config.WINDOW_HEIGHT / 2
         screen.blit(self.surface, (-offset_x, -offset_y))
         for pickup in self.pickups:
-            pickup.draw(screen, offset_x, offset_y)
+            show = (
+                abs(self.explorer.x - pickup.x) < 40
+                and abs(self.explorer.y - pickup.y) < 40
+            )
+            pickup.draw(screen, offset_x, offset_y, font, show)
         # draw landing ship
         ship_rect = pygame.Rect(
             int(self.ship_pos[0] - offset_x - 10),
