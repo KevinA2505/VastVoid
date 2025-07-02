@@ -80,6 +80,10 @@ def main():
                 if event.type == pygame.QUIT:
                     running = False
                     break
+                if inventory_window:
+                    if inventory_window.handle_event(event):
+                        inventory_window = None
+                    continue
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_i:
                     inventory_window = InventoryWindow(player)
                     continue
@@ -102,6 +106,8 @@ def main():
                 keys = pygame.key.get_pressed()
                 current_surface.update(keys, dt)
                 current_surface.draw(screen, info_font)
+                if inventory_window:
+                    inventory_window.draw(screen, info_font)
                 pygame.display.flip()
                 continue
 
