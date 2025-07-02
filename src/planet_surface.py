@@ -89,6 +89,11 @@ class PlanetSurface:
         self.width = 3000
         self.height = 3000
         self.surface = pygame.Surface((self.width, self.height))
+        self.collision_surface = pygame.Surface(
+            (self.width, self.height), pygame.SRCALPHA
+        )
+        self.collision_surface.fill((0, 0, 0, 0))
+        self.collision_mask: pygame.mask.Mask | None = None
         self.pickups: list[ItemPickup] = []
         # grid resolution used for walkable map
         self.cell = 60
@@ -138,7 +143,7 @@ class PlanetSurface:
     def _draw_river(self) -> None:
         """Draw a wavy blue line representing a river."""
         length = random.randint(self.height // 2, self.height)
-        width = random.randint(8, 14)
+        width = random.randint(16, 28)
         start_side = random.choice(["top", "bottom", "left", "right"])
         if start_side == "top":
             x, y, angle = random.randint(0, self.width), 0, math.pi / 2
@@ -159,24 +164,8 @@ class PlanetSurface:
             if x < 0 or x > self.width or y < 0 or y > self.height:
                 break
         pygame.draw.lines(self.surface, (50, 100, 200), False, points, width)
+        pygame.draw.lines(self.collision_surface, (255, 255, 255), False, points, width)
         self.rivers.append(points)
-        span = max(1, math.ceil(width / self.cell))
-        step = self.cell / 2
-        for p1, p2 in zip(points, points[1:]):
-            dx = p2[0] - p1[0]
-            dy = p2[1] - p1[1]
-            dist = math.hypot(dx, dy)
-            steps = int(dist / step) + 1
-            for s in range(steps + 1):
-                px = p1[0] + dx * s / steps
-                py = p1[1] + dy * s / steps
-                cx = int(px // self.cell)
-                cy = int(py // self.cell)
-                for ix in range(-span, span + 1):
-                    for iy in range(-span, span + 1):
-                        nx, ny = cx + ix, cy + iy
-                        if 0 <= nx < self.cols and 0 <= ny < self.rows:
-                            self.blocked[ny][nx] = True
 
     def _draw_forest(self) -> None:
         """Draw a cluster of trees to represent a forested area."""
@@ -198,6 +187,7 @@ class PlanetSurface:
         rows = self.rows
         self.blocked = [[False for _ in range(cols)] for _ in range(rows)]
         self.surface.fill((0, 0, 0))
+        self.collision_surface.fill((0, 0, 0, 0))
 
         biome_names = (
             self.planet.biomes if self.planet.biomes else [self.planet.environment]
@@ -235,6 +225,7 @@ class PlanetSurface:
                 pygame.draw.rect(self.surface, biome.color, rect)
                 if is_ocean_planet or biome_names[biome_idx] == "ocean world":
                     self.blocked[j][i] = True
+                    pygame.draw.rect(self.collision_surface, (255, 255, 255), rect)
                 for _ in range(3):
                     self._draw_patch(rect, biome)
                 if biome.spawn_items:
@@ -250,8 +241,12 @@ class PlanetSurface:
         for _ in range(random.randint(2, 4)):
             self._draw_forest()
 
+        self.collision_mask = pygame.mask.from_surface(self.collision_surface)
+
     def is_walkable(self, x: float, y: float) -> bool:
         """Return ``True`` if the coordinates correspond to a walkable cell."""
+        if self.collision_mask and self.collision_mask.get_at((int(x), int(y))):
+            return False
         cx = int(x // self.cell)
         cy = int(y // self.cell)
         if 0 <= cx < self.cols and 0 <= cy < self.rows:
