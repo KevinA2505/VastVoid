@@ -17,8 +17,8 @@ GRID_SIZE = 3
 MIN_SYSTEM_DISTANCE = 400
 
 # Ship boost settings
-BOOST_MULTIPLIER = 2.0  # speed multiplier when boost is active
-BOOST_DURATION = 2.0    # seconds of boost
+BOOST_MULTIPLIER = 2.5  # speed multiplier when boost is active
+BOOST_DURATION = 4.0    # seconds of boost
 BOOST_RECHARGE = 10.0   # seconds to fully recharge boost
 
 # Camera speed when planning a route
