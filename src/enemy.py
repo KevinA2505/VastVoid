@@ -220,4 +220,7 @@ def create_random_enemy(region: Sector) -> Enemy:
     model = random.choice(SHIP_MODELS)
     x = random.randint(region.x, region.x + region.width)
     y = random.randint(region.y, region.y + region.height)
-    return Enemy(Ship(x, y, model), species, region)
+    enemy = Enemy(Ship(x, y, model), species, region)
+    if enemy.ship.weapons:
+        enemy.ship.weapons[0].cooldown = 0.25
+    return enemy

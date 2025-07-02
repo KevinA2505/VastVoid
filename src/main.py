@@ -304,13 +304,26 @@ def main():
         for enemy in list(enemies):
             enemy.update(ship, dt, world_width, world_height, sectors, blackholes)
 
+            enemy_rect = pygame.Rect(
+                enemy.ship.x - enemy.ship.size / 2,
+                enemy.ship.y - enemy.ship.size / 2,
+                enemy.ship.size,
+                enemy.ship.size,
+            )
+            ship_rect = pygame.Rect(
+                ship.x - ship.size / 2,
+                ship.y - ship.size / 2,
+                ship.size,
+                ship.size,
+            )
+
             for proj in list(ship.projectiles):
-                if math.hypot(enemy.ship.x - proj.x, enemy.ship.y - proj.y) < enemy.ship.size / 2:
+                if enemy_rect.collidepoint(proj.x, proj.y):
                     enemy.ship.take_damage(proj.damage)
                     ship.projectiles.remove(proj)
 
             for proj in list(enemy.ship.projectiles):
-                if math.hypot(ship.x - proj.x, ship.y - proj.y) < ship.size / 2:
+                if ship_rect.collidepoint(proj.x, proj.y):
                     ship.take_damage(proj.damage)
                     enemy.ship.projectiles.remove(proj)
 
@@ -479,6 +492,13 @@ def main():
         shield_fill = int(bar_width * ship.shield.strength / ship.shield.max_strength)
         if shield_fill > 0:
             pygame.draw.rect(screen, (0, 0, 150), (bar_x, shield_y, shield_fill, bar_height))
+
+        hull_y = shield_y - 15
+        pygame.draw.rect(screen, (60, 60, 90), (bar_x, hull_y, bar_width, bar_height))
+        pygame.draw.rect(screen, (200, 200, 200), (bar_x, hull_y, bar_width, bar_height), 1)
+        hull_fill = int(bar_width * ship.hull / 100)
+        if hull_fill > 0:
+            pygame.draw.rect(screen, (150, 0, 0), (bar_x, hull_y, hull_fill, bar_height))
 
         menu.draw(screen, info_font)
 
