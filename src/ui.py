@@ -112,16 +112,23 @@ class RoutePlanner:
 
 
 class InventoryWindow:
-    """Display the player's inventory in a simple window."""
+    """Display the player's inventory and allow using items."""
 
     def __init__(self, player) -> None:
         self.player = player
         self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
+        self.item_rects: list[tuple[str, pygame.Rect]] = []
 
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.close_rect.collidepoint(event.pos):
                 return True
+            for name, rect in self.item_rects:
+                if rect.collidepoint(event.pos):
+                    if self.player.inventory.get(name, 0) > 0:
+                        self.player.remove_item(name, 1)
+                        print(f"Used {name}")
+                    return False
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             return True
         return False
@@ -130,12 +137,24 @@ class InventoryWindow:
         screen.fill((20, 20, 40))
         title = font.render("Inventory", True, (255, 255, 255))
         screen.blit(title, (20, 20))
-        y = 60
+        self.item_rects.clear()
+        x0, y0 = 20, 60
+        cell_w, cell_h = 120, 40
+        cols = 4
+        i = 0
         for name, qty in self.player.inventory.items():
-            if qty > 0:
-                text = font.render(f"{name}: {qty}", True, (255, 255, 255))
-                screen.blit(text, (40, y))
-                y += 20
+            if qty <= 0:
+                continue
+            col = i % cols
+            row = i // cols
+            rect = pygame.Rect(x0 + col * (cell_w + 5), y0 + row * (cell_h + 5), cell_w, cell_h)
+            self.item_rects.append((name, rect))
+            pygame.draw.rect(screen, (60, 60, 90), rect)
+            pygame.draw.rect(screen, (200, 200, 200), rect, 1)
+            txt = font.render(f"{name} ({qty})", True, (255, 255, 255))
+            txt_rect = txt.get_rect(center=rect.center)
+            screen.blit(txt, txt_rect)
+            i += 1
         pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
         pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
         exit_txt = font.render("Close", True, (255, 255, 255))
