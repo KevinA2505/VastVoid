@@ -5,6 +5,7 @@ import os
 from dataclasses import dataclass, field
 
 from enemy import Enemy, Flee, Defend, Attack, Pursue, Idle, _NullKeys
+import config
 
 
 Q_TABLE_PATH = "learning_enemy_q_table.pkl"
@@ -125,8 +126,7 @@ def create_learning_enemy(region):
     y = random.randint(region.y, region.y + region.height)
     enemy = LearningEnemy(Ship(x, y, model), species, region)
     enemy.load_q_table()
-    # make enemy weapons fire more frequently
+    # Set the weapon cooldown using the configured value
     if enemy.ship.weapons:
-        # Reduce cooldown so learning enemies fire more often
-        enemy.ship.weapons[0].cooldown = 0.1
+        enemy.ship.weapons[0].cooldown = config.ENEMY_WEAPON_COOLDOWN
     return enemy
