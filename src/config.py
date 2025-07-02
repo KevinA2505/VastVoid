@@ -36,3 +36,10 @@ BLACKHOLE_MIN_DISTANCE = 600  # minimum distance from any star system
 BLACKHOLE_RANGE = 300         # distance at which the ship feels the pull
 BLACKHOLE_STRENGTH = 40000    # acceleration force applied when near
 BLACKHOLE_RADIUS = 25         # radius of the dangerous core
+
+# Worm hole settings
+WORMHOLE_CHANCE = 0.05       # probability of a sector containing a wormhole pair
+WORMHOLE_MIN_DISTANCE = 400  # minimum distance from star systems and black holes
+WORMHOLE_RADIUS = 20         # visible size of a worm hole
+WORMHOLE_COLOR = (150, 100, 200)
+WORMHOLE_DELAY = 5.0         # seconds before teleport occurs
