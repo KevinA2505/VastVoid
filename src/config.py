@@ -28,5 +28,5 @@ CAMERA_PAN_SPEED = 500  # pixels per second
 BLACKHOLE_CHANCE = 0.15       # probability of a sector containing a black hole
 BLACKHOLE_MIN_DISTANCE = 600  # minimum distance from any star system
 BLACKHOLE_RANGE = 300         # distance at which the ship feels the pull
-BLACKHOLE_STRENGTH = 800      # acceleration force applied when near
+BLACKHOLE_STRENGTH = 40000    # acceleration force applied when near
 BLACKHOLE_RADIUS = 25         # radius of the dangerous core

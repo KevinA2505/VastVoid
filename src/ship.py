@@ -54,13 +54,7 @@ class Ship:
 
         if blackholes:
             for hole in blackholes:
-                dx = hole.x - self.x
-                dy = hole.y - self.y
-                dist = math.hypot(dx, dy)
-                if dist < hole.pull_range and dist > 0:
-                    pull = hole.strength / dist
-                    self.vx += dx / dist * pull * dt
-                    self.vy += dy / dist * pull * dt
+                hole.apply_pull(self, dt)
 
         old_x, old_y = self.x, self.y
 
@@ -109,15 +103,9 @@ class Ship:
 
         if blackholes:
             for hole in blackholes:
-                bdx = hole.x - self.x
-                bdy = hole.y - self.y
-                dist = math.hypot(bdx, bdy)
-                if dist < hole.pull_range and dist > 0:
-                    pull = hole.strength / dist
-                    self.vx += bdx / dist * pull * dt
-                    self.vy += bdy / dist * pull * dt
-                    self.x += self.vx * dt
-                    self.y += self.vy * dt
+                hole.apply_pull(self, dt)
+                self.x += self.vx * dt
+                self.y += self.vy * dt
 
         if self._check_collision(sectors):
             self.x, self.y = old_x, old_y
