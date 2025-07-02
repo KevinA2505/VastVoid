@@ -59,7 +59,6 @@ def main():
     current_station = None
     current_surface = None
     approaching_planet = None
-    prev_ship_pos = None
     camera_x = ship.x
     camera_y = ship.y
 
@@ -74,9 +73,10 @@ def main():
                     running = False
                     break
                 if current_surface.handle_event(event):
+                    planet = current_surface.planet
                     current_surface = None
-                    ship.x, ship.y = prev_ship_pos
-                    prev_ship_pos = None
+                    ship.x = planet.x + planet.radius + 40
+                    ship.y = planet.y
                     camera_x = ship.x
                     camera_y = ship.y
                     break
@@ -193,7 +193,6 @@ def main():
                         )
                         if visit_rect.collidepoint(event.pos):
                             approaching_planet = selected_object
-                            prev_ship_pos = (ship.x, ship.y)
                             ship.start_autopilot(selected_object)
                             selected_object = None
                             continue
