@@ -2,6 +2,8 @@ import pygame
 import config
 from ship import Ship
 from sector import create_sectors
+from star import Star
+from planet import Planet
 
 
 def main():
@@ -17,6 +19,8 @@ def main():
     ship = Ship(world_width // 2, world_height // 2)
 
     zoom = 1.0
+    selected_object = None
+    info_font = pygame.font.Font(None, 20)
 
     clock = pygame.time.Clock()
     running = True
@@ -30,6 +34,22 @@ def main():
                     zoom = max(0.1, zoom - 0.1)
                 elif event.key == pygame.K_e:
                     zoom += 0.1
+                elif event.key == pygame.K_ESCAPE:
+                    selected_object = None
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                offset_x = ship.x - config.WINDOW_WIDTH / (2 * zoom)
+                offset_y = ship.y - config.WINDOW_HEIGHT / (2 * zoom)
+                world_x = event.pos[0] / zoom + offset_x
+                world_y = event.pos[1] / zoom + offset_y
+                if event.button == 1:
+                    selected_object = None
+                    for sector in sectors:
+                        obj = sector.get_object_at_point(world_x, world_y, 0)
+                        if obj:
+                            selected_object = obj
+                            break
+                elif event.button == 3:
+                    selected_object = None
 
         keys = pygame.key.get_pressed()
         ship.update(keys, dt, world_width, world_height, sectors)
@@ -42,6 +62,31 @@ def main():
         for sector in sectors:
             sector.draw(screen, offset_x, offset_y, zoom)
         ship.draw(screen, zoom)
+
+        if selected_object:
+            panel_width, panel_height = 180, 70
+            panel_rect = pygame.Rect(
+                config.WINDOW_WIDTH - panel_width - 10,
+                10,
+                panel_width,
+                panel_height,
+            )
+            pygame.draw.rect(screen, (30, 30, 60), panel_rect)
+            pygame.draw.rect(screen, (200, 200, 200), panel_rect, 1)
+
+            if isinstance(selected_object, Star):
+                obj_type = "Star"
+            else:
+                obj_type = "Planet"
+
+            lines = [
+                f"Name: {selected_object.name}",
+                f"Type: {obj_type}",
+                f"Radius: {selected_object.radius}",
+            ]
+            for i, line in enumerate(lines):
+                text_surf = info_font.render(line, True, (255, 255, 255))
+                screen.blit(text_surf, (panel_rect.x + 5, panel_rect.y + 5 + i * 20))
 
         pygame.display.flip()
 

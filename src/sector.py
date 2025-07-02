@@ -39,6 +39,16 @@ class Sector:
                 return True
         return False
 
+    def get_object_at_point(self, x: float, y: float, radius: float):
+        """Return the star or planet at the given point if any."""
+        if not (self.x <= x <= self.x + self.width and self.y <= y <= self.y + self.height):
+            return None
+        for system in self.systems:
+            obj = system.get_object_at_point(x, y, radius)
+            if obj:
+                return obj
+        return None
+
 
 def create_sectors(grid_size: int, width: int, height: int) -> list:
     """Generate a grid of sectors filled with random star systems."""

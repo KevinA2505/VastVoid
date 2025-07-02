@@ -2,10 +2,15 @@ import math
 import pygame
 from star import Star
 
+
 class Planet:
     """Planet that orbits around a star."""
 
+    _id_counter = 1
+
     def __init__(self, star: Star, distance: float, radius: int, color, angle: float, speed: float) -> None:
+        self.name = f"Planet {Planet._id_counter}"
+        Planet._id_counter += 1
         self.star = star
         self.distance = distance
         self.radius = radius
