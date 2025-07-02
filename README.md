@@ -35,3 +35,10 @@ and `colliding_star_systems.py`) remain in the `src` directory for reference.
 
 Wormholes now appear at least once in every generated universe, allowing
 instant travel between two distant points.
+
+### Enemy AI
+
+A new `Enemy` class lives in `src/enemy.py`. It creates autonomous pilots
+with their own ships and simple state-based behaviour. Enemies can pursue
+the player, fire at close range, or retreat when their hull integrity is
+low.
