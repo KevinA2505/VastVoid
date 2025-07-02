@@ -6,6 +6,10 @@ orbiting planets.
 The core game classes now live in separate modules within `src` and are
 initialized from a single entry point (`main.py`).
 
+You can select any planet and choose **Visit planet** to land on its surface
+and explore a procedurally generated map. Press `Escape` or use the *Take Off*
+button to return to space.
+
 ## Character creation
 
 When starting the game you can personalise the player by entering a name,
