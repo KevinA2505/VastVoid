@@ -1,4 +1,5 @@
 import pygame
+import math
 import config
 from ship import Ship
 from sector import create_sectors
@@ -29,6 +30,12 @@ def main():
     running = True
     while running:
         dt = clock.tick(60) / 1000.0
+        cancel_rect = pygame.Rect(
+            config.WINDOW_WIDTH // 2 - 70, config.WINDOW_HEIGHT - 40, 20, 20
+        )
+        auto_rect = pygame.Rect(
+            cancel_rect.right + 10, config.WINDOW_HEIGHT - 40, 100, 25
+        )
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -39,6 +46,23 @@ def main():
                 route_planner.start()
 
             route_planner.handle_event(event, sectors, ship, zoom)
+
+            if route_planner.destination:
+                if (
+                    event.type == pygame.MOUSEBUTTONDOWN
+                    and event.button == 1
+                    and cancel_rect.collidepoint(event.pos)
+                ):
+                    route_planner.cancel()
+                    ship.cancel_autopilot()
+                    continue
+                if (
+                    event.type == pygame.MOUSEBUTTONDOWN
+                    and event.button == 1
+                    and auto_rect.collidepoint(event.pos)
+                ):
+                    ship.start_autopilot(route_planner.destination)
+                    continue
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
@@ -64,6 +88,16 @@ def main():
 
         keys = pygame.key.get_pressed()
         ship.update(keys, dt, world_width, world_height, sectors)
+        if (
+            route_planner.destination
+            and not ship.autopilot_target
+            and math.hypot(
+                route_planner.destination.x - ship.x,
+                route_planner.destination.y - ship.y,
+            )
+            < 1
+        ):
+            route_planner.destination = None
         for sector in sectors:
             sector.update()
 
@@ -109,6 +143,19 @@ def main():
                     text_surf,
                     (panel_rect.x + 5, panel_rect.y + 5 + i * line_height),
                 )
+
+        if route_planner.destination:
+            pygame.draw.rect(screen, (150, 0, 0), cancel_rect)
+            pygame.draw.rect(screen, (200, 200, 200), cancel_rect, 1)
+            cancel_text = info_font.render("X", True, (255, 255, 255))
+            cancel_rect_text = cancel_text.get_rect(center=cancel_rect.center)
+            screen.blit(cancel_text, cancel_rect_text)
+
+            pygame.draw.rect(screen, (60, 60, 90), auto_rect)
+            pygame.draw.rect(screen, (200, 200, 200), auto_rect, 1)
+            auto_text = info_font.render("Auto Move", True, (255, 255, 255))
+            auto_rect_text = auto_text.get_rect(center=auto_rect.center)
+            screen.blit(auto_text, auto_rect_text)
 
         menu.draw(screen, info_font)
         
