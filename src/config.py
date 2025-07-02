@@ -45,3 +45,7 @@ WORMHOLE_COLOR = (150, 100, 200)
 WORMHOLE_DELAY = 5.0         # seconds before teleport occurs
 WORMHOLE_COOLDOWN = 3.0      # delay after teleport before re-entry allowed
 WORMHOLE_FLASH_TIME = 0.75   # duration of post-teleport flash effect
+
+# Enemy spawn settings
+MIN_ENEMIES = 5
+MAX_ENEMIES = 12

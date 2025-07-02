@@ -41,4 +41,6 @@ instant travel between two distant points.
 A new `Enemy` class lives in `src/enemy.py`. It creates autonomous pilots
 with their own ships and simple state-based behaviour. Enemies can pursue
 the player, fire at close range, or retreat when their hull integrity is
-low.
+low. When a new game starts, a random number of enemies is generated and
+scattered across space. The amount varies between `MIN_ENEMIES` and
+`MAX_ENEMIES` defined in `config.py`.
