@@ -52,3 +52,8 @@ WORMHOLE_FLASH_TIME = 0.75   # duration of post-teleport flash effect
 # Enemy spawn settings
 MIN_ENEMIES = 5
 MAX_ENEMIES = 12
+
+# Cooldown for enemy weapons in seconds. Default player weapons use
+# 0.5, so enemies fire slightly faster but still allow the player to
+# dodge incoming shots.
+ENEMY_WEAPON_COOLDOWN = 0.3
