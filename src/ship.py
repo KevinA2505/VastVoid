@@ -10,7 +10,14 @@ class Ship:
         self.vx = 0.0
         self.vy = 0.0
 
-    def update(self, keys: pygame.key.ScancodeWrapper, dt: float, world_width: int, world_height: int) -> None:
+    def update(
+        self,
+        keys: pygame.key.ScancodeWrapper,
+        dt: float,
+        world_width: int,
+        world_height: int,
+        sectors: list,
+    ) -> None:
         if keys[pygame.K_w]:
             self.vy -= config.SHIP_ACCELERATION * dt
         if keys[pygame.K_s]:
@@ -23,11 +30,25 @@ class Ship:
         self.vx *= config.SHIP_FRICTION
         self.vy *= config.SHIP_FRICTION
 
+        old_x, old_y = self.x, self.y
+
         self.x += self.vx * dt
         self.y += self.vy * dt
 
         self.x = max(0, min(world_width, self.x))
         self.y = max(0, min(world_height, self.y))
+
+        if self._check_collision(sectors):
+            self.x, self.y = old_x, old_y
+            self.vx = 0
+            self.vy = 0
+
+    def _check_collision(self, sectors: list) -> bool:
+        half_size = config.SHIP_SIZE / 2
+        for sector in sectors:
+            if sector.collides_with_point(self.x, self.y, half_size):
+                return True
+        return False
 
     def draw(self, screen: pygame.Surface) -> None:
         ship_rect = pygame.Rect(

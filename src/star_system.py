@@ -30,6 +30,14 @@ class StarSystem:
         for planet in self.planets:
             planet.update()
 
+    def collides_with_point(self, x: float, y: float, radius: float) -> bool:
+        if math.hypot(self.star.x - x, self.star.y - y) < self.star.radius + radius:
+            return True
+        for planet in self.planets:
+            if math.hypot(planet.x - x, planet.y - y) < planet.radius + radius:
+                return True
+        return False
+
     def draw(self, screen: pygame.Surface, offset_x: float = 0, offset_y: float = 0) -> None:
         self.star.draw(screen, offset_x, offset_y)
         for planet in self.planets:
