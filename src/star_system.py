@@ -3,6 +3,7 @@ import random
 import pygame
 from star import Star
 from planet import Planet
+from names import get_system_name
 import config
 
 class StarSystem:
@@ -11,27 +12,17 @@ class StarSystem:
     _id_counter = 1
 
     def __init__(self, x: int, y: int) -> None:
-        self.name = f"System {StarSystem._id_counter}"
+        self.name = get_system_name()
         StarSystem._id_counter += 1
-        self.star = Star(x, y, random.randint(15, 30))
+        self.star = Star.random_star(x, y)
         self.planets = []
         num_planets = random.randint(2, 5)
 
         # Starting distance ensures planets don't overlap the star
         distance = self.star.radius + 40
         for _ in range(num_planets):
-            radius = random.randint(4, 10)
-            color = (
-                random.randint(50, 255),
-                random.randint(50, 255),
-                random.randint(50, 255),
-            )
-            angle = random.uniform(0, 2 * math.pi)
-            # Randomize direction so planets don't all rotate the same way
-            speed = random.choice([-1, 1]) * config.ORBIT_SPEED_FACTOR / math.sqrt(distance)
-
             self.planets.append(
-                Planet(self.star, distance, radius, color, angle, speed)
+                Planet.random_planet(self.star, distance)
             )
 
             # Increment distance so orbits are spaced apart
