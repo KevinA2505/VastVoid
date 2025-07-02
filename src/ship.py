@@ -204,6 +204,23 @@ class Ship:
         for proj in self.projectiles:
             proj.draw(screen, offset_x, offset_y, zoom)
 
+    def draw_at(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        """Draw the ship on screen applying an offset and zoom."""
+        size = max(1, int(self.size * zoom ** 0.5))
+        ship_rect = pygame.Rect(
+            int((self.x - offset_x) * zoom) - size // 2,
+            int((self.y - offset_y) * zoom) - size // 2,
+            size,
+            size,
+        )
+        pygame.draw.rect(screen, self.color, ship_rect)
+
 
 def choose_ship(screen: pygame.Surface) -> ShipModel:
     """Let the player select a ship model and return it."""

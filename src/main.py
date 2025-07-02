@@ -1,7 +1,9 @@
 import pygame
 import math
+import random
 import config
 from ship import Ship, choose_ship
+from enemy import create_random_enemy
 from sector import create_sectors
 from wormhole import WormHole
 from star import Star
@@ -56,6 +58,13 @@ def main():
         wormholes.extend(sector.wormholes)
     world_width = config.GRID_SIZE * config.SECTOR_WIDTH
     world_height = config.GRID_SIZE * config.SECTOR_HEIGHT
+
+    enemies = []
+    num_enemies = random.randint(config.MIN_ENEMIES, config.MAX_ENEMIES)
+    for _ in range(num_enemies):
+        ex = random.randint(0, world_width)
+        ey = random.randint(0, world_height)
+        enemies.append(create_random_enemy(ex, ey))
 
     chosen_model = choose_ship(screen)
     player.ship_model = chosen_model
@@ -293,6 +302,8 @@ def main():
 
         keys = pygame.key.get_pressed()
         ship.update(keys, dt, world_width, world_height, sectors, blackholes)
+        for enemy in enemies:
+            enemy.update(ship, dt, world_width, world_height, sectors, blackholes)
         if approaching_planet and not ship.autopilot_target:
             dist = math.hypot(
                 approaching_planet.x - ship.x,
@@ -352,7 +363,11 @@ def main():
         offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
         for sector in sectors:
             sector.draw(screen, offset_x, offset_y, zoom)
+        for enemy in enemies:
+            enemy.ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         ship.draw_projectiles(screen, offset_x, offset_y, zoom)
+        for enemy in enemies:
+            enemy.ship.draw_at(screen, offset_x, offset_y, zoom)
         ship.draw(screen, zoom)
         route_planner.draw(screen, info_font, ship, offset_x, offset_y, zoom)
 
