@@ -5,6 +5,7 @@ import config
 from star import Star
 from names import get_planet_name, PLANET_ENVIRONMENTS
 from biome import BIOMES
+from planet_surface import ENV_COLORS
 
 
 class Planet:
@@ -41,14 +42,15 @@ class Planet:
     def random_planet(star: Star, distance: float) -> "Planet":
         """Create a planet with randomised properties."""
         radius = random.randint(4, 10)
-        color = (
+        environment = random.choice(PLANET_ENVIRONMENTS)
+        fallback_random_color = (
             random.randint(50, 255),
             random.randint(50, 255),
             random.randint(50, 255),
         )
+        color = ENV_COLORS.get(environment, fallback_random_color)
         angle = random.uniform(0, 2 * math.pi)
         speed = random.choice([-1, 1]) * config.ORBIT_SPEED_FACTOR / math.sqrt(distance)
-        environment = random.choice(PLANET_ENVIRONMENTS)
         biome_names = list(BIOMES.keys())
         num_biomes = random.randint(1, min(3, len(biome_names)))
         biomes = random.sample(biome_names, k=num_biomes)
