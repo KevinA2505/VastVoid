@@ -144,7 +144,7 @@ class Enemy:
         attack = Attack(self)
         pursue = Pursue(self)
         idle = Idle(self)
-        root = py_trees.composites.Selector("EnemyRoot")
+        root = py_trees.composites.Selector("EnemyRoot", memory=False)
         root.add_children([flee, attack, pursue, idle])
         self.tree = py_trees.trees.BehaviourTree(root)
 
