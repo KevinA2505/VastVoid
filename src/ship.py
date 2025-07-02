@@ -35,6 +35,11 @@ class Ship:
         self.vx = 0.0
         self.vy = 0.0
         self.autopilot_target = None
+        self.orbit_target = None
+        self.orbit_time = 0.0
+        self.orbit_radius = 0.0
+        self.orbit_angle = 0.0
+        self.orbit_forced = False
         self.boost_charge = 1.0
         self.boost_time = 0.0
         self.model = model
@@ -65,6 +70,11 @@ class Ship:
         sectors: list,
         blackholes: list | None = None,
     ) -> None:
+        if self.orbit_time > 0 and self.orbit_target:
+            self._update_orbit(dt)
+            if self.boost_time > 0 and self.orbit_forced:
+                self.cancel_orbit()
+            return
         if self.autopilot_target:
             self._update_autopilot(dt, world_width, world_height, sectors, blackholes)
             return
@@ -122,6 +132,22 @@ class Ship:
     def cancel_autopilot(self) -> None:
         self.autopilot_target = None
 
+    def start_orbit(self, target, duration: float = 5.0, forced: bool = False) -> None:
+        """Begin orbiting ``target`` for a short duration."""
+        dx = self.x - target.x
+        dy = self.y - target.y
+        self.orbit_radius = math.hypot(dx, dy)
+        self.orbit_angle = math.atan2(dy, dx)
+        self.orbit_target = target
+        self.orbit_time = duration
+        self.orbit_forced = forced
+        self.autopilot_target = None
+
+    def cancel_orbit(self) -> None:
+        self.orbit_target = None
+        self.orbit_time = 0.0
+        self.orbit_forced = False
+
     def _update_autopilot(
         self,
         dt: float,
@@ -162,6 +188,16 @@ class Ship:
 
         self._update_projectiles(dt, world_width, world_height)
 
+    def _update_orbit(self, dt: float) -> None:
+        if not self.orbit_target:
+            return
+        self.orbit_time -= dt
+        self.orbit_angle += config.SHIP_ORBIT_SPEED * dt
+        self.x = self.orbit_target.x + math.cos(self.orbit_angle) * self.orbit_radius
+        self.y = self.orbit_target.y + math.sin(self.orbit_angle) * self.orbit_radius
+        if self.orbit_time <= 0:
+            self.cancel_orbit()
+
     def _check_collision(self, sectors: list) -> bool:
         half_size = self.size / 2
         for sector in sectors:
@@ -190,6 +226,8 @@ class Ship:
     def fire(self, tx: float, ty: float) -> None:
         if not self.weapons:
             return
+        if self.orbit_target and self.orbit_time > 0:
+            tx, ty = self.orbit_target.x, self.orbit_target.y
         proj = self.weapons[0].fire(self.x, self.y, tx, ty)
         if proj:
             self.projectiles.append(proj)

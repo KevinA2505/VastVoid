@@ -63,3 +63,9 @@ player's tactics.
 The Q-table for these enemies is saved to `learning_enemy_q_table.pkl` in the
 project root when the game exits. Spawning enemies load this file if present so
 their behaviour persists between sessions.
+
+### Attack orbit
+Press **R** while near an enemy ship to start an attack orbit around it for
+five seconds. During this manoeuvre all of your shots automatically target the
+orbited enemy. Enemies may also force your ship into an orbit with a 10%
+chance when they attack, but boosting will break the effect.
