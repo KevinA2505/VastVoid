@@ -11,6 +11,8 @@ initialized from a single entry point (`main.py`).
 When starting the game you can personalise the player by entering a name,
 age, species and a **fraction** (faction). Five fictional fractions are
 available, each with a short description and a small boost for its members.
+After the character is created you can also choose a starting ship from a
+small catalogue of models, each with its own brand and classification.
 
 ## Running the game
 

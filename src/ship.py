@@ -1,11 +1,33 @@
 import pygame
 import math
+from dataclasses import dataclass
 import config
+from names import get_ship_name
+
+
+@dataclass
+class ShipModel:
+    """Template describing a type of ship."""
+
+    classification: str
+    brand: str
+    size: int
+    color: tuple[int, int, int]
+    accel_factor: float = 1.0
+
+
+# Some predefined ship models used during character creation
+SHIP_MODELS = [
+    ShipModel("Fighter", "AeroTech", 18, (200, 200, 255), 1.2),
+    ShipModel("Explorer", "NovaCorp", 20, (255, 220, 150), 1.0),
+    ShipModel("Freighter", "Galactic Haul", 24, (180, 180, 180), 0.8),
+    ShipModel("Interceptor", "Starlight", 16, (255, 100, 100), 1.4),
+]
 
 class Ship:
-    """Simple controllable ship."""
+    """Simple controllable ship with optional model attributes."""
 
-    def __init__(self, x: float, y: float) -> None:
+    def __init__(self, x: float, y: float, model: ShipModel | None = None) -> None:
         self.x = float(x)
         self.y = float(y)
         self.vx = 0.0
@@ -13,6 +35,20 @@ class Ship:
         self.autopilot_target = None
         self.boost_charge = 1.0
         self.boost_time = 0.0
+        self.model = model
+        self.name = get_ship_name()
+        if model:
+            self.brand = model.brand
+            self.classification = model.classification
+            self.size = model.size
+            self.color = model.color
+            self.accel_factor = model.accel_factor
+        else:
+            self.brand = "Generic"
+            self.classification = "Standard"
+            self.size = config.SHIP_SIZE
+            self.color = config.SHIP_COLOR
+            self.accel_factor = 1.0
 
     def update(
         self,
@@ -26,7 +62,7 @@ class Ship:
         if self.autopilot_target:
             self._update_autopilot(dt, world_width, world_height, sectors, blackholes)
             return
-        accel = config.SHIP_ACCELERATION
+        accel = config.SHIP_ACCELERATION * self.accel_factor
         if self.boost_time > 0:
             self.boost_time -= dt
             if self.boost_time <= 0:
@@ -112,7 +148,7 @@ class Ship:
             self.autopilot_target = None
 
     def _check_collision(self, sectors: list) -> bool:
-        half_size = config.SHIP_SIZE / 2
+        half_size = self.size / 2
         for sector in sectors:
             if sector.collides_with_point(self.x, self.y, half_size):
                 return True
@@ -120,14 +156,14 @@ class Ship:
 
     def draw(self, screen: pygame.Surface, zoom: float = 1.0) -> None:
         """Draw the ship scaled by a non-linear factor of the zoom level."""
-        size = max(1, int(config.SHIP_SIZE * zoom ** 0.5))
+        size = max(1, int(self.size * zoom ** 0.5))
         ship_rect = pygame.Rect(
             config.WINDOW_WIDTH // 2 - size // 2,
             config.WINDOW_HEIGHT // 2 - size // 2,
             size,
             size,
         )
-        pygame.draw.rect(screen, config.SHIP_COLOR, ship_rect)
+        pygame.draw.rect(screen, self.color, ship_rect)
 
     @property
     def boost_ratio(self) -> float:
@@ -135,3 +171,29 @@ class Ship:
         if self.boost_time > 0:
             return 0.0
         return self.boost_charge
+
+
+def choose_ship(screen: pygame.Surface) -> ShipModel:
+    """Let the player select a ship model and return it."""
+    font = pygame.font.Font(None, 32)
+    clock = pygame.time.Clock()
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                raise SystemExit
+            if event.type == pygame.KEYDOWN and event.unicode.isdigit():
+                idx = int(event.unicode) - 1
+                if 0 <= idx < len(SHIP_MODELS):
+                    return SHIP_MODELS[idx]
+        screen.fill(config.BACKGROUND_COLOR)
+        lines = ["Choose your ship:"]
+        for i, model in enumerate(SHIP_MODELS):
+            lines.append(
+                f"{i+1} - {model.brand} {model.classification}"
+            )
+        for i, line in enumerate(lines):
+            msg = font.render(line, True, (255, 255, 255))
+            screen.blit(msg, (50, 100 + i * 30))
+        pygame.display.flip()
+        clock.tick(30)

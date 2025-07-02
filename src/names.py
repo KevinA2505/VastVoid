@@ -67,6 +67,20 @@ _STATION_NAMES = [
     "Pioneer Post"
 ]
 
+# Names for playable ships
+_SHIP_NAMES = [
+    "Valiant",
+    "Nebula Runner",
+    "Star Chaser",
+    "Celestial Wind",
+    "Lone Voyager",
+    "Solar Flare",
+    "Void Whisper",
+    "Quantum Drift",
+    "Cosmic Arrow",
+    "Eclipse Rider",
+]
+
 
 def _get_name(pool: list) -> str:
     """Return and remove a random name from a pool."""
@@ -90,6 +104,10 @@ def get_system_name() -> str:
 
 def get_station_name() -> str:
     return _get_name(_STATION_NAMES)
+
+
+def get_ship_name() -> str:
+    return _get_name(_SHIP_NAMES)
 
 
 PLANET_ENVIRONMENTS = [

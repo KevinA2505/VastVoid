@@ -1,7 +1,7 @@
 import pygame
 import math
 import config
-from ship import Ship
+from ship import Ship, choose_ship
 from sector import create_sectors
 from star import Star
 from planet import Planet
@@ -45,7 +45,10 @@ def main():
         blackholes.extend(sector.blackholes)
     world_width = config.GRID_SIZE * config.SECTOR_WIDTH
     world_height = config.GRID_SIZE * config.SECTOR_HEIGHT
-    ship = Ship(world_width // 2, world_height // 2)
+
+    chosen_model = choose_ship(screen)
+    player.ship_model = chosen_model
+    ship = Ship(world_width // 2, world_height // 2, chosen_model)
 
     zoom = 1.0
     selected_object = None
