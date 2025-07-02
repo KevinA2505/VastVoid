@@ -235,6 +235,11 @@ HERRAMIENTAS: List[Item] = [
     Item("comunicador interestelar", "herramienta", 0.7, 60, "Permite la comunicación a través de grandes distancias."),
 ]
 
+# --- Vehiculos ----------------------------------------------------------
+VEHICULOS: List[Item] = [
+    Item("boat", "vehiculo", 8.0, 20, "Pequeña embarcación algo quemada pero útil."),
+]
+
 # Organize items by type for easy lookup
 ITEMS_BY_TYPE: Dict[str, List[Item]] = {
     "materia_prima": MATERIA_PRIMA,
@@ -243,6 +248,7 @@ ITEMS_BY_TYPE: Dict[str, List[Item]] = {
     "artefacto": ARTEFACTOS,
     "arma": ARMAS,
     "herramienta": HERRAMIENTAS,
+    "vehiculo": VEHICULOS,
 }
 
 # Flatten list with all items
