@@ -110,5 +110,6 @@ def create_learning_enemy(region):
     enemy = LearningEnemy(Ship(x, y, model), species, region)
     # make enemy weapons fire more frequently
     if enemy.ship.weapons:
-        enemy.ship.weapons[0].cooldown = 0.25
+        # Reduce cooldown so learning enemies fire more often
+        enemy.ship.weapons[0].cooldown = 0.1
     return enemy
