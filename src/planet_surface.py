@@ -100,7 +100,9 @@ class PlanetSurface:
         self.cols = self.width // self.cell
         self.rows = self.height // self.cell
         self.blocked: list[list[bool]] = []
-        self.rivers: list[list[tuple[int, int]]] = []
+        # Store river segments along with their drawn width
+        self.rivers: list[tuple[list[tuple[int, int]], int]] = []
+        self.boat_active = False
         self._generate_map()
         self.ship_pos = (self.width // 2, self.height // 2)
         self.explorer = Explorer(*self.ship_pos)
@@ -143,7 +145,7 @@ class PlanetSurface:
     def _draw_river(self) -> None:
         """Draw a wavy blue line representing a river."""
         length = random.randint(self.height // 2, self.height)
-        width = random.randint(16, 28)
+        width = random.randint(24, 40)
         start_side = random.choice(["top", "bottom", "left", "right"])
         if start_side == "top":
             x, y, angle = random.randint(0, self.width), 0, math.pi / 2
@@ -164,8 +166,34 @@ class PlanetSurface:
             if x < 0 or x > self.width or y < 0 or y > self.height:
                 break
         pygame.draw.lines(self.surface, (50, 100, 200), False, points, width)
-        pygame.draw.lines(self.collision_surface, (255, 255, 255), False, points, width)
-        self.rivers.append(points)
+        pygame.draw.lines(
+            self.collision_surface, (255, 255, 255), False, points, width
+        )
+        self.rivers.append((points, width))
+
+    def _distance_to_segment(
+        self, x: float, y: float, p1: tuple[int, int], p2: tuple[int, int]
+    ) -> float:
+        """Return the distance from point ``(x, y)`` to the line segment ``p1``-``p2``."""
+        x1, y1 = p1
+        x2, y2 = p2
+        if (x1, y1) == (x2, y2):
+            return math.hypot(x - x1, y - y1)
+        dx = x2 - x1
+        dy = y2 - y1
+        t = max(0, min(1, ((x - x1) * dx + (y - y1) * dy) / float(dx * dx + dy * dy)))
+        proj_x = x1 + t * dx
+        proj_y = y1 + t * dy
+        return math.hypot(x - proj_x, y - proj_y)
+
+    def _point_near_river(self, x: float, y: float, margin: float = 10.0) -> bool:
+        """Return ``True`` if ``(x, y)`` is within ``margin`` of any river."""
+        for points, width in self.rivers:
+            half = width / 2 + margin
+            for i in range(len(points) - 1):
+                if self._distance_to_segment(x, y, points[i], points[i + 1]) <= half:
+                    return True
+        return False
 
     def _draw_forest(self) -> None:
         """Draw a cluster of trees to represent a forested area."""
@@ -246,6 +274,8 @@ class PlanetSurface:
     def is_walkable(self, x: float, y: float) -> bool:
         """Return ``True`` if the coordinates correspond to a walkable cell."""
         if self.collision_mask and self.collision_mask.get_at((int(x), int(y))):
+            if self.boat_active and self._point_near_river(x, y):
+                return True
             return False
         cx = int(x // self.cell)
         cy = int(y // self.cell)
@@ -257,8 +287,17 @@ class PlanetSurface:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.exit_rect.collidepoint(event.pos):
                 return True
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            return True
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                return True
+            if event.key == pygame.K_b:
+                if self.boat_active:
+                    self.boat_active = False
+                elif (
+                    self.player.inventory.get("boat", 0) > 0
+                    and self._point_near_river(self.explorer.x, self.explorer.y)
+                ):
+                    self.boat_active = True
         return False
 
     def update(self, keys: pygame.key.ScancodeWrapper, dt: float) -> None:
@@ -266,6 +305,8 @@ class PlanetSurface:
         self.explorer.update(keys, dt, self.width, self.height)
         if not self.is_walkable(self.explorer.x, self.explorer.y):
             self.explorer.x, self.explorer.y = old_x, old_y
+        if self.boat_active and not self._point_near_river(self.explorer.x, self.explorer.y):
+            self.boat_active = False
         self.camera_x = self.explorer.x
         self.camera_y = self.explorer.y
         for pickup in self.pickups[:]:
@@ -294,6 +335,16 @@ class PlanetSurface:
             20,
         )
         pygame.draw.rect(screen, (200, 200, 200), ship_rect)
+        if self.boat_active:
+            pygame.draw.circle(
+                screen,
+                (180, 120, 60),
+                (
+                    int(self.explorer.x - offset_x),
+                    int(self.explorer.y - offset_y),
+                ),
+                10,
+            )
         self.explorer.draw(screen, offset_x, offset_y)
         # exit button
         pygame.draw.rect(screen, (60, 60, 90), self.exit_rect)

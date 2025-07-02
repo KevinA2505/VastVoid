@@ -94,6 +94,8 @@ def create_player(screen: pygame.Surface) -> Player:
                             # Give the player some starter supplies
                             player.add_item("gasolina", 10)
                             player.add_item("materia oscura", 1)
+                            # The player starts with a partially burnt boat
+                            player.add_item("boat", 1)
                             return player
 
         screen.fill(config.BACKGROUND_COLOR)
