@@ -50,11 +50,13 @@ class Ship:
                 return True
         return False
 
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen: pygame.Surface, zoom: float = 1.0) -> None:
+        """Draw the ship scaled by a non-linear factor of the zoom level."""
+        size = max(1, int(config.SHIP_SIZE * zoom ** 0.5))
         ship_rect = pygame.Rect(
-            config.WINDOW_WIDTH // 2 - config.SHIP_SIZE // 2,
-            config.WINDOW_HEIGHT // 2 - config.SHIP_SIZE // 2,
-            config.SHIP_SIZE,
-            config.SHIP_SIZE,
+            config.WINDOW_WIDTH // 2 - size // 2,
+            config.WINDOW_HEIGHT // 2 - size // 2,
+            size,
+            size,
         )
         pygame.draw.rect(screen, config.SHIP_COLOR, ship_rect)

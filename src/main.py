@@ -41,7 +41,7 @@ def main():
         offset_y = ship.y - config.WINDOW_HEIGHT / (2 * zoom)
         for sector in sectors:
             sector.draw(screen, offset_x, offset_y, zoom)
-        ship.draw(screen)
+        ship.draw(screen, zoom)
 
         pygame.display.flip()
 
