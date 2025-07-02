@@ -1,4 +1,5 @@
 import pygame
+import math
 import config
 
 class Ship:
@@ -9,6 +10,7 @@ class Ship:
         self.y = float(y)
         self.vx = 0.0
         self.vy = 0.0
+        self.autopilot_target = None
 
     def update(
         self,
@@ -18,6 +20,9 @@ class Ship:
         world_height: int,
         sectors: list,
     ) -> None:
+        if self.autopilot_target:
+            self._update_autopilot(dt, world_width, world_height, sectors)
+            return
         if keys[pygame.K_w]:
             self.vy -= config.SHIP_ACCELERATION * dt
         if keys[pygame.K_s]:
@@ -42,6 +47,36 @@ class Ship:
             self.x, self.y = old_x, old_y
             self.vx = 0
             self.vy = 0
+
+    def start_autopilot(self, target) -> None:
+        self.autopilot_target = target
+
+    def cancel_autopilot(self) -> None:
+        self.autopilot_target = None
+
+    def _update_autopilot(
+        self, dt: float, world_width: int, world_height: int, sectors: list
+    ) -> None:
+        dest_x, dest_y = self.autopilot_target.x, self.autopilot_target.y
+        dx = dest_x - self.x
+        dy = dest_y - self.y
+        distance = math.hypot(dx, dy)
+        step = config.AUTOPILOT_SPEED * dt
+        if distance <= step:
+            self.x = dest_x
+            self.y = dest_y
+            self.autopilot_target = None
+            self.vx = 0
+            self.vy = 0
+            return
+        old_x, old_y = self.x, self.y
+        self.x += dx / distance * step
+        self.y += dy / distance * step
+        self.x = max(0, min(world_width, self.x))
+        self.y = max(0, min(world_height, self.y))
+        if self._check_collision(sectors):
+            self.x, self.y = old_x, old_y
+            self.autopilot_target = None
 
     def _check_collision(self, sectors: list) -> bool:
         half_size = config.SHIP_SIZE / 2
