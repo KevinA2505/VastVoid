@@ -64,16 +64,6 @@ def main():
         ship.draw(screen, zoom)
 
         if selected_object:
-            panel_width, panel_height = 180, 70
-            panel_rect = pygame.Rect(
-                config.WINDOW_WIDTH - panel_width - 10,
-                10,
-                panel_width,
-                panel_height,
-            )
-            pygame.draw.rect(screen, (30, 30, 60), panel_rect)
-            pygame.draw.rect(screen, (200, 200, 200), panel_rect, 1)
-
             if isinstance(selected_object, Star):
                 lines = [
                     f"Name: {selected_object.name}",
@@ -88,9 +78,25 @@ def main():
                     f"Environment: {selected_object.environment}",
                     f"Radius: {selected_object.radius}",
                 ]
+
+            panel_width = 180
+            line_height = 20
+            panel_height = line_height * len(lines) + 10
+            panel_rect = pygame.Rect(
+                config.WINDOW_WIDTH - panel_width - 10,
+                10,
+                panel_width,
+                panel_height,
+            )
+            pygame.draw.rect(screen, (30, 30, 60), panel_rect)
+            pygame.draw.rect(screen, (200, 200, 200), panel_rect, 1)
+
             for i, line in enumerate(lines):
                 text_surf = info_font.render(line, True, (255, 255, 255))
-                screen.blit(text_surf, (panel_rect.x + 5, panel_rect.y + 5 + i * 20))
+                screen.blit(
+                    text_surf,
+                    (panel_rect.x + 5, panel_rect.y + 5 + i * line_height),
+                )
 
         pygame.display.flip()
 
