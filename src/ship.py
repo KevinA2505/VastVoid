@@ -83,6 +83,7 @@ class Ship:
 
         if self.orbit_time > 0 and self.orbit_target:
             self._update_orbit(dt)
+            self._update_projectiles(dt, world_width, world_height)
             if self.boost_time > 0 and self.orbit_forced:
                 self.cancel_orbit()
             return
