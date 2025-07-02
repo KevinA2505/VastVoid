@@ -2,6 +2,7 @@ import random
 import math
 import pygame
 from star_system import StarSystem
+from blackhole import BlackHole
 import config
 
 class Sector:
@@ -27,6 +28,21 @@ class Sector:
                     self.systems.append(StarSystem(sx, sy))
                     break
 
+        # Possibly add a black hole positioned far from star systems
+        self.blackholes = []
+        if random.random() < config.BLACKHOLE_CHANCE:
+            for _ in range(100):
+                hx = random.randint(self.x + 100, self.x + self.width - 100)
+                hy = random.randint(self.y + 100, self.y + self.height - 100)
+                too_close = False
+                for system in self.systems:
+                    if math.hypot(system.star.x - hx, system.star.y - hy) < config.BLACKHOLE_MIN_DISTANCE:
+                        too_close = True
+                        break
+                if not too_close:
+                    self.blackholes.append(BlackHole(hx, hy))
+                    break
+
     def update(self) -> None:
         for system in self.systems:
             system.update()
@@ -40,12 +56,17 @@ class Sector:
     ) -> None:
         for system in self.systems:
             system.draw(screen, offset_x, offset_y, zoom)
+        for hole in self.blackholes:
+            hole.draw(screen, offset_x, offset_y, zoom)
 
     def collides_with_point(self, x: float, y: float, radius: float) -> bool:
         if not (self.x <= x <= self.x + self.width and self.y <= y <= self.y + self.height):
             return False
         for system in self.systems:
             if system.collides_with_point(x, y, radius):
+                return True
+        for hole in self.blackholes:
+            if math.hypot(hole.x - x, hole.y - y) < hole.radius + radius:
                 return True
         return False
 
