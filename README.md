@@ -72,8 +72,6 @@ slot. When used, your ship orbits the nearest enemy at a reduced speed for five
 seconds and automatically fires once every second. After the orbit ends there
 is a short cooldown before it can be triggered again.
 
-Projectiles now vanish after travelling around 1200 pixels. Shots fired during
-an orbit curve slightly thanks to a gentle angular adjustment applied every
-frame.
-Press **H** to launch a guided projectile that continually turns towards the
-nearest enemy.
+Projectiles now vanish after travelling around 1200 pixels. While orbiting an
+enemy, your ship automatically fires homing shots once per second that track
+the target. Normal shots are unaffected and travel in a straight line.
