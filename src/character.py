@@ -19,11 +19,13 @@ class Robot:
 
 class Player:
     """The player controlled character."""
-    def __init__(self, name: str, age: int, species, fraction: Fraction):
+
+    def __init__(self, name: str, age: int, species, fraction: Fraction, ship_model=None):
         self.name = name
         self.age = age
         self.species = species
         self.fraction = fraction
+        self.ship_model = ship_model
 
 
 def create_player(screen: pygame.Surface) -> Player:
