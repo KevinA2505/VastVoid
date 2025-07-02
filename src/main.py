@@ -4,6 +4,7 @@ from ship import Ship
 from sector import create_sectors
 from star import Star
 from planet import Planet
+from ui import DropdownMenu, RoutePlanner
 
 
 def main():
@@ -21,6 +22,8 @@ def main():
     zoom = 1.0
     selected_object = None
     info_font = pygame.font.Font(None, 20)
+    menu = DropdownMenu(10, 10, 100, 25, ["Plan Route"])
+    route_planner = RoutePlanner()
 
     clock = pygame.time.Clock()
     running = True
@@ -29,7 +32,15 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.KEYDOWN:
+                continue
+
+            selection = menu.handle_event(event)
+            if selection == "Plan Route":
+                route_planner.start()
+
+            route_planner.handle_event(event, sectors, ship, zoom)
+
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
                     zoom = max(0.1, zoom - 0.1)
                 elif event.key == pygame.K_e:
@@ -62,6 +73,7 @@ def main():
         for sector in sectors:
             sector.draw(screen, offset_x, offset_y, zoom)
         ship.draw(screen, zoom)
+        route_planner.draw(screen, info_font, ship, offset_x, offset_y, zoom)
 
         if selected_object:
             if isinstance(selected_object, Star):
@@ -98,6 +110,8 @@ def main():
                     (panel_rect.x + 5, panel_rect.y + 5 + i * line_height),
                 )
 
+        menu.draw(screen, info_font)
+        
         pygame.display.flip()
 
     pygame.quit()
