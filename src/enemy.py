@@ -2,7 +2,7 @@ import math
 import random
 from dataclasses import dataclass, field
 
-import pygame
+import py_trees
 
 from character import Alien, Human, Robot
 from ship import Ship, SHIP_MODELS
@@ -24,6 +24,101 @@ class _Point:
         self.y = y
 
 
+class _EnemyBehaviour(py_trees.behaviour.Behaviour):
+    """Base behaviour storing a reference to the enemy instance."""
+
+    def __init__(self, name: str, enemy: "Enemy") -> None:
+        super().__init__(name)
+        self.enemy = enemy
+
+
+class Flee(_EnemyBehaviour):
+    def __init__(self, enemy: "Enemy") -> None:
+        super().__init__("Flee", enemy)
+
+    def update(self) -> py_trees.common.Status:
+        enemy = self.enemy
+        ship = enemy.ship
+        player = enemy.player_ship
+        dx = player.x - ship.x
+        dy = player.y - ship.y
+        if ship.hull > enemy.flee_threshold:
+            return py_trees.common.Status.FAILURE
+        enemy.state = "flee"
+        if enemy._flee_target is None or ship.autopilot_target is None:
+            angle = math.atan2(-dy, -dx)
+            dest_x = ship.x + math.cos(angle) * enemy.detection_range
+            dest_y = ship.y + math.sin(angle) * enemy.detection_range
+            enemy._flee_target = _Point(dest_x, dest_y)
+            ship.start_autopilot(enemy._flee_target)
+        return py_trees.common.Status.SUCCESS
+
+
+class Attack(_EnemyBehaviour):
+    def __init__(self, enemy: "Enemy") -> None:
+        super().__init__("Attack", enemy)
+
+    def update(self) -> py_trees.common.Status:
+        enemy = self.enemy
+        ship = enemy.ship
+        player = enemy.player_ship
+        dx = player.x - ship.x
+        dy = player.y - ship.y
+        dist = math.hypot(dx, dy)
+        in_region = (
+            enemy.region.x <= player.x <= enemy.region.x + enemy.region.width
+            and enemy.region.y <= player.y <= enemy.region.y + enemy.region.height
+        )
+        if not (in_region and dist <= enemy.attack_range) or ship.hull <= enemy.flee_threshold:
+            return py_trees.common.Status.FAILURE
+        enemy.state = "attack"
+        angle = math.atan2(dy, dx)
+        dest_x = player.x - math.cos(angle) * 120
+        dest_y = player.y - math.sin(angle) * 120
+        ship.start_autopilot(_Point(dest_x, dest_y))
+        ship.fire(player.x, player.y)
+        return py_trees.common.Status.SUCCESS
+
+
+class Pursue(_EnemyBehaviour):
+    def __init__(self, enemy: "Enemy") -> None:
+        super().__init__("Pursue", enemy)
+
+    def update(self) -> py_trees.common.Status:
+        enemy = self.enemy
+        ship = enemy.ship
+        player = enemy.player_ship
+        dx = player.x - ship.x
+        dy = player.y - ship.y
+        dist = math.hypot(dx, dy)
+        in_region = (
+            enemy.region.x <= player.x <= enemy.region.x + enemy.region.width
+            and enemy.region.y <= player.y <= enemy.region.y + enemy.region.height
+        )
+        if not (in_region and dist <= enemy.detection_range) or ship.hull <= enemy.flee_threshold:
+            return py_trees.common.Status.FAILURE
+        enemy.state = "pursue"
+        ship.start_autopilot(player)
+        return py_trees.common.Status.SUCCESS
+
+
+class Idle(_EnemyBehaviour):
+    def __init__(self, enemy: "Enemy") -> None:
+        super().__init__("Idle", enemy)
+
+    def update(self) -> py_trees.common.Status:
+        enemy = self.enemy
+        ship = enemy.ship
+        enemy.state = "idle"
+        if ship.autopilot_target is None:
+            if enemy._wander_target is None:
+                wx = random.randint(enemy.region.x, enemy.region.x + enemy.region.width)
+                wy = random.randint(enemy.region.y, enemy.region.y + enemy.region.height)
+                enemy._wander_target = _Point(wx, wy)
+            ship.start_autopilot(enemy._wander_target)
+        return py_trees.common.Status.SUCCESS
+
+
 @dataclass
 class Enemy:
     """Autonomous ship pilot able to attack, defend and flee."""
@@ -37,6 +132,21 @@ class Enemy:
     state: str = field(default="idle", init=False)
     _flee_target: _Point | None = field(default=None, init=False, repr=False)
     _wander_target: _Point | None = field(default=None, init=False, repr=False)
+    player_ship: Ship | None = field(default=None, init=False, repr=False)
+    tree: py_trees.trees.BehaviourTree | None = field(default=None, init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        self.build_tree()
+
+    def build_tree(self) -> None:
+        """Create the behaviour tree controlling this enemy."""
+        flee = Flee(self)
+        attack = Attack(self)
+        pursue = Pursue(self)
+        idle = Idle(self)
+        root = py_trees.composites.Selector("EnemyRoot")
+        root.add_children([flee, attack, pursue, idle])
+        self.tree = py_trees.trees.BehaviourTree(root)
 
     def update(
         self,
@@ -47,48 +157,8 @@ class Enemy:
         sectors: list,
         blackholes: list | None = None,
     ) -> None:
-        """Update enemy behaviour and ship movement."""
-        dx = player_ship.x - self.ship.x
-        dy = player_ship.y - self.ship.y
-        dist = math.hypot(dx, dy)
-
-        in_region = (
-            self.region.x <= player_ship.x <= self.region.x + self.region.width
-            and self.region.y <= player_ship.y <= self.region.y + self.region.height
-        )
-
-        if self.ship.hull <= self.flee_threshold:
-            self.state = "flee"
-        elif in_region and dist <= self.attack_range:
-            self.state = "attack"
-        elif in_region and dist <= self.detection_range:
-            self.state = "pursue"
-        else:
-            self.state = "idle"
-
-        if self.state == "attack":
-            angle = math.atan2(dy, dx)
-            dest_x = player_ship.x - math.cos(angle) * 120
-            dest_y = player_ship.y - math.sin(angle) * 120
-            self.ship.start_autopilot(_Point(dest_x, dest_y))
-            self.ship.fire(player_ship.x, player_ship.y)
-        elif self.state == "pursue":
-            self.ship.start_autopilot(player_ship)
-        elif self.state == "flee":
-            if self._flee_target is None or self.ship.autopilot_target is None:
-                angle = math.atan2(-dy, -dx)
-                dest_x = self.ship.x + math.cos(angle) * self.detection_range
-                dest_y = self.ship.y + math.sin(angle) * self.detection_range
-                self._flee_target = _Point(dest_x, dest_y)
-                self.ship.start_autopilot(self._flee_target)
-        else:
-            if self.ship.autopilot_target is None:
-                if self._wander_target is None:
-                    wx = random.randint(self.region.x, self.region.x + self.region.width)
-                    wy = random.randint(self.region.y, self.region.y + self.region.height)
-                    self._wander_target = _Point(wx, wy)
-                self.ship.start_autopilot(self._wander_target)
-
+        """Update ship movement after behaviour tree tick."""
+        
         self.ship.update(_NullKeys(), dt, world_width, world_height, sectors, blackholes)
 
         if self.state == "idle" and self.ship.autopilot_target is None:
