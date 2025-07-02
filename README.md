@@ -59,3 +59,7 @@ Q-learning algorithm so that each enemy chooses actions like pursue or attack
 based on a learned Q-table updated every frame. Enemies are spawned through the
 `create_learning_enemy()` helper by default and will adapt slightly to the
 player's tactics.
+
+The Q-table for these enemies is saved to `learning_enemy_q_table.pkl` in the
+project root when the game exits. Spawning enemies load this file if present so
+their behaviour persists between sessions.
