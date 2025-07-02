@@ -302,9 +302,6 @@ def main():
         keys = pygame.key.get_pressed()
         ship.update(keys, dt, world_width, world_height, sectors, blackholes)
         for enemy in list(enemies):
-            enemy.player_ship = ship
-            if enemy.tree:
-                enemy.tree.tick()
             enemy.update(ship, dt, world_width, world_height, sectors, blackholes)
 
             for proj in list(ship.projectiles):

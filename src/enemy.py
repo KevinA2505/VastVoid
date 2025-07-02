@@ -195,7 +195,11 @@ class Enemy:
         blackholes: list | None = None,
     ) -> None:
         """Update ship movement after behaviour tree tick."""
-        
+
+        self.player_ship = player_ship
+        if self.tree:
+            self.tree.tick()
+
         self.ship.update(_NullKeys(), dt, world_width, world_height, sectors, blackholes)
 
         if self.state == "idle" and self.ship.autopilot_target is None:
