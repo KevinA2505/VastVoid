@@ -1,8 +1,13 @@
 import math
 import random
+import pickle
+import os
 from dataclasses import dataclass, field
 
 from enemy import Enemy, Flee, Defend, Attack, Pursue, Idle, _NullKeys
+
+
+Q_TABLE_PATH = "learning_enemy_q_table.pkl"
 
 
 @dataclass
@@ -45,6 +50,17 @@ class LearningEnemy(Enemy):
         if random.random() < self.epsilon or state not in self.q_table:
             return random.choice(list(self.actions))
         return max(self.q_table[state], key=self.q_table[state].get)
+
+    def save_q_table(self, path: str = Q_TABLE_PATH) -> None:
+        """Persist the Q-table to disk."""
+        with open(path, "wb") as f:
+            pickle.dump(self.q_table, f)
+
+    def load_q_table(self, path: str = Q_TABLE_PATH) -> None:
+        """Load Q-table values if a saved table exists."""
+        if os.path.exists(path):
+            with open(path, "rb") as f:
+                self.q_table = pickle.load(f)
 
     def learn(self, state: tuple, action: str, reward: float, next_state: tuple) -> None:
         q_state = self.q_table.setdefault(state, {a: 0.0 for a in self.actions})
@@ -108,6 +124,7 @@ def create_learning_enemy(region):
     x = random.randint(region.x, region.x + region.width)
     y = random.randint(region.y, region.y + region.height)
     enemy = LearningEnemy(Ship(x, y, model), species, region)
+    enemy.load_q_table()
     # make enemy weapons fire more frequently
     if enemy.ship.weapons:
         # Reduce cooldown so learning enemies fire more often

@@ -510,6 +510,10 @@ def main():
 
         pygame.display.flip()
 
+    # Save learning data so enemies retain behavior between sessions
+    for enemy in enemies:
+        enemy.save_q_table()
+
     pygame.quit()
 
 
