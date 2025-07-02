@@ -277,14 +277,18 @@ class Ship:
     def fire(self, tx: float, ty: float) -> None:
         if not self.weapons:
             return
+        weapon = self.weapons[0]
+        proj = None
+        bullet_speed = weapon.speed
         if self.orbit_target and self.orbit_time > 0:
             target = self.orbit_target
-            if self.weapons:
-                speed = self.weapons[0].speed
-                tx, ty = self._predict_target_position(target, speed)
-            else:
-                tx, ty = target.x, target.y
-        proj = self.weapons[0].fire(self.x, self.y, tx, ty)
+            bullet_speed *= config.ORBIT_PROJECTILE_SPEED_MULTIPLIER
+            tx, ty = self._predict_target_position(target, bullet_speed)
+            if weapon.can_fire():
+                weapon._timer = 0.0
+                proj = Projectile(self.x, self.y, tx, ty, bullet_speed, weapon.damage)
+        else:
+            proj = weapon.fire(self.x, self.y, tx, ty)
         if proj:
             self.projectiles.append(proj)
 
