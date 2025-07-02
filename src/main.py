@@ -7,6 +7,7 @@ from star import Star
 from planet import Planet
 from station import SpaceStation
 from ui import DropdownMenu, RoutePlanner
+from planet_surface import PlanetSurface
 from character import create_player
 
 
@@ -56,6 +57,9 @@ def main():
     menu = DropdownMenu(10, 10, 100, 25, ["Plan Route"])
     route_planner = RoutePlanner()
     current_station = None
+    current_surface = None
+    approaching_planet = None
+    prev_ship_pos = None
     camera_x = ship.x
     camera_y = ship.y
 
@@ -63,6 +67,26 @@ def main():
     running = True
     while running:
         dt = clock.tick(60) / 1000.0
+
+        if current_surface:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+                if current_surface.handle_event(event):
+                    current_surface = None
+                    ship.x, ship.y = prev_ship_pos
+                    prev_ship_pos = None
+                    camera_x = ship.x
+                    camera_y = ship.y
+                    break
+            if current_surface:
+                keys = pygame.key.get_pressed()
+                current_surface.update(keys, dt)
+                current_surface.draw(screen, info_font)
+                pygame.display.flip()
+                continue
+
         near_station = None
         if not current_station:
             for sector in sectors:
@@ -146,6 +170,33 @@ def main():
                         if near_station.dock_ship(ship):
                             current_station = near_station
                         continue
+                    if selected_object and isinstance(selected_object, Planet):
+                        lines = [
+                            f"Name: {selected_object.name}",
+                            "Type: Planet",
+                            f"Environment: {selected_object.environment}",
+                            f"Radius: {selected_object.radius}",
+                        ]
+                        panel_height = len(lines) * 20 + 10 + 30
+                        panel_width = 180
+                        panel_rect = pygame.Rect(
+                            config.WINDOW_WIDTH - panel_width - 10,
+                            10,
+                            panel_width,
+                            panel_height,
+                        )
+                        visit_rect = pygame.Rect(
+                            panel_rect.x + 10,
+                            panel_rect.bottom - 25,
+                            panel_rect.width - 20,
+                            20,
+                        )
+                        if visit_rect.collidepoint(event.pos):
+                            approaching_planet = selected_object
+                            prev_ship_pos = (ship.x, ship.y)
+                            ship.start_autopilot(selected_object)
+                            selected_object = None
+                            continue
                     selected_object = None
                     for sector in sectors:
                         obj = sector.get_object_at_point(world_x, world_y, 0)
@@ -162,6 +213,18 @@ def main():
 
         keys = pygame.key.get_pressed()
         ship.update(keys, dt, world_width, world_height, sectors, blackholes)
+        if approaching_planet and not ship.autopilot_target:
+            dist = math.hypot(
+                approaching_planet.x - ship.x,
+                approaching_planet.y - ship.y,
+            )
+            if dist <= approaching_planet.radius + 20:
+                current_surface = PlanetSurface(approaching_planet)
+                approaching_planet = None
+                camera_x = current_surface.camera_x
+                camera_y = current_surface.camera_y
+            else:
+                approaching_planet = None
         if (
             route_planner.destination
             and not ship.autopilot_target
@@ -228,6 +291,9 @@ def main():
             panel_width = 180
             line_height = 20
             panel_height = line_height * len(lines) + 10
+            has_visit = isinstance(selected_object, Planet)
+            if has_visit:
+                panel_height += 30
             panel_rect = pygame.Rect(
                 config.WINDOW_WIDTH - panel_width - 10,
                 10,
@@ -243,6 +309,21 @@ def main():
                     text_surf,
                     (panel_rect.x + 5, panel_rect.y + 5 + i * line_height),
                 )
+            visit_rect = None
+            if has_visit:
+                visit_rect = pygame.Rect(
+                    panel_rect.x + 10,
+                    panel_rect.bottom - 25,
+                    panel_rect.width - 20,
+                    20,
+                )
+                pygame.draw.rect(screen, (60, 60, 90), visit_rect)
+                pygame.draw.rect(screen, (200, 200, 200), visit_rect, 1)
+                icon = info_font.render("\u25B2", True, (255, 255, 255))
+                screen.blit(icon, (visit_rect.x + 5, visit_rect.y + 3))
+                txt = info_font.render("Visit planet", True, (255, 255, 255))
+                txt_rect = txt.get_rect(midleft=(visit_rect.x + 20, visit_rect.centery))
+                screen.blit(txt, txt_rect)
 
         if route_planner.destination:
             pygame.draw.rect(screen, (150, 0, 0), cancel_rect)
