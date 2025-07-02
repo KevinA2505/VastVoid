@@ -1,0 +1,6 @@
+pygame
+numpy
+
+# Optional dependencies for advanced features:
+# py_trees    # For potential AI behavior trees
+# pygame-ai   # For more sophisticated AI support
