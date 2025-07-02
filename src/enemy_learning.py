@@ -107,4 +107,8 @@ def create_learning_enemy(region):
     model = random.choice(SHIP_MODELS)
     x = random.randint(region.x, region.x + region.width)
     y = random.randint(region.y, region.y + region.height)
-    return LearningEnemy(Ship(x, y, model), species, region)
+    enemy = LearningEnemy(Ship(x, y, model), species, region)
+    # make enemy weapons fire more frequently
+    if enemy.ship.weapons:
+        enemy.ship.weapons[0].cooldown = 0.25
+    return enemy
