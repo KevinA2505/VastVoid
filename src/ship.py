@@ -11,6 +11,8 @@ class Ship:
         self.vx = 0.0
         self.vy = 0.0
         self.autopilot_target = None
+        self.boost_charge = 1.0
+        self.boost_time = 0.0
 
     def update(
         self,
@@ -23,14 +25,28 @@ class Ship:
         if self.autopilot_target:
             self._update_autopilot(dt, world_width, world_height, sectors)
             return
+        accel = config.SHIP_ACCELERATION
+        if self.boost_time > 0:
+            self.boost_time -= dt
+            if self.boost_time <= 0:
+                self.boost_time = 0
+        else:
+            if self.boost_charge < 1.0:
+                self.boost_charge = min(1.0, self.boost_charge + dt / config.BOOST_RECHARGE)
+            if keys[pygame.K_LSHIFT] and self.boost_charge >= 1.0:
+                self.boost_time = config.BOOST_DURATION
+                self.boost_charge = 0.0
+        if self.boost_time > 0:
+            accel *= config.BOOST_MULTIPLIER
+
         if keys[pygame.K_w]:
-            self.vy -= config.SHIP_ACCELERATION * dt
+            self.vy -= accel * dt
         if keys[pygame.K_s]:
-            self.vy += config.SHIP_ACCELERATION * dt
+            self.vy += accel * dt
         if keys[pygame.K_a]:
-            self.vx -= config.SHIP_ACCELERATION * dt
+            self.vx -= accel * dt
         if keys[pygame.K_d]:
-            self.vx += config.SHIP_ACCELERATION * dt
+            self.vx += accel * dt
 
         self.vx *= config.SHIP_FRICTION
         self.vy *= config.SHIP_FRICTION
@@ -95,3 +111,10 @@ class Ship:
             size,
         )
         pygame.draw.rect(screen, config.SHIP_COLOR, ship_rect)
+
+    @property
+    def boost_ratio(self) -> float:
+        """Return current boost charge as a 0-1 ratio."""
+        if self.boost_time > 0:
+            return 0.0
+        return self.boost_charge
