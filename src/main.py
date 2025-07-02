@@ -73,6 +73,9 @@ def main():
                 if event.type == pygame.QUIT:
                     running = False
                     break
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_i:
+                    inventory_window = InventoryWindow(player)
+                    continue
                 if current_surface.handle_event(event):
                     planet = current_surface.planet
                     current_surface = None
@@ -134,6 +137,9 @@ def main():
                     ship.x = current_station.x + current_station.radius + 40
                     current_station = None
                     continue
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_i:
+                    inventory_window = InventoryWindow(player)
+                    continue
                 if (
                     event.type == pygame.MOUSEBUTTONDOWN
                     and event.button == 1
@@ -176,6 +182,8 @@ def main():
                     zoom += 0.1
                 elif event.key == pygame.K_ESCAPE:
                     selected_object = None
+                elif event.key == pygame.K_i:
+                    inventory_window = InventoryWindow(player)
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
                 offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)

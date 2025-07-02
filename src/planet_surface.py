@@ -274,7 +274,7 @@ class PlanetSurface:
     def is_walkable(self, x: float, y: float) -> bool:
         """Return ``True`` if the coordinates correspond to a walkable cell."""
         if self.collision_mask and self.collision_mask.get_at((int(x), int(y))):
-            if self.boat_active and self._point_near_river(x, y):
+            if self.boat_active:
                 return True
             return False
         cx = int(x // self.cell)
@@ -293,10 +293,7 @@ class PlanetSurface:
             if event.key == pygame.K_b:
                 if self.boat_active:
                     self.boat_active = False
-                elif (
-                    self.player.inventory.get("boat", 0) > 0
-                    and self._point_near_river(self.explorer.x, self.explorer.y)
-                ):
+                elif self.player.inventory.get("boat", 0) > 0:
                     self.boat_active = True
         return False
 
@@ -305,8 +302,6 @@ class PlanetSurface:
         self.explorer.update(keys, dt, self.width, self.height)
         if not self.is_walkable(self.explorer.x, self.explorer.y):
             self.explorer.x, self.explorer.y = old_x, old_y
-        if self.boat_active and not self._point_near_river(self.explorer.x, self.explorer.y):
-            self.boat_active = False
         self.camera_x = self.explorer.x
         self.camera_y = self.explorer.y
         for pickup in self.pickups[:]:
