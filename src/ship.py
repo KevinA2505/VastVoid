@@ -226,6 +226,29 @@ class Ship:
         if self.orbit_time <= 0:
             self.cancel_orbit()
 
+    def _predict_target_position(self, target, speed: float) -> tuple[float, float]:
+        """Return an estimated future position for ``target`` given projectile speed."""
+        dx = target.x - self.x
+        dy = target.y - self.y
+        dvx = target.vx
+        dvy = target.vy
+        a = dvx * dvx + dvy * dvy - speed * speed
+        b = 2 * (dx * dvx + dy * dvy)
+        c = dx * dx + dy * dy
+        t = 0.0
+        disc = b * b - 4 * a * c
+        if abs(a) < 1e-6 or disc < 0:
+            if speed > 0:
+                t = math.sqrt(c) / speed
+        else:
+            sqrt_disc = math.sqrt(disc)
+            t1 = (-b + sqrt_disc) / (2 * a)
+            t2 = (-b - sqrt_disc) / (2 * a)
+            t_candidates = [val for val in (t1, t2) if val > 0]
+            if t_candidates:
+                t = min(t_candidates)
+        return target.x + dvx * t, target.y + dvy * t
+
     def _check_collision(self, sectors: list) -> bool:
         half_size = self.size / 2
         for sector in sectors:
@@ -255,7 +278,12 @@ class Ship:
         if not self.weapons:
             return
         if self.orbit_target and self.orbit_time > 0:
-            tx, ty = self.orbit_target.x, self.orbit_target.y
+            target = self.orbit_target
+            if self.weapons:
+                speed = self.weapons[0].speed
+                tx, ty = self._predict_target_position(target, speed)
+            else:
+                tx, ty = target.x, target.y
         proj = self.weapons[0].fire(self.x, self.y, tx, ty)
         if proj:
             self.projectiles.append(proj)
