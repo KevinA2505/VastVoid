@@ -3,6 +3,7 @@ import math
 import config
 from ship import Ship, choose_ship
 from sector import create_sectors
+from wormhole import WormHole
 from star import Star
 from planet import Planet
 from station import SpaceStation
@@ -49,8 +50,10 @@ def main():
         config.GRID_SIZE, config.SECTOR_WIDTH, config.SECTOR_HEIGHT
     )
     blackholes = []
+    wormholes = []
     for sector in sectors:
         blackholes.extend(sector.blackholes)
+        wormholes.extend(sector.wormholes)
     world_width = config.GRID_SIZE * config.SECTOR_WIDTH
     world_height = config.GRID_SIZE * config.SECTOR_HEIGHT
 
@@ -67,6 +70,8 @@ def main():
     current_station = None
     current_surface = None
     approaching_planet = None
+    teleport_target = None
+    teleport_timer = 0.0
     camera_x = ship.x
     camera_y = ship.y
 
@@ -74,6 +79,13 @@ def main():
     running = True
     while running:
         dt = clock.tick(60) / 1000.0
+
+        if teleport_timer > 0:
+            teleport_timer -= dt
+            if teleport_timer <= 0 and teleport_target:
+                ship.x = teleport_target.x
+                ship.y = teleport_target.y
+                teleport_target = None
 
         if current_surface:
             for event in pygame.event.get():
@@ -295,6 +307,15 @@ def main():
                 break
         if not running:
             continue
+
+        if teleport_timer <= 0:
+            for wh in wormholes:
+                if math.hypot(wh.x - ship.x, wh.y - ship.y) < wh.radius:
+                    if wh.pair:
+                        teleport_target = wh.pair
+                        teleport_timer = config.WORMHOLE_DELAY
+                        print("Entering wormhole...")
+                    break
         for sector in sectors:
             sector.update()
 

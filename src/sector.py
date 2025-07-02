@@ -3,6 +3,7 @@ import math
 import pygame
 from star_system import StarSystem
 from blackhole import BlackHole
+from wormhole import WormHole
 import config
 
 class Sector:
@@ -43,6 +44,46 @@ class Sector:
                     self.blackholes.append(BlackHole(hx, hy))
                     break
 
+        # Possibly add a worm hole pair positioned far from star systems
+        self.wormholes = []
+        if random.random() < config.WORMHOLE_CHANCE:
+            first = None
+            for _ in range(100):
+                wx = random.randint(self.x + 100, self.x + self.width - 100)
+                wy = random.randint(self.y + 100, self.y + self.height - 100)
+                too_close = False
+                for system in self.systems:
+                    if math.hypot(system.star.x - wx, system.star.y - wy) < config.WORMHOLE_MIN_DISTANCE:
+                        too_close = True
+                        break
+                for hole in self.blackholes:
+                    if math.hypot(hole.x - wx, hole.y - wy) < config.WORMHOLE_MIN_DISTANCE:
+                        too_close = True
+                        break
+                if not too_close:
+                    first = WormHole(wx, wy)
+                    break
+            if first is not None:
+                for _ in range(100):
+                    wx = random.randint(self.x + 100, self.x + self.width - 100)
+                    wy = random.randint(self.y + 100, self.y + self.height - 100)
+                    too_close = False
+                    for system in self.systems:
+                        if math.hypot(system.star.x - wx, system.star.y - wy) < config.WORMHOLE_MIN_DISTANCE:
+                            too_close = True
+                            break
+                    for hole in self.blackholes:
+                        if math.hypot(hole.x - wx, hole.y - wy) < config.WORMHOLE_MIN_DISTANCE:
+                            too_close = True
+                            break
+                    if math.hypot(first.x - wx, first.y - wy) < config.WORMHOLE_MIN_DISTANCE:
+                        too_close = True
+                    if not too_close:
+                        second = WormHole(wx, wy)
+                        first.set_pair(second)
+                        self.wormholes.extend([first, second])
+                        break
+
     def update(self) -> None:
         for system in self.systems:
             system.update()
@@ -57,6 +98,8 @@ class Sector:
         for system in self.systems:
             system.draw(screen, offset_x, offset_y, zoom)
         for hole in self.blackholes:
+            hole.draw(screen, offset_x, offset_y, zoom)
+        for hole in self.wormholes:
             hole.draw(screen, offset_x, offset_y, zoom)
 
     def collides_with_point(self, x: float, y: float, radius: float) -> bool:
