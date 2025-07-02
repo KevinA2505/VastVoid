@@ -2,5 +2,6 @@ pygame
 numpy
 
 # Optional dependencies for advanced features:
-# py_trees    # For potential AI behavior trees
+# py_trees is now used for the enemy behavior tree
+py_trees
 # pygame-ai   # For more sophisticated AI support

@@ -44,3 +44,10 @@ the player, fire at close range, or retreat when their hull integrity is
 low. When a new game starts, a random number of enemies is generated and
 scattered across space. The amount varies between `MIN_ENEMIES` and
 `MAX_ENEMIES` defined in `config.py`.
+
+#### Behavior trees
+
+Enemy logic now runs on a small behavior tree built with `py_trees`. Each
+enemy ticks its tree every frame to decide whether to idle, pursue, attack or
+flee. Actions inside the tree call the same ship methods as before so combat
+and navigation work exactly like the earlier state machine implementation.
