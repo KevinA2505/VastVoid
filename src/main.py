@@ -37,8 +37,8 @@ def main():
             sector.update()
 
         screen.fill(config.BACKGROUND_COLOR)
-        offset_x = ship.x - config.WINDOW_WIDTH // 2
-        offset_y = ship.y - config.WINDOW_HEIGHT // 2
+        offset_x = ship.x - config.WINDOW_WIDTH / (2 * zoom)
+        offset_y = ship.y - config.WINDOW_HEIGHT / (2 * zoom)
         for sector in sectors:
             sector.draw(screen, offset_x, offset_y, zoom)
         ship.draw(screen)
