@@ -1,5 +1,6 @@
 import pygame
 import config
+import math
 
 class DropdownMenu:
     """Simple dropdown menu triggered by a button."""
