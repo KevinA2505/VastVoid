@@ -75,15 +75,19 @@ def main():
             pygame.draw.rect(screen, (200, 200, 200), panel_rect, 1)
 
             if isinstance(selected_object, Star):
-                obj_type = "Star"
+                lines = [
+                    f"Name: {selected_object.name}",
+                    f"Type: Star ({selected_object.spectral_type})",
+                    f"Radius: {selected_object.radius}",
+                    f"Brightness: {selected_object.brightness}",
+                ]
             else:
-                obj_type = "Planet"
-
-            lines = [
-                f"Name: {selected_object.name}",
-                f"Type: {obj_type}",
-                f"Radius: {selected_object.radius}",
-            ]
+                lines = [
+                    f"Name: {selected_object.name}",
+                    "Type: Planet",
+                    f"Environment: {selected_object.environment}",
+                    f"Radius: {selected_object.radius}",
+                ]
             for i, line in enumerate(lines):
                 text_surf = info_font.render(line, True, (255, 255, 255))
                 screen.blit(text_surf, (panel_rect.x + 5, panel_rect.y + 5 + i * 20))
