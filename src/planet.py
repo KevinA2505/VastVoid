@@ -8,6 +8,11 @@ from biome import BIOMES
 from planet_surface import ENV_COLORS
 
 
+def _lighter_color(color: tuple[int, int, int], factor: float = 1.3) -> tuple[int, int, int]:
+    """Return a lighter variant of ``color`` by the given ``factor``."""
+    return tuple(min(255, int(c * factor)) for c in color)
+
+
 class Planet:
     """Planet that orbits around a star."""
 
@@ -23,6 +28,8 @@ class Planet:
         speed: float,
         environment: str = "rocky",
         biomes: list[str] | None = None,
+        atmosphere_color: tuple[int, int, int] | None = None,
+        atmosphere_size: float = 1.5,
     ) -> None:
         self.name = get_planet_name()
         Planet._id_counter += 1
@@ -34,12 +41,21 @@ class Planet:
         self.speed = speed
         self.environment = environment
         self.biomes = biomes if biomes is not None else []
+        self.atmosphere_color = (
+            atmosphere_color if atmosphere_color is not None else _lighter_color(color)
+        )
+        self.atmosphere_size = atmosphere_size
         self.x = 0.0
         self.y = 0.0
         self.update()
 
     @staticmethod
-    def random_planet(star: Star, distance: float) -> "Planet":
+    def random_planet(
+        star: Star,
+        distance: float,
+        atmosphere_color: tuple[int, int, int] | None = None,
+        atmosphere_size: float = 1.5,
+    ) -> "Planet":
         """Create a planet with randomised properties."""
         radius = random.randint(4, 10)
         environment = random.choice(PLANET_ENVIRONMENTS)
@@ -54,8 +70,19 @@ class Planet:
         biome_names = list(BIOMES.keys())
         num_biomes = random.randint(1, min(3, len(biome_names)))
         biomes = random.sample(biome_names, k=num_biomes)
+        if atmosphere_color is None:
+            atmosphere_color = _lighter_color(color)
         return Planet(
-            star, distance, radius, color, angle, speed, environment, biomes
+            star,
+            distance,
+            radius,
+            color,
+            angle,
+            speed,
+            environment,
+            biomes,
+            atmosphere_color,
+            atmosphere_size,
         )
 
     def update(self) -> None:
@@ -71,6 +98,25 @@ class Planet:
         zoom: float = 1.0,
     ) -> None:
         scaled_radius = max(1, int(self.radius * zoom))
+
+        # Draw atmosphere halo first so the planet appears on top
+        atm_radius = int(self.radius * self.atmosphere_size * zoom)
+        if atm_radius > scaled_radius:
+            halo = pygame.Surface((atm_radius * 2, atm_radius * 2), pygame.SRCALPHA)
+            pygame.draw.circle(
+                halo,
+                (*self.atmosphere_color, 80),
+                (atm_radius, atm_radius),
+                atm_radius,
+            )
+            screen.blit(
+                halo,
+                (
+                    int((self.x - offset_x) * zoom) - atm_radius,
+                    int((self.y - offset_y) * zoom) - atm_radius,
+                ),
+            )
+
         pygame.draw.circle(
             screen,
             self.color,
