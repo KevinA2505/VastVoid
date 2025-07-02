@@ -3,6 +3,7 @@ import random
 import pygame
 from star import Star
 from planet import Planet
+from station import SpaceStation
 from names import get_system_name
 import config
 
@@ -28,6 +29,15 @@ class StarSystem:
             # Increment distance so orbits are spaced apart
             distance += random.randint(30, 50)
 
+        self.stations = []
+        num_stations = random.randint(1, 2)
+        station_distance = distance
+        for _ in range(num_stations):
+            self.stations.append(
+                SpaceStation.random_station(self.star, station_distance)
+            )
+            station_distance += random.randint(30, 50)
+
     def update(self) -> None:
         for planet in self.planets:
             planet.update()
@@ -41,12 +51,15 @@ class StarSystem:
         return False
 
     def get_object_at_point(self, x: float, y: float, radius: float):
-        """Return the star or planet under the point if any."""
+        """Return the star, planet or station under the point if any."""
         if math.hypot(self.star.x - x, self.star.y - y) < self.star.radius + radius:
             return self.star
         for planet in self.planets:
             if math.hypot(planet.x - x, planet.y - y) < planet.radius + radius:
                 return planet
+        for station in self.stations:
+            if math.hypot(station.x - x, station.y - y) < station.radius + radius:
+                return station
         return None
 
     def draw(
@@ -70,3 +83,6 @@ class StarSystem:
                 1,
             )
             planet.draw(screen, offset_x, offset_y, zoom)
+
+        for station in self.stations:
+            station.draw(screen, offset_x, offset_y, zoom)

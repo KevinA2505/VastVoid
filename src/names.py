@@ -55,6 +55,18 @@ _SYSTEM_NAMES = [
     "Auriga",
 ]
 
+_STATION_NAMES = [
+    "Odyssey Station",
+    "Zenith Hub",
+    "Orion Dock",
+    "Horizon Outpost",
+    "Nova Base",
+    "Eclipse Port",
+    "Nebula Terminal",
+    "Solstice Station",
+    "Pioneer Post"
+]
+
 
 def _get_name(pool: list) -> str:
     """Return and remove a random name from a pool."""
@@ -74,6 +86,10 @@ def get_planet_name() -> str:
 
 def get_system_name() -> str:
     return _get_name(_SYSTEM_NAMES)
+
+
+def get_station_name() -> str:
+    return _get_name(_STATION_NAMES)
 
 
 PLANET_ENVIRONMENTS = [
