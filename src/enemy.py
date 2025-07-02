@@ -81,8 +81,6 @@ class Attack(_EnemyBehaviour):
         dest_y = player.y - math.sin(angle) * 120
         ship.start_autopilot(_Point(dest_x, dest_y))
         ship.fire(player.x, player.y)
-        if random.random() < 0.1 and hasattr(player, "start_orbit"):
-            player.start_orbit(ship, forced=True)
         return py_trees.common.Status.SUCCESS
 
 
