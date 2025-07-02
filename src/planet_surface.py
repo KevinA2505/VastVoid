@@ -90,6 +90,12 @@ class PlanetSurface:
         self.height = 3000
         self.surface = pygame.Surface((self.width, self.height))
         self.pickups: list[ItemPickup] = []
+        # grid resolution used for walkable map
+        self.cell = 60
+        self.cols = self.width // self.cell
+        self.rows = self.height // self.cell
+        self.blocked: list[list[bool]] = []
+        self.rivers: list[list[tuple[int, int]]] = []
         self._generate_map()
         self.ship_pos = (self.width // 2, self.height // 2)
         self.explorer = Explorer(*self.ship_pos)
@@ -153,6 +159,24 @@ class PlanetSurface:
             if x < 0 or x > self.width or y < 0 or y > self.height:
                 break
         pygame.draw.lines(self.surface, (50, 100, 200), False, points, width)
+        self.rivers.append(points)
+        span = max(1, math.ceil(width / self.cell))
+        step = self.cell / 2
+        for p1, p2 in zip(points, points[1:]):
+            dx = p2[0] - p1[0]
+            dy = p2[1] - p1[1]
+            dist = math.hypot(dx, dy)
+            steps = int(dist / step) + 1
+            for s in range(steps + 1):
+                px = p1[0] + dx * s / steps
+                py = p1[1] + dy * s / steps
+                cx = int(px // self.cell)
+                cy = int(py // self.cell)
+                for ix in range(-span, span + 1):
+                    for iy in range(-span, span + 1):
+                        nx, ny = cx + ix, cy + iy
+                        if 0 <= nx < self.cols and 0 <= ny < self.rows:
+                            self.blocked[ny][nx] = True
 
     def _draw_forest(self) -> None:
         """Draw a cluster of trees to represent a forested area."""
@@ -169,9 +193,10 @@ class PlanetSurface:
 
     def _generate_map(self) -> None:
         """Create a map using a simple expansion algorithm for large regions."""
-        cell = 60
-        cols = self.width // cell
-        rows = self.height // cell
+        cell = self.cell
+        cols = self.cols
+        rows = self.rows
+        self.blocked = [[False for _ in range(cols)] for _ in range(rows)]
         self.surface.fill((0, 0, 0))
 
         biome_names = (
@@ -201,11 +226,15 @@ class PlanetSurface:
                     queue.append((nx, ny, idx))
 
         self.pickups.clear()
+        is_ocean_planet = self.planet.environment == "ocean world"
         for j in range(rows):
             for i in range(cols):
-                biome = biomes[grid[j][i]]
+                biome_idx = grid[j][i]
+                biome = biomes[biome_idx]
                 rect = pygame.Rect(i * cell, j * cell, cell, cell)
                 pygame.draw.rect(self.surface, biome.color, rect)
+                if is_ocean_planet or biome_names[biome_idx] == "ocean world":
+                    self.blocked[j][i] = True
                 for _ in range(3):
                     self._draw_patch(rect, biome)
                 if biome.spawn_items:
@@ -221,6 +250,14 @@ class PlanetSurface:
         for _ in range(random.randint(2, 4)):
             self._draw_forest()
 
+    def is_walkable(self, x: float, y: float) -> bool:
+        """Return ``True`` if the coordinates correspond to a walkable cell."""
+        cx = int(x // self.cell)
+        cy = int(y // self.cell)
+        if 0 <= cx < self.cols and 0 <= cy < self.rows:
+            return not self.blocked[cy][cx]
+        return False
+
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.exit_rect.collidepoint(event.pos):
@@ -230,7 +267,10 @@ class PlanetSurface:
         return False
 
     def update(self, keys: pygame.key.ScancodeWrapper, dt: float) -> None:
+        old_x, old_y = self.explorer.x, self.explorer.y
         self.explorer.update(keys, dt, self.width, self.height)
+        if not self.is_walkable(self.explorer.x, self.explorer.y):
+            self.explorer.x, self.explorer.y = old_x, old_y
         self.camera_x = self.explorer.x
         self.camera_y = self.explorer.y
         for pickup in self.pickups[:]:
