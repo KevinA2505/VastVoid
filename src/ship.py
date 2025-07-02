@@ -41,6 +41,7 @@ class Ship:
         self.orbit_angle = 0.0
         self.orbit_speed = config.SHIP_ORBIT_SPEED
         self.orbit_fire_timer = 0.0
+        self.orbit_cooldown = 0.0
         self.orbit_forced = False
         self.boost_charge = 1.0
         self.boost_time = 0.0
@@ -72,6 +73,8 @@ class Ship:
         sectors: list,
         blackholes: list | None = None,
     ) -> None:
+        if self.orbit_cooldown > 0:
+            self.orbit_cooldown = max(0.0, self.orbit_cooldown - dt)
         if self.orbit_time > 0 and self.orbit_target:
             self._update_orbit(dt)
             if self.boost_time > 0 and self.orbit_forced:
@@ -142,6 +145,8 @@ class Ship:
         speed: float | None = None,
     ) -> None:
         """Begin orbiting ``target`` for a short duration."""
+        if self.orbit_cooldown > 0 or self.orbit_time > 0:
+            return
         dx = self.x - target.x
         dy = self.y - target.y
         self.orbit_radius = math.hypot(dx, dy)
@@ -150,7 +155,7 @@ class Ship:
         self.orbit_time = duration
         self.orbit_forced = forced
         self.orbit_speed = speed if speed is not None else config.SHIP_ORBIT_SPEED
-        self.orbit_fire_timer = 1.0
+        self.orbit_fire_timer = 0.0
         self.autopilot_target = None
 
     def cancel_orbit(self) -> None:
@@ -159,6 +164,7 @@ class Ship:
         self.orbit_forced = False
         self.orbit_speed = config.SHIP_ORBIT_SPEED
         self.orbit_fire_timer = 0.0
+        self.orbit_cooldown = config.ORBIT_COOLDOWN
 
     def _update_autopilot(
         self,

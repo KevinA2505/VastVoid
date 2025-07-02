@@ -68,7 +68,8 @@ their behaviour persists between sessions.
 Five ability slots now appear at the bottom of the screen. The first slot shows
 the **Boost** ability which is still activated with the left **Shift** key. The
 second slot triggers the **Orbit** skill using the **R** key or by clicking the
-slot. When used, your ship orbits the nearest enemy at a reduced speed and
-automatically fires once per second for the duration of the manoeuvre. Enemies
-may still force your ship into an orbit with a 10% chance when they attack,
-but boosting will break the effect.
+slot. When used, your ship orbits the nearest enemy at a reduced speed for five
+seconds and automatically fires once every second. After the orbit ends there
+is a short cooldown before it can be triggered again. Enemies may still force
+your ship into an orbit with a 10% chance when they attack, but boosting will
+break the effect.
