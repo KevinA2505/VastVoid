@@ -1,6 +1,7 @@
 import math
 from dataclasses import dataclass, field
 import pygame
+import config
 
 
 @dataclass
@@ -27,9 +28,19 @@ class Weapon:
 
 
 class Projectile:
-    """Projectile fired by a weapon."""
+    """Projectile fired by a weapon with optional curvature and range."""
 
-    def __init__(self, x: float, y: float, tx: float, ty: float, speed: float, damage: int) -> None:
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        tx: float,
+        ty: float,
+        speed: float,
+        damage: int,
+        curvature: float = 0.0,
+        max_distance: float = config.PROJECTILE_MAX_DISTANCE,
+    ) -> None:
         self.x = x
         self.y = y
         self.damage = damage
@@ -38,10 +49,25 @@ class Projectile:
         dist = math.hypot(dx, dy) or 1.0
         self.vx = dx / dist * speed
         self.vy = dy / dist * speed
+        self.curvature = curvature
+        self.max_distance = max_distance
+        self.traveled = 0.0
 
     def update(self, dt: float) -> None:
         self.x += self.vx * dt
         self.y += self.vy * dt
+        step = math.hypot(self.vx * dt, self.vy * dt)
+        self.traveled += step
+        if self.curvature:
+            angle = math.atan2(self.vy, self.vx) + self.curvature * dt
+            speed = math.hypot(self.vx, self.vy)
+            self.vx = math.cos(angle) * speed
+            self.vy = math.sin(angle) * speed
+
+    def expired(self) -> bool:
+        if self.max_distance <= 0:
+            return False
+        return self.traveled >= self.max_distance
 
     def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
         pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))

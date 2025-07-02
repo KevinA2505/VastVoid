@@ -71,3 +71,7 @@ second slot triggers the **Orbit** skill using the **R** key or by clicking the
 slot. When used, your ship orbits the nearest enemy at a reduced speed for five
 seconds and automatically fires once every second. After the orbit ends there
 is a short cooldown before it can be triggered again.
+
+Projectiles now vanish after travelling around 1200 pixels. Shots fired during
+an orbit curve slightly thanks to a gentle angular adjustment applied every
+frame.

@@ -17,6 +17,8 @@ ORBIT_SPEED_FACTOR = 0.005  # base factor used to calculate orbital speed
 SHIP_ORBIT_SPEED = 1.5      # angular speed for attack orbits (radians per second)
 ORBIT_COOLDOWN = 5.0        # delay before a new orbit can be triggered
 ORBIT_PROJECTILE_SPEED_MULTIPLIER = 2.5  # bullet speed boost while orbiting
+ORBIT_PROJECTILE_CURVATURE = 0.5        # radians per second of bullet curve
+PROJECTILE_MAX_DISTANCE = 1200          # maximum distance a projectile can travel
 
 SECTOR_WIDTH = 2000
 SECTOR_HEIGHT = 2000

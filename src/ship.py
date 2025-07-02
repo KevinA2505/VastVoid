@@ -286,7 +286,15 @@ class Ship:
             tx, ty = self._predict_target_position(target, bullet_speed)
             if weapon.can_fire():
                 weapon._timer = 0.0
-                proj = Projectile(self.x, self.y, tx, ty, bullet_speed, weapon.damage)
+                proj = Projectile(
+                    self.x,
+                    self.y,
+                    tx,
+                    ty,
+                    bullet_speed,
+                    weapon.damage,
+                    curvature=config.ORBIT_PROJECTILE_CURVATURE,
+                )
         else:
             proj = weapon.fire(self.x, self.y, tx, ty)
         if proj:
@@ -295,7 +303,8 @@ class Ship:
     def _update_projectiles(self, dt: float, world_width: int, world_height: int) -> None:
         for proj in list(self.projectiles):
             proj.update(dt)
-            if not (0 <= proj.x <= world_width and 0 <= proj.y <= world_height):
+            out_of_bounds = not (0 <= proj.x <= world_width and 0 <= proj.y <= world_height)
+            if proj.expired() or out_of_bounds:
                 self.projectiles.remove(proj)
 
     def take_damage(self, amount: float) -> None:
