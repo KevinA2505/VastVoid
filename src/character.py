@@ -1,6 +1,7 @@
 import pygame
 import config
 from fraction import FRACTIONS, Fraction
+from items import ITEMS
 
 class Alien:
     """Basic Alien species."""
@@ -26,6 +27,20 @@ class Player:
         self.species = species
         self.fraction = fraction
         self.ship_model = ship_model
+        # Inventory starts empty but contains an entry for each known item
+        self.inventory: dict[str, int] = {item: 0 for item in ITEMS}
+
+    def add_item(self, item: str, quantity: int = 1) -> None:
+        """Add `quantity` of `item` to the inventory."""
+        if item not in self.inventory:
+            self.inventory[item] = 0
+        self.inventory[item] += quantity
+
+    def remove_item(self, item: str, quantity: int = 1) -> None:
+        """Remove up to `quantity` of `item` from the inventory."""
+        if item not in self.inventory:
+            return
+        self.inventory[item] = max(0, self.inventory[item] - quantity)
 
 
 def create_player(screen: pygame.Surface) -> Player:
@@ -75,7 +90,11 @@ def create_player(screen: pygame.Surface) -> Player:
                         index = int(event.unicode) - 1
                         if 0 <= index < len(FRACTIONS):
                             fraction = FRACTIONS[index]
-                            return Player(name, int(age or 0), species, fraction)
+                            player = Player(name, int(age or 0), species, fraction)
+                            # Give the player some starter supplies
+                            player.add_item("gasolina", 10)
+                            player.add_item("materia oscura", 1)
+                            return player
 
         screen.fill(config.BACKGROUND_COLOR)
         if step == 0:
