@@ -50,6 +50,8 @@ def main():
     menu = DropdownMenu(10, 10, 100, 25, ["Plan Route"])
     route_planner = RoutePlanner()
     current_station = None
+    camera_x = ship.x
+    camera_y = ship.y
 
     clock = pygame.time.Clock()
     running = True
@@ -102,7 +104,7 @@ def main():
             if selection == "Plan Route":
                 route_planner.start()
 
-            route_planner.handle_event(event, sectors, ship, zoom)
+            route_planner.handle_event(event, sectors, (camera_x, camera_y), zoom)
 
             if route_planner.destination:
                 if (
@@ -129,8 +131,8 @@ def main():
                 elif event.key == pygame.K_ESCAPE:
                     selected_object = None
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                offset_x = ship.x - config.WINDOW_WIDTH / (2 * zoom)
-                offset_y = ship.y - config.WINDOW_HEIGHT / (2 * zoom)
+                offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
+                offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
                 world_x = event.pos[0] / zoom + offset_x
                 world_y = event.pos[1] / zoom + offset_y
                 if event.button == 1:
@@ -168,8 +170,20 @@ def main():
             sector.update()
 
         screen.fill(config.BACKGROUND_COLOR)
-        offset_x = ship.x - config.WINDOW_WIDTH / (2 * zoom)
-        offset_y = ship.y - config.WINDOW_HEIGHT / (2 * zoom)
+        if route_planner.active:
+            if keys[pygame.K_LEFT]:
+                camera_x -= config.CAMERA_PAN_SPEED * dt
+            if keys[pygame.K_RIGHT]:
+                camera_x += config.CAMERA_PAN_SPEED * dt
+            if keys[pygame.K_UP]:
+                camera_y -= config.CAMERA_PAN_SPEED * dt
+            if keys[pygame.K_DOWN]:
+                camera_y += config.CAMERA_PAN_SPEED * dt
+        else:
+            camera_x = ship.x
+            camera_y = ship.y
+        offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
+        offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
         for sector in sectors:
             sector.draw(screen, offset_x, offset_y, zoom)
         ship.draw(screen, zoom)
@@ -235,6 +249,17 @@ def main():
             enter_text = info_font.render("Enter", True, (255, 255, 255))
             enter_text_rect = enter_text.get_rect(center=enter_rect.center)
             screen.blit(enter_text, enter_text_rect)
+
+        # draw boost bar
+        bar_width = 100
+        bar_height = 10
+        bar_x = (config.WINDOW_WIDTH - bar_width) // 2
+        bar_y = config.WINDOW_HEIGHT - 20
+        pygame.draw.rect(screen, (60, 60, 90), (bar_x, bar_y, bar_width, bar_height))
+        pygame.draw.rect(screen, (200, 200, 200), (bar_x, bar_y, bar_width, bar_height), 1)
+        fill_width = int(bar_width * ship.boost_ratio)
+        if fill_width > 0:
+            pygame.draw.rect(screen, (0, 150, 0), (bar_x, bar_y, fill_width, bar_height))
 
         menu.draw(screen, info_font)
         

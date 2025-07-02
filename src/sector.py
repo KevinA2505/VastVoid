@@ -1,6 +1,8 @@
 import random
+import math
 import pygame
 from star_system import StarSystem
+import config
 
 class Sector:
     """Large region containing multiple star systems."""
@@ -13,9 +15,17 @@ class Sector:
         num_systems = random.randint(3, 4)
         self.systems = []
         for _ in range(num_systems):
-            sx = random.randint(self.x + 100, self.x + self.width - 100)
-            sy = random.randint(self.y + 100, self.y + self.height - 100)
-            self.systems.append(StarSystem(sx, sy))
+            for _ in range(100):  # attempt placement with spacing
+                sx = random.randint(self.x + 100, self.x + self.width - 100)
+                sy = random.randint(self.y + 100, self.y + self.height - 100)
+                too_close = False
+                for system in self.systems:
+                    if math.hypot(system.star.x - sx, system.star.y - sy) < config.MIN_SYSTEM_DISTANCE:
+                        too_close = True
+                        break
+                if not too_close:
+                    self.systems.append(StarSystem(sx, sy))
+                    break
 
     def update(self) -> None:
         for system in self.systems:

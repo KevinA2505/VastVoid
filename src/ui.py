@@ -63,14 +63,15 @@ class RoutePlanner:
         self.active = False
         self.destination = None
 
-    def handle_event(self, event, sectors: list, ship, zoom: float) -> None:
+    def handle_event(self, event, sectors: list, camera_pos, zoom: float) -> None:
+        """Process events while selecting a destination."""
         if not self.active:
             return
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self.cancel()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            offset_x = ship.x - config.WINDOW_WIDTH / (2 * zoom)
-            offset_y = ship.y - config.WINDOW_HEIGHT / (2 * zoom)
+            offset_x = camera_pos[0] - config.WINDOW_WIDTH / (2 * zoom)
+            offset_y = camera_pos[1] - config.WINDOW_HEIGHT / (2 * zoom)
             world_x = event.pos[0] / zoom + offset_x
             world_y = event.pos[1] / zoom + offset_y
             for sector in sectors:
