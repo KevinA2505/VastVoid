@@ -16,7 +16,7 @@ BOAT_SPEED_WATER = 200  # slightly faster than walking when on water
 ORBIT_SPEED_FACTOR = 0.005  # base factor used to calculate orbital speed
 SHIP_ORBIT_SPEED = 1.5      # angular speed for attack orbits (radians per second)
 ORBIT_COOLDOWN = 5.0        # delay before a new orbit can be triggered
-ORBIT_PROJECTILE_SPEED_MULTIPLIER = 1.5  # bullet speed boost while orbiting
+ORBIT_PROJECTILE_SPEED_MULTIPLIER = 2.5  # bullet speed boost while orbiting
 
 SECTOR_WIDTH = 2000
 SECTOR_HEIGHT = 2000
