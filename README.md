@@ -53,8 +53,9 @@ flee. Actions inside the tree call the same ship methods as before so combat
 and navigation work exactly like the earlier state machine implementation.
 
 ### Learning enemies
-An experimental `LearningEnemy` class in `src/enemy_learning.py` replaces the
-behaviour tree with a simple Q-learning algorithm. Each enemy chooses actions
-like pursue or attack based on a learned Q-table updated every frame. Use the
-helper `create_learning_enemy()` to spawn this variant if you want opponents
-that adapt slightly to the player's tactics.
+Enemies now use the experimental `LearningEnemy` class from
+`src/enemy_learning.py`. It replaces the behaviour tree with a simple
+Q-learning algorithm so that each enemy chooses actions like pursue or attack
+based on a learned Q-table updated every frame. Enemies are spawned through the
+`create_learning_enemy()` helper by default and will adapt slightly to the
+player's tactics.
