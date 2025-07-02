@@ -39,6 +39,8 @@ class Ship:
         self.orbit_time = 0.0
         self.orbit_radius = 0.0
         self.orbit_angle = 0.0
+        self.orbit_speed = config.SHIP_ORBIT_SPEED
+        self.orbit_fire_timer = 0.0
         self.orbit_forced = False
         self.boost_charge = 1.0
         self.boost_time = 0.0
@@ -132,7 +134,13 @@ class Ship:
     def cancel_autopilot(self) -> None:
         self.autopilot_target = None
 
-    def start_orbit(self, target, duration: float = 5.0, forced: bool = False) -> None:
+    def start_orbit(
+        self,
+        target,
+        duration: float = 5.0,
+        forced: bool = False,
+        speed: float | None = None,
+    ) -> None:
         """Begin orbiting ``target`` for a short duration."""
         dx = self.x - target.x
         dy = self.y - target.y
@@ -141,12 +149,16 @@ class Ship:
         self.orbit_target = target
         self.orbit_time = duration
         self.orbit_forced = forced
+        self.orbit_speed = speed if speed is not None else config.SHIP_ORBIT_SPEED
+        self.orbit_fire_timer = 1.0
         self.autopilot_target = None
 
     def cancel_orbit(self) -> None:
         self.orbit_target = None
         self.orbit_time = 0.0
         self.orbit_forced = False
+        self.orbit_speed = config.SHIP_ORBIT_SPEED
+        self.orbit_fire_timer = 0.0
 
     def _update_autopilot(
         self,
@@ -192,9 +204,13 @@ class Ship:
         if not self.orbit_target:
             return
         self.orbit_time -= dt
-        self.orbit_angle += config.SHIP_ORBIT_SPEED * dt
+        self.orbit_angle += self.orbit_speed * dt
         self.x = self.orbit_target.x + math.cos(self.orbit_angle) * self.orbit_radius
         self.y = self.orbit_target.y + math.sin(self.orbit_angle) * self.orbit_radius
+        self.orbit_fire_timer -= dt
+        if self.orbit_fire_timer <= 0:
+            self.fire(self.orbit_target.x, self.orbit_target.y)
+            self.orbit_fire_timer += 1.0
         if self.orbit_time <= 0:
             self.cancel_orbit()
 

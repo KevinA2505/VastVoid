@@ -9,7 +9,7 @@ from wormhole import WormHole
 from star import Star
 from planet import Planet
 from station import SpaceStation
-from ui import DropdownMenu, RoutePlanner, InventoryWindow
+from ui import DropdownMenu, RoutePlanner, InventoryWindow, AbilityBar
 from planet_surface import PlanetSurface
 from character import create_player
 
@@ -74,6 +74,7 @@ def main():
     info_font = pygame.font.Font(None, 20)
     menu = DropdownMenu(10, 10, 100, 25, ["Plan Route", "Inventory"])
     route_planner = RoutePlanner()
+    ability_bar = AbilityBar()
     inventory_window = None
     current_station = None
     current_surface = None
@@ -215,6 +216,7 @@ def main():
                 inventory_window = InventoryWindow(player)
 
             route_planner.handle_event(event, sectors, (camera_x, camera_y), zoom)
+            ability_bar.handle_event(event, ship, enemies)
 
             if route_planner.destination:
                 if (
@@ -251,7 +253,7 @@ def main():
                             min_dist = d
                             nearest = en
                     if nearest and min_dist <= 350:
-                        ship.start_orbit(nearest.ship)
+                        ship.start_orbit(nearest.ship, speed=config.SHIP_ORBIT_SPEED * 0.5)
                 elif event.key == pygame.K_SPACE:
                     mx, my = pygame.mouse.get_pos()
                     offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
@@ -509,7 +511,7 @@ def main():
         hull_fill = int(bar_width * ship.hull / 100)
         if hull_fill > 0:
             pygame.draw.rect(screen, (150, 0, 0), (bar_x, hull_y, hull_fill, bar_height))
-
+        ability_bar.draw(screen, info_font)
         menu.draw(screen, info_font)
 
         if teleport_flash_timer > 0:
