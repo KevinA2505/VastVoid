@@ -62,9 +62,8 @@ def main():
     enemies = []
     num_enemies = random.randint(config.MIN_ENEMIES, config.MAX_ENEMIES)
     for _ in range(num_enemies):
-        ex = random.randint(0, world_width)
-        ey = random.randint(0, world_height)
-        enemies.append(create_random_enemy(ex, ey))
+        region = random.choice(sectors)
+        enemies.append(create_random_enemy(region))
 
     chosen_model = choose_ship(screen)
     player.ship_model = chosen_model
@@ -302,8 +301,21 @@ def main():
 
         keys = pygame.key.get_pressed()
         ship.update(keys, dt, world_width, world_height, sectors, blackholes)
-        for enemy in enemies:
+        for enemy in list(enemies):
             enemy.update(ship, dt, world_width, world_height, sectors, blackholes)
+
+            for proj in list(ship.projectiles):
+                if math.hypot(enemy.ship.x - proj.x, enemy.ship.y - proj.y) < enemy.ship.size / 2:
+                    enemy.ship.take_damage(proj.damage)
+                    ship.projectiles.remove(proj)
+
+            for proj in list(enemy.ship.projectiles):
+                if math.hypot(ship.x - proj.x, ship.y - proj.y) < ship.size / 2:
+                    ship.take_damage(proj.damage)
+                    enemy.ship.projectiles.remove(proj)
+
+            if enemy.ship.hull <= 0:
+                enemies.remove(enemy)
         if approaching_planet and not ship.autopilot_target:
             dist = math.hypot(
                 approaching_planet.x - ship.x,
