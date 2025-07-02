@@ -73,8 +73,9 @@ class Explorer:
             self.x -= speed * dt
         if keys[pygame.K_d]:
             self.x += speed * dt
-        self.x = max(0, min(width, self.x))
-        self.y = max(0, min(height, self.y))
+        # Clamp position so mask lookups stay within bounds
+        self.x = max(0, min(width - 1, self.x))
+        self.y = max(0, min(height - 1, self.y))
 
     def draw(self, screen: pygame.Surface, offset_x: float, offset_y: float) -> None:
         rect = pygame.Rect(
@@ -300,19 +301,25 @@ class PlanetSurface:
 
     def is_walkable(self, x: float, y: float) -> bool:
         """Return ``True`` if the coordinates correspond to a walkable cell."""
-        if self.collision_mask and self.collision_mask.get_at((int(x), int(y))):
-            if self.boat_active:
-                return True
+        ix = int(x)
+        iy = int(y)
+        if not (0 <= ix < self.width and 0 <= iy < self.height):
             return False
-        cx = int(x // self.cell)
-        cy = int(y // self.cell)
+        if self.collision_mask and self.collision_mask.get_at((ix, iy)):
+            return self.boat_active
+        cx = ix // self.cell
+        cy = iy // self.cell
         if 0 <= cx < self.cols and 0 <= cy < self.rows:
             return not self.blocked[cy][cx]
         return False
 
     def is_water(self, x: float, y: float) -> bool:
         """Return ``True`` if ``(x, y)`` is water based on the collision mask."""
-        return bool(self.collision_mask and self.collision_mask.get_at((int(x), int(y))))
+        ix = int(x)
+        iy = int(y)
+        if not (0 <= ix < self.width and 0 <= iy < self.height):
+            return False
+        return bool(self.collision_mask and self.collision_mask.get_at((ix, iy)))
 
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
