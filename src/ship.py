@@ -221,7 +221,16 @@ class Ship:
         self.y = self.orbit_target.y + math.sin(self.orbit_angle) * self.orbit_radius
         self.orbit_fire_timer -= dt
         if self.orbit_fire_timer <= 0:
-            self.fire(self.orbit_target.x, self.orbit_target.y)
+            # Fire a homing projectile while orbiting
+            if self.weapons:
+                weapon = self.weapons[0]
+                if weapon.can_fire():
+                    weapon._timer = 0.0
+                    proj = weapon.fire_homing(self.x, self.y, self.orbit_target)
+                    if proj:
+                        proj.vx *= config.ORBIT_PROJECTILE_SPEED_MULTIPLIER
+                        proj.vy *= config.ORBIT_PROJECTILE_SPEED_MULTIPLIER
+                        self.projectiles.append(proj)
             self.orbit_fire_timer += 1.0
         if self.orbit_time <= 0:
             self.cancel_orbit()
