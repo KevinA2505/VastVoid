@@ -75,18 +75,23 @@ class Ship:
     ) -> None:
         if self.orbit_cooldown > 0:
             self.orbit_cooldown = max(0.0, self.orbit_cooldown - dt)
+
+        # Always recharge shields and update weapon timers
+        self.shield.recharge(dt)
+        for weapon in self.weapons:
+            weapon.update(dt)
+
         if self.orbit_time > 0 and self.orbit_target:
             self._update_orbit(dt)
             if self.boost_time > 0 and self.orbit_forced:
                 self.cancel_orbit()
             return
+
         if self.autopilot_target:
             self._update_autopilot(dt, world_width, world_height, sectors, blackholes)
             return
+
         accel = config.SHIP_ACCELERATION * self.accel_factor
-        self.shield.recharge(dt)
-        for weapon in self.weapons:
-            weapon.update(dt)
         if self.boost_time > 0:
             self.boost_time -= dt
             if self.boost_time <= 0:
