@@ -21,9 +21,10 @@ class Ship:
         world_width: int,
         world_height: int,
         sectors: list,
+        blackholes: list | None = None,
     ) -> None:
         if self.autopilot_target:
-            self._update_autopilot(dt, world_width, world_height, sectors)
+            self._update_autopilot(dt, world_width, world_height, sectors, blackholes)
             return
         accel = config.SHIP_ACCELERATION
         if self.boost_time > 0:
@@ -51,6 +52,16 @@ class Ship:
         self.vx *= config.SHIP_FRICTION
         self.vy *= config.SHIP_FRICTION
 
+        if blackholes:
+            for hole in blackholes:
+                dx = hole.x - self.x
+                dy = hole.y - self.y
+                dist = math.hypot(dx, dy)
+                if dist < hole.pull_range and dist > 0:
+                    pull = hole.strength / dist
+                    self.vx += dx / dist * pull * dt
+                    self.vy += dy / dist * pull * dt
+
         old_x, old_y = self.x, self.y
 
         self.x += self.vx * dt
@@ -71,7 +82,12 @@ class Ship:
         self.autopilot_target = None
 
     def _update_autopilot(
-        self, dt: float, world_width: int, world_height: int, sectors: list
+        self,
+        dt: float,
+        world_width: int,
+        world_height: int,
+        sectors: list,
+        blackholes: list | None = None,
     ) -> None:
         dest_x, dest_y = self.autopilot_target.x, self.autopilot_target.y
         dx = dest_x - self.x
@@ -90,6 +106,19 @@ class Ship:
         self.y += dy / distance * step
         self.x = max(0, min(world_width, self.x))
         self.y = max(0, min(world_height, self.y))
+
+        if blackholes:
+            for hole in blackholes:
+                bdx = hole.x - self.x
+                bdy = hole.y - self.y
+                dist = math.hypot(bdx, bdy)
+                if dist < hole.pull_range and dist > 0:
+                    pull = hole.strength / dist
+                    self.vx += bdx / dist * pull * dt
+                    self.vy += bdy / dist * pull * dt
+                    self.x += self.vx * dt
+                    self.y += self.vy * dt
+
         if self._check_collision(sectors):
             self.x, self.y = old_x, old_y
             self.autopilot_target = None

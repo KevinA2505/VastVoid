@@ -40,6 +40,9 @@ def main():
     sectors = create_sectors(
         config.GRID_SIZE, config.SECTOR_WIDTH, config.SECTOR_HEIGHT
     )
+    blackholes = []
+    for sector in sectors:
+        blackholes.extend(sector.blackholes)
     world_width = config.GRID_SIZE * config.SECTOR_WIDTH
     world_height = config.GRID_SIZE * config.SECTOR_HEIGHT
     ship = Ship(world_width // 2, world_height // 2)
@@ -155,7 +158,7 @@ def main():
             continue
 
         keys = pygame.key.get_pressed()
-        ship.update(keys, dt, world_width, world_height, sectors)
+        ship.update(keys, dt, world_width, world_height, sectors, blackholes)
         if (
             route_planner.destination
             and not ship.autopilot_target
@@ -166,6 +169,14 @@ def main():
             < 1
         ):
             route_planner.destination = None
+
+        for hole in blackholes:
+            if math.hypot(hole.x - ship.x, hole.y - ship.y) < hole.radius:
+                print("You were swallowed by a black hole!")
+                running = False
+                break
+        if not running:
+            continue
         for sector in sectors:
             sector.update()
 
