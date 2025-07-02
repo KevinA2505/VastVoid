@@ -28,3 +28,18 @@ class BlackHole:
         pygame.draw.circle(screen, (10, 10, 10), center, scaled_radius)
         pygame.draw.circle(screen, (80, 0, 80), center, scaled_radius, 1)
 
+        # visualize the pull range for debugging
+        if self.pull_range * zoom > 1:
+            range_radius = int(self.pull_range * zoom)
+            pygame.draw.circle(screen, (40, 0, 40), center, range_radius, 1)
+
+    def apply_pull(self, ship, dt: float) -> None:
+        """Apply gravitational pull on the given ship."""
+        dx = self.x - ship.x
+        dy = self.y - ship.y
+        dist = math.hypot(dx, dy)
+        if dist < self.pull_range and dist > 0:
+            pull = self.strength / dist
+            ship.vx += dx / dist * pull * dt
+            ship.vy += dy / dist * pull * dt
+
