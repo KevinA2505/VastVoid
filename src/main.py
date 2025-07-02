@@ -3,7 +3,7 @@ import math
 import random
 import config
 from ship import Ship, choose_ship
-from enemy import create_random_enemy
+from enemy_learning import create_learning_enemy
 from sector import create_sectors
 from wormhole import WormHole
 from star import Star
@@ -63,7 +63,7 @@ def main():
     num_enemies = random.randint(config.MIN_ENEMIES, config.MAX_ENEMIES)
     for _ in range(num_enemies):
         region = random.choice(sectors)
-        enemies.append(create_random_enemy(region))
+        enemies.append(create_learning_enemy(region))
 
     chosen_model = choose_ship(screen)
     player.ship_model = chosen_model
