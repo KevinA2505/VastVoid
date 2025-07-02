@@ -1,3 +1,4 @@
+import math
 import pygame
 import random
 import config
@@ -97,7 +98,8 @@ class PlanetSurface:
         self.exit_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
 
     def _random_variation(self, base: tuple[int, int, int]) -> tuple[int, int, int]:
-        return tuple(min(255, max(0, c + random.randint(-30, 30))) for c in base)
+        """Return the same colour to avoid tonal changes inside a region."""
+        return base
 
     def _draw_patch(self, rect: pygame.Rect, biome: Biome) -> None:
         """Draw a more organic looking patch of terrain."""
@@ -110,7 +112,7 @@ class PlanetSurface:
             shape = pygame.Rect(x - w // 2, y - h // 2, w, h)
             pygame.draw.ellipse(
                 self.surface,
-                self._random_variation(biome.color),
+                biome.color,
                 shape,
             )
         else:
@@ -123,27 +125,88 @@ class PlanetSurface:
             ]
             pygame.draw.polygon(
                 self.surface,
-                self._random_variation(biome.color),
+                biome.color,
                 points,
             )
 
+    def _draw_river(self) -> None:
+        """Draw a wavy blue line representing a river."""
+        length = random.randint(self.height // 2, self.height)
+        width = random.randint(8, 14)
+        start_side = random.choice(["top", "bottom", "left", "right"])
+        if start_side == "top":
+            x, y, angle = random.randint(0, self.width), 0, math.pi / 2
+        elif start_side == "bottom":
+            x, y, angle = random.randint(0, self.width), self.height, -math.pi / 2
+        elif start_side == "left":
+            x, y, angle = 0, random.randint(0, self.height), 0
+        else:
+            x, y, angle = self.width, random.randint(0, self.height), math.pi
+
+        points = [(x, y)]
+        seg = 40
+        for _ in range(length // seg):
+            angle += random.uniform(-0.5, 0.5)
+            x += seg * math.cos(angle)
+            y += seg * math.sin(angle)
+            points.append((int(x), int(y)))
+            if x < 0 or x > self.width or y < 0 or y > self.height:
+                break
+        pygame.draw.lines(self.surface, (50, 100, 200), False, points, width)
+
+    def _draw_forest(self) -> None:
+        """Draw a cluster of trees to represent a forested area."""
+        w = random.randint(200, 400)
+        h = random.randint(200, 400)
+        x = random.randint(0, self.width - w)
+        y = random.randint(0, self.height - h)
+        area = pygame.Rect(x, y, w, h)
+        for _ in range(150):
+            tx = random.randint(area.left, area.right)
+            ty = random.randint(area.top, area.bottom)
+            r = random.randint(3, 8)
+            pygame.draw.circle(self.surface, (20, 70, 20), (tx, ty), r)
+
     def _generate_map(self) -> None:
-        cell = 300
+        """Create a map using a simple expansion algorithm for large regions."""
+        cell = 60
+        cols = self.width // cell
+        rows = self.height // cell
         self.surface.fill((0, 0, 0))
-        for i in range(self.width // cell):
-            for j in range(self.height // cell):
-                biome_name = (
-                    random.choice(self.planet.biomes)
-                    if self.planet.biomes
-                    else self.planet.environment
-                )
-                biome = BIOMES.get(
-                    biome_name,
-                    Biome(ENV_COLORS.get(biome_name, (90, 90, 90)), [], 0),
-                )
+
+        biome_names = (
+            self.planet.biomes if self.planet.biomes else [self.planet.environment]
+        )
+        biomes = [
+            BIOMES.get(name, Biome(ENV_COLORS.get(name, (90, 90, 90)), [], 0))
+            for name in biome_names
+        ]
+
+        grid = [[-1 for _ in range(cols)] for _ in range(rows)]
+        queue: list[tuple[int, int, int]] = []
+        for idx in range(len(biomes)):
+            x = random.randint(0, cols - 1)
+            y = random.randint(0, rows - 1)
+            grid[y][x] = idx
+            queue.append((x, y, idx))
+
+        dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+        while queue:
+            qidx = random.randrange(len(queue))
+            x, y, idx = queue.pop(qidx)
+            for dx, dy in dirs:
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < cols and 0 <= ny < rows and grid[ny][nx] == -1:
+                    grid[ny][nx] = idx
+                    queue.append((nx, ny, idx))
+
+        self.pickups.clear()
+        for j in range(rows):
+            for i in range(cols):
+                biome = biomes[grid[j][i]]
                 rect = pygame.Rect(i * cell, j * cell, cell, cell)
                 pygame.draw.rect(self.surface, biome.color, rect)
-                for _ in range(25):
+                for _ in range(3):
                     self._draw_patch(rect, biome)
                 if biome.spawn_items:
                     for _ in range(random.randint(1, 3)):
@@ -152,6 +215,11 @@ class PlanetSurface:
                             px = random.randint(rect.left, rect.right)
                             py = random.randint(rect.top, rect.bottom)
                             self.pickups.append(ItemPickup(name, px, py))
+
+        for _ in range(random.randint(1, 3)):
+            self._draw_river()
+        for _ in range(random.randint(2, 4)):
+            self._draw_forest()
 
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
