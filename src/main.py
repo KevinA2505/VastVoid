@@ -11,8 +11,8 @@ from planet_surface import PlanetSurface
 from character import create_player
 
 
-def draw_station_ui(screen: pygame.Surface, station: SpaceStation, font: pygame.font.Font) -> pygame.Rect:
-    """Draw a simple interface for a space station and return the exit button rect."""
+def draw_station_ui(screen: pygame.Surface, station: SpaceStation, font: pygame.font.Font) -> tuple[pygame.Rect, pygame.Rect]:
+    """Draw a simple interface for a space station and return button rects."""
     screen.fill((20, 20, 40))
     title = font.render(station.name, True, (255, 255, 255))
     screen.blit(title, (20, 20))
@@ -28,7 +28,14 @@ def draw_station_ui(screen: pygame.Surface, station: SpaceStation, font: pygame.
     exit_txt = font.render("Leave", True, (255, 255, 255))
     exit_txt_rect = exit_txt.get_rect(center=exit_rect.center)
     screen.blit(exit_txt, exit_txt_rect)
-    return exit_rect
+
+    inv_rect = pygame.Rect(10, 10, 100, 30)
+    pygame.draw.rect(screen, (60, 60, 90), inv_rect)
+    pygame.draw.rect(screen, (200, 200, 200), inv_rect, 1)
+    inv_txt = font.render("Items", True, (255, 255, 255))
+    inv_txt_rect = inv_txt.get_rect(center=inv_rect.center)
+    screen.blit(inv_txt, inv_txt_rect)
+    return exit_rect, inv_rect
 
 
 def main():
@@ -74,6 +81,13 @@ def main():
                     running = False
                     break
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_i:
+                    inventory_window = InventoryWindow(player)
+                    continue
+                if (
+                    event.type == pygame.MOUSEBUTTONDOWN
+                    and event.button == 1
+                    and current_surface.inventory_rect.collidepoint(event.pos)
+                ):
                     inventory_window = InventoryWindow(player)
                     continue
                 if current_surface.handle_event(event):
@@ -132,6 +146,7 @@ def main():
 
             if current_station:
                 leave_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
+                inv_rect = pygame.Rect(10, 10, 100, 30)
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     current_station.undock_ship(ship)
                     ship.x = current_station.x + current_station.radius + 40
@@ -148,6 +163,14 @@ def main():
                     current_station.undock_ship(ship)
                     ship.x = current_station.x + current_station.radius + 40
                     current_station = None
+                    continue
+                if (
+                    event.type == pygame.MOUSEBUTTONDOWN
+                    and event.button == 1
+                    and inv_rect.collidepoint(event.pos)
+                ):
+                    inventory_window = InventoryWindow(player)
+                    continue
                 continue
 
             selection = menu.handle_event(event)
@@ -230,7 +253,7 @@ def main():
                     selected_object = None
 
         if current_station:
-            leave_rect = draw_station_ui(screen, current_station, info_font)
+            leave_rect, inv_rect = draw_station_ui(screen, current_station, info_font)
             pygame.display.flip()
             continue
 

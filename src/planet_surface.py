@@ -109,6 +109,7 @@ class PlanetSurface:
         self.camera_x = self.explorer.x
         self.camera_y = self.explorer.y
         self.exit_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
+        self.inventory_rect = pygame.Rect(10, 10, 100, 30)
 
     def _random_variation(self, base: tuple[int, int, int]) -> tuple[int, int, int]:
         """Return the same colour to avoid tonal changes inside a region."""
@@ -347,3 +348,9 @@ class PlanetSurface:
         txt = font.render("Take Off", True, (255, 255, 255))
         txt_rect = txt.get_rect(center=self.exit_rect.center)
         screen.blit(txt, txt_rect)
+        # inventory button
+        pygame.draw.rect(screen, (60, 60, 90), self.inventory_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.inventory_rect, 1)
+        inv_txt = font.render("Items", True, (255, 255, 255))
+        inv_rect = inv_txt.get_rect(center=self.inventory_rect.center)
+        screen.blit(inv_txt, inv_rect)
