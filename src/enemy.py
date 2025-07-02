@@ -80,6 +80,42 @@ class Attack(_EnemyBehaviour):
         return py_trees.common.Status.SUCCESS
 
 
+class Defend(_EnemyBehaviour):
+    """Evasive manoeuvres when shields are low or projectiles are near."""
+
+    DANGER_RANGE = 200
+    SHIELD_THRESHOLD = 0.3
+
+    def __init__(self, enemy: "Enemy") -> None:
+        super().__init__("Defend", enemy)
+
+    def update(self) -> py_trees.common.Status:
+        enemy = self.enemy
+        ship = enemy.ship
+        player = enemy.player_ship
+        if not player:
+            return py_trees.common.Status.FAILURE
+
+        shield_ratio = ship.shield.strength / ship.shield.max_strength
+        near_proj = any(
+            math.hypot(proj.x - ship.x, proj.y - ship.y) <= self.DANGER_RANGE
+            for proj in player.projectiles
+        )
+
+        if shield_ratio < self.SHIELD_THRESHOLD or near_proj:
+            enemy.state = "defend"
+            dx = player.x - ship.x
+            dy = player.y - ship.y
+            angle = math.atan2(dy, dx) + math.pi / 2
+            dist = enemy.detection_range / 2
+            dest_x = ship.x + math.cos(angle) * dist
+            dest_y = ship.y + math.sin(angle) * dist
+            ship.start_autopilot(_Point(dest_x, dest_y))
+            return py_trees.common.Status.SUCCESS
+
+        return py_trees.common.Status.FAILURE
+
+
 class Pursue(_EnemyBehaviour):
     def __init__(self, enemy: "Enemy") -> None:
         super().__init__("Pursue", enemy)
@@ -141,11 +177,12 @@ class Enemy:
     def build_tree(self) -> None:
         """Create the behaviour tree controlling this enemy."""
         flee = Flee(self)
+        defend = Defend(self)
         attack = Attack(self)
         pursue = Pursue(self)
         idle = Idle(self)
         root = py_trees.composites.Selector("EnemyRoot", memory=False)
-        root.add_children([flee, attack, pursue, idle])
+        root.add_children([flee, defend, attack, pursue, idle])
         self.tree = py_trees.trees.BehaviourTree(root)
 
     def update(
