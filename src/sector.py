@@ -47,42 +47,47 @@ class Sector:
         # Possibly add a worm hole pair positioned far from star systems
         self.wormholes = []
         if random.random() < config.WORMHOLE_CHANCE:
-            first = None
-            for _ in range(100):
-                wx = random.randint(self.x + 100, self.x + self.width - 100)
-                wy = random.randint(self.y + 100, self.y + self.height - 100)
-                too_close = False
-                for system in self.systems:
-                    if math.hypot(system.star.x - wx, system.star.y - wy) < config.WORMHOLE_MIN_DISTANCE:
-                        too_close = True
-                        break
-                for hole in self.blackholes:
-                    if math.hypot(hole.x - wx, hole.y - wy) < config.WORMHOLE_MIN_DISTANCE:
-                        too_close = True
-                        break
-                if not too_close:
-                    first = WormHole(wx, wy)
+            self._add_wormhole_pair()
+
+    def _add_wormhole_pair(self) -> None:
+        """Generate and store a paired set of wormholes in this sector."""
+        first = None
+        for _ in range(100):
+            wx = random.randint(self.x + 100, self.x + self.width - 100)
+            wy = random.randint(self.y + 100, self.y + self.height - 100)
+            too_close = False
+            for system in self.systems:
+                if math.hypot(system.star.x - wx, system.star.y - wy) < config.WORMHOLE_MIN_DISTANCE:
+                    too_close = True
                     break
-            if first is not None:
-                for _ in range(100):
-                    wx = random.randint(self.x + 100, self.x + self.width - 100)
-                    wy = random.randint(self.y + 100, self.y + self.height - 100)
-                    too_close = False
-                    for system in self.systems:
-                        if math.hypot(system.star.x - wx, system.star.y - wy) < config.WORMHOLE_MIN_DISTANCE:
-                            too_close = True
-                            break
-                    for hole in self.blackholes:
-                        if math.hypot(hole.x - wx, hole.y - wy) < config.WORMHOLE_MIN_DISTANCE:
-                            too_close = True
-                            break
-                    if math.hypot(first.x - wx, first.y - wy) < config.WORMHOLE_MIN_DISTANCE:
-                        too_close = True
-                    if not too_close:
-                        second = WormHole(wx, wy)
-                        first.set_pair(second)
-                        self.wormholes.extend([first, second])
-                        break
+            for hole in self.blackholes:
+                if math.hypot(hole.x - wx, hole.y - wy) < config.WORMHOLE_MIN_DISTANCE:
+                    too_close = True
+                    break
+            if not too_close:
+                first = WormHole(wx, wy)
+                break
+        if first is None:
+            return
+        for _ in range(100):
+            wx = random.randint(self.x + 100, self.x + self.width - 100)
+            wy = random.randint(self.y + 100, self.y + self.height - 100)
+            too_close = False
+            for system in self.systems:
+                if math.hypot(system.star.x - wx, system.star.y - wy) < config.WORMHOLE_MIN_DISTANCE:
+                    too_close = True
+                    break
+            for hole in self.blackholes:
+                if math.hypot(hole.x - wx, hole.y - wy) < config.WORMHOLE_MIN_DISTANCE:
+                    too_close = True
+                    break
+            if math.hypot(first.x - wx, first.y - wy) < config.WORMHOLE_MIN_DISTANCE:
+                too_close = True
+            if not too_close:
+                second = WormHole(wx, wy)
+                first.set_pair(second)
+                self.wormholes.extend([first, second])
+                break
 
     def update(self) -> None:
         for system in self.systems:
@@ -132,4 +137,9 @@ def create_sectors(grid_size: int, width: int, height: int) -> list:
             x = col * width
             y = row * height
             sectors.append(Sector(x, y, width, height))
+
+    # Guarantee at least one wormhole pair exists in the world
+    if not any(sector.wormholes for sector in sectors):
+        random.choice(sectors)._add_wormhole_pair()
+
     return sectors
