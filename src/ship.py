@@ -342,11 +342,7 @@ class Ship:
     def _update_specials(self, dt: float, world_width: int, world_height: int, enemies: list | None = None) -> None:
         for obj in list(self.specials):
             if isinstance(obj, LaserBeam):
-                obj.update(dt)
-                if enemies:
-                    for en in enemies:
-                        if obj.hits(en.ship):
-                            en.ship.take_damage(obj.damage_rate * dt)
+                obj.update(dt, enemies or [])
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, TimedMine):
