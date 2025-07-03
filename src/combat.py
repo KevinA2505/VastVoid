@@ -362,7 +362,7 @@ class BombDrone:
         hp: float = 40.0,
         speed: float = 80.0,
         lifetime: float = 6.0,
-        radius: float = 140.0,
+        radius: float = 100.0,
         damage: float = 50.0,
     ) -> None:
         self.owner = owner
