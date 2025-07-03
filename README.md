@@ -34,7 +34,8 @@ The original example scripts (`black_plane.py`, `nave.py`, `space_objects.py`
 and `colliding_star_systems.py`) remain in the `src` directory for reference.
 
 Wormholes now appear at least once in every generated universe, allowing
-instant travel between two distant points.
+instant travel between two distant points. The two ends of a pair are
+placed far apart thanks to the `WORMHOLE_PAIR_MIN_DISTANCE` setting.
 
 ### Enemy AI
 
