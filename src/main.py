@@ -42,6 +42,27 @@ def draw_station_ui(screen: pygame.Surface, station: SpaceStation, font: pygame.
     return exit_rect, inv_rect
 
 
+def draw_enemy_health_bar(
+    screen: pygame.Surface,
+    ship: Ship,
+    offset_x: float,
+    offset_y: float,
+    zoom: float,
+) -> None:
+    """Render a small translucent health bar above an enemy ship."""
+    bar_w = max(20, int(ship.size * zoom))
+    bar_h = 4
+    x = int((ship.x - offset_x) * zoom) - bar_w // 2
+    y = int((ship.y - offset_y) * zoom) - int(ship.size * zoom ** 0.5) // 2 - 8
+    surf = pygame.Surface((bar_w, bar_h), pygame.SRCALPHA)
+    pygame.draw.rect(surf, (60, 60, 90, 100), (0, 0, bar_w, bar_h))
+    pygame.draw.rect(surf, (200, 200, 200, 150), (0, 0, bar_w, bar_h), 1)
+    fill = int(bar_w * ship.hull / config.ENEMY_MAX_HULL)
+    if fill > 0:
+        pygame.draw.rect(surf, (150, 0, 0, 180), (0, 0, fill, bar_h))
+    screen.blit(surf, (x, y))
+
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((config.WINDOW_WIDTH, config.WINDOW_HEIGHT))
@@ -68,7 +89,12 @@ def main():
 
     chosen_model = choose_ship(screen)
     player.ship_model = chosen_model
-    ship = Ship(world_width // 2, world_height // 2, chosen_model)
+    ship = Ship(
+        world_width // 2,
+        world_height // 2,
+        chosen_model,
+        hull=config.PLAYER_MAX_HULL,
+    )
     ship.weapons.extend([
         LaserWeapon(),
         MineWeapon(),
@@ -440,6 +466,7 @@ def main():
         ship.draw_specials(screen, offset_x, offset_y, zoom)
         for enemy in enemies:
             enemy.ship.draw_at(screen, offset_x, offset_y, zoom)
+            draw_enemy_health_bar(screen, enemy.ship, offset_x, offset_y, zoom)
         ship.draw(screen, zoom)
         route_planner.draw(screen, info_font, ship, offset_x, offset_y, zoom)
 
@@ -543,7 +570,7 @@ def main():
         hull_y = shield_y - 15
         pygame.draw.rect(screen, (60, 60, 90), (bar_x, hull_y, bar_width, bar_height))
         pygame.draw.rect(screen, (200, 200, 200), (bar_x, hull_y, bar_width, bar_height), 1)
-        hull_fill = int(bar_width * ship.hull / 100)
+        hull_fill = int(bar_width * ship.hull / config.PLAYER_MAX_HULL)
         if hull_fill > 0:
             pygame.draw.rect(screen, (150, 0, 0), (bar_x, hull_y, hull_fill, bar_height))
         ability_bar.draw(screen, info_font)

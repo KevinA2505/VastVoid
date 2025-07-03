@@ -8,6 +8,11 @@ SHIP_FRICTION = 0.92  # velocity retained each frame
 AUTOPILOT_SPEED = 120  # pixels per second when auto moving
 PLANET_LANDING_SPEED = 100  # slower speed when approaching a planet
 
+# --- Hull settings -----------------------------------------------------------
+# Maximum hull values for player and enemy ships
+PLAYER_MAX_HULL = 120
+ENEMY_MAX_HULL = 80
+
 # --- Explorer/Boat movement -------------------------------------------------
 EXPLORER_SPEED = 150  # base walking speed on a planet surface
 BOAT_SPEED_LAND = 60  # slow boat speed when on land
