@@ -134,7 +134,7 @@ class GuidedMissile(Projectile):
     ) -> None:
         super().__init__(x, y, target.x, target.y, 0.0, damage, 0.0, max_distance=0)
         self.target = target
-        self.speed = speed + 5
+        self.speed = speed + 4
         self.delay = delay
         self.lifetime = lifetime
         self.turn_rate = turn_rate
@@ -469,7 +469,7 @@ class MissileWeapon(Weapon):
     """Heavy homing missile launcher."""
 
     def __init__(self) -> None:
-        super().__init__("Misil hiperguiado", 50, 250, cooldown=4.5)
+        super().__init__("Misil hiperguiado", 43, 250, cooldown=4.5)
         self.target = None
 
     def fire(self, x: float, y: float, tx: float, ty: float):
