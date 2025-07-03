@@ -138,7 +138,7 @@ def create_learning_enemy(region):
     model = random.choice(SHIP_MODELS)
     x = random.randint(region.x, region.x + region.width)
     y = random.randint(region.y, region.y + region.height)
-    enemy = LearningEnemy(Ship(x, y, model), species, region)
+    enemy = LearningEnemy(Ship(x, y, model, hull=config.ENEMY_MAX_HULL), species, region)
     enemy.load_q_table()
     # Replace the default weapon with a random one
     weapon_cls = random.choice(

@@ -363,7 +363,7 @@ class BombDrone:
         speed: float = 80.0,
         lifetime: float = 6.0,
         radius: float = 100.0,
-        damage: float = 50.0,
+        damage: float = 40.0,
     ) -> None:
         self.owner = owner
         self.target = None
@@ -512,7 +512,7 @@ class LaserWeapon(Weapon):
     def __init__(self) -> None:
         super().__init__("Laser de rafaga", 0, 0, cooldown=6.0)
         self.beam_length = 600.0
-        self.damage_rate = 10.0
+        self.damage_rate = 8.0
 
     def fire(self, x: float, y: float, tx: float, ty: float):
         if not self.can_fire():
@@ -556,7 +556,7 @@ class MissileWeapon(Weapon):
     """Heavy homing missile launcher."""
 
     def __init__(self) -> None:
-        super().__init__("Misil hiperguiado", 43, 250, cooldown=4.5)
+        super().__init__("Misil hiperguiado", 30, 250, cooldown=4.5)
         self.target = None
 
     def fire(self, x: float, y: float, tx: float, ty: float):
@@ -572,4 +572,4 @@ class BasicWeapon(Weapon):
     """Generic low damage weapon for starting ships."""
 
     def __init__(self) -> None:
-        super().__init__("Basic", 8, 380, cooldown=0.6)
+        super().__init__("Basic", 6, 380, cooldown=0.6)

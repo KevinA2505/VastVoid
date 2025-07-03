@@ -38,7 +38,13 @@ SHIP_MODELS = [
 class Ship:
     """Simple controllable ship with optional model attributes."""
 
-    def __init__(self, x: float, y: float, model: ShipModel | None = None) -> None:
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        model: ShipModel | None = None,
+        hull: int = 100,
+    ) -> None:
         self.x = float(x)
         self.y = float(y)
         self.vx = 0.0
@@ -56,7 +62,7 @@ class Ship:
         self.boost_time = 0.0
         self.model = model
         self.name = get_ship_name()
-        self.weapons: list[Weapon] = [Weapon("Laser", 10, 400)]
+        self.weapons: list[Weapon] = [Weapon("Laser", 8, 400)]
         self.active_weapon: int = 0
         for w in self.weapons:
             w.owner = self
@@ -64,7 +70,7 @@ class Ship:
         self.specials: list = []
         self._enemy_list: list | None = None
         self.shield = Shield()
-        self.hull = 100
+        self.hull = hull
         if model:
             self.brand = model.brand
             self.classification = model.classification

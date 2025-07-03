@@ -251,7 +251,7 @@ def create_random_enemy(region: Sector) -> Enemy:
     model = random.choice(SHIP_MODELS)
     x = random.randint(region.x, region.x + region.width)
     y = random.randint(region.y, region.y + region.height)
-    enemy = Enemy(Ship(x, y, model), species, region)
+    enemy = Enemy(Ship(x, y, model, hull=config.ENEMY_MAX_HULL), species, region)
     # Replace the default weapon with a random one
     weapon_cls = random.choice(
         [LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon, BasicWeapon]
