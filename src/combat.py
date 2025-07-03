@@ -355,18 +355,22 @@ class TimedMine:
 class Drone:
     """Autonomous drone that orbits the owner and fires at enemies."""
 
-    def __init__(self, owner, hp: float = 25.0) -> None:
+    def __init__(self, owner, hp: float = 10.0, lifetime: float = 8.0) -> None:
         self.owner = owner
         self.angle = 0.0
-        self.radius = owner.size * 2
+        # Increased orbit range so drones keep a bit more distance
+        self.radius = owner.size * 3
         self.hp = hp
+        self.lifetime = lifetime
         self.projectiles: List[Projectile] = []
-        self.fire_cooldown = 1.0
+        # Slightly faster fire rate
+        self.fire_cooldown = 0.8
         self._timer = 0.0
         self.x = owner.x
         self.y = owner.y
 
     def update(self, dt: float, enemies: List) -> None:
+        self.lifetime -= dt
         self.angle += 2.0 * dt
         self.x = self.owner.x + math.cos(self.angle) * self.radius
         self.y = self.owner.y + math.sin(self.angle) * self.radius
@@ -381,7 +385,7 @@ class Drone:
                     target.ship.x,
                     target.ship.y,
                     350,
-                    5,
+                    3,
                 )
                 self.projectiles.append(proj)
                 self._timer = self.fire_cooldown
@@ -392,7 +396,7 @@ class Drone:
 
     def _find_target(self, enemies: List):
         nearest = None
-        min_d = 100.0
+        min_d = 150.0
         for en in enemies:
             d = math.hypot(en.ship.x - self.x, en.ship.y - self.y)
             if d < min_d:
@@ -401,7 +405,7 @@ class Drone:
         return nearest
 
     def expired(self) -> bool:
-        return self.hp <= 0
+        return self.hp <= 0 or self.lifetime <= 0
 
     def draw(
         self,
@@ -449,10 +453,13 @@ class DroneWeapon(Weapon):
     """Weapon that releases an assisting drone."""
 
     def __init__(self) -> None:
-        super().__init__("Dron asistente", 0, 0, cooldown=8.0)
+        super().__init__("Dron asistente", 0, 0, cooldown=10.0)
 
     def fire(self, x: float, y: float, tx: float, ty: float):
         if not self.can_fire():
+            return None
+        existing = [s for s in getattr(self.owner, "specials", []) if isinstance(s, Drone)]
+        if len(existing) >= 3:
             return None
         self._timer = 0.0
         return Drone(self.owner)
