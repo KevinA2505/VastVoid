@@ -9,6 +9,7 @@ from combat import (
     Projectile,
     Shield,
     LaserBeam,
+    ChannelingBeam,
     TimedMine,
     Drone,
 )
@@ -315,7 +316,7 @@ class Ship:
         else:
             proj = weapon.fire(self.x, self.y, tx, ty)
         if proj:
-            if isinstance(proj, (LaserBeam, TimedMine, Drone)):
+            if isinstance(proj, (LaserBeam, ChannelingBeam, TimedMine, Drone)):
                 self.specials.append(proj)
             else:
                 self.projectiles.append(proj)
@@ -327,7 +328,7 @@ class Ship:
         weapon = self.weapons[self.active_weapon]
         proj = weapon.fire_homing(self.x, self.y, target)
         if proj:
-            if isinstance(proj, (LaserBeam, TimedMine, Drone)):
+            if isinstance(proj, (LaserBeam, ChannelingBeam, TimedMine, Drone)):
                 self.specials.append(proj)
             else:
                 self.projectiles.append(proj)
@@ -347,6 +348,10 @@ class Ship:
                     for en in enemies:
                         if obj.hits(en.ship):
                             en.ship.take_damage(obj.damage_rate * dt)
+                if obj.expired():
+                    self.specials.remove(obj)
+            elif isinstance(obj, ChannelingBeam):
+                obj.update(dt, enemies or [])
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, TimedMine):

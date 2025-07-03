@@ -196,6 +196,105 @@ class LaserBeam:
         pygame.draw.line(screen, (255, 50, 50), start, end, width)
 
 
+class ChannelingBeam:
+    """Two-phase laser that locks onto a target if the probe hits."""
+
+    def __init__(
+        self,
+        owner,
+        angle: float,
+        length: float = 600.0,
+        probe_time: float = 1.0,
+        channel_time: float = 3.0,
+        damage_rate: float = 10.0,
+    ) -> None:
+        self.owner = owner
+        self.angle = angle
+        self.length = length
+        self.probe_timer = probe_time
+        self.channel_timer = channel_time
+        self.damage_rate = damage_rate
+        self.target = None
+
+    def _start_pos(self) -> tuple[float, float]:
+        return self.owner.x, self.owner.y
+
+    def _end_point(self) -> tuple[float, float]:
+        if self.target:
+            return self.target.x, self.target.y
+        x, y = self._start_pos()
+        ex = x + math.cos(self.angle) * self.length
+        ey = y + math.sin(self.angle) * self.length
+        return ex, ey
+
+    def _hits(self, ship) -> bool:
+        x1, y1 = self._start_pos()
+        x2, y2 = self._end_point()
+        px, py = ship.x, ship.y
+        half = ship.size / 2
+        dx, dy = x2 - x1, y2 - y1
+        denom = dx * dx + dy * dy
+        if denom == 0:
+            return False
+        t = max(0.0, min(1.0, ((px - x1) * dx + (py - y1) * dy) / denom))
+        cx = x1 + dx * t
+        cy = y1 + dy * t
+        dist = math.hypot(px - cx, py - cy)
+        return dist <= half
+
+    def update(self, dt: float, enemies: list) -> None:
+        if self.target:
+            self.channel_timer -= dt
+            if self.target.hull <= 0:
+                self.target = None
+            else:
+                sx, sy = self._start_pos()
+                dx = self.target.x - sx
+                dy = self.target.y - sy
+                if math.hypot(dx, dy) > self.length:
+                    self.target = None
+                else:
+                    self.angle = math.atan2(dy, dx)
+                    self.target.take_damage(self.damage_rate * dt)
+        else:
+            self.probe_timer -= dt
+            if self.probe_timer > 0:
+                for en in enemies:
+                    if self._hits(en.ship):
+                        self.target = en.ship
+                        break
+
+    def expired(self) -> bool:
+        if self.target:
+            return self.channel_timer <= 0 or self.target is None
+        return self.probe_timer <= 0
+
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        x1, y1 = self._start_pos()
+        start = (int((x1 - offset_x) * zoom), int((y1 - offset_y) * zoom))
+        ex, ey = self._end_point()
+        end = (int((ex - offset_x) * zoom), int((ey - offset_y) * zoom))
+        width = 6 if self.target else 3
+        width = max(1, int(width * zoom))
+        if not self.target and self.probe_timer < 1.0:
+            alpha = max(0, min(255, int(255 * (self.probe_timer / 1.0))))
+        else:
+            alpha = 255
+        color = (255, 200, 50, alpha) if alpha < 255 else (255, 200, 50)
+        if len(color) == 4:
+            surf = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+            pygame.draw.line(surf, color, start, end, width)
+            screen.blit(surf, (0, 0))
+        else:
+            pygame.draw.line(screen, color, start, end, width)
+
+
 class TimedMine:
     """Explosive that detonates after a short delay."""
 
@@ -321,6 +420,20 @@ class LaserWeapon(Weapon):
         self._timer = 0.0
         angle = math.atan2(ty - y, tx - x)
         return LaserBeam(x, y, angle)
+
+
+class ChannelLaserWeapon(Weapon):
+    """Weapon that fires a probe beam which can lock onto a target."""
+
+    def __init__(self) -> None:
+        super().__init__("Laser canalizado", 0, 0, cooldown=4.0)
+
+    def fire(self, x: float, y: float, tx: float, ty: float):
+        if not self.can_fire():
+            return None
+        self._timer = 0.0
+        angle = math.atan2(ty - y, tx - x)
+        return ChannelingBeam(self.owner, angle)
 
 
 class MineWeapon(Weapon):

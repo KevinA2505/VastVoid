@@ -3,7 +3,7 @@ import math
 import random
 import config
 from ship import Ship, choose_ship
-from combat import LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon
+from combat import ChannelLaserWeapon, LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon
 from enemy_learning import create_learning_enemy
 from sector import create_sectors
 from wormhole import WormHole
@@ -69,12 +69,13 @@ def main():
     chosen_model = choose_ship(screen)
     player.ship_model = chosen_model
     ship = Ship(world_width // 2, world_height // 2, chosen_model)
-    ship.weapons.extend([
+    ship.weapons = [
+        ChannelLaserWeapon(),
         LaserWeapon(),
         MineWeapon(),
         DroneWeapon(),
         MissileWeapon(),
-    ])
+    ]
     for w in ship.weapons:
         w.owner = ship
 
