@@ -360,7 +360,7 @@ class Drone:
     projectiles can damage them.
     """
 
-    def __init__(self, owner, hp: float = 5.0, lifetime: float = float("inf")) -> None:
+    def __init__(self, owner, hp: float = 16.0, lifetime: float = float("inf")) -> None:
         self.owner = owner
         self.angle = 0.0
         # Increased orbit range so drones keep a bit more distance
@@ -371,7 +371,7 @@ class Drone:
         self.size = 10
         self.projectiles: List[Projectile] = []
         # Slightly faster fire rate
-        self.fire_cooldown = 0.72
+        self.fire_cooldown = 0.32
         self._timer = 0.0
         self.x = owner.x
         self.y = owner.y
@@ -461,7 +461,7 @@ class DroneWeapon(Weapon):
     """Weapon that releases an assisting drone."""
 
     def __init__(self) -> None:
-        super().__init__("Dron asistente", 0, 0, cooldown=10.0)
+        super().__init__("Dron asistente", 0, 0, cooldown=8.5)
 
     def fire(self, x: float, y: float, tx: float, ty: float):
         if not self.can_fire():
