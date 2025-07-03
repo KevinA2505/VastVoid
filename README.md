@@ -44,6 +44,8 @@ the player, fire at close range, or retreat when their hull integrity is
 low. When a new game starts, a random number of enemies is generated and
 scattered across space. The amount varies between `MIN_ENEMIES` and
 `MAX_ENEMIES` defined in `config.py`.
+Each enemy now spawns with a random weapon drawn from the same arsenal
+available to the player, so encounters can vary widely.
 
 #### Behavior trees
 

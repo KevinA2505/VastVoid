@@ -5,6 +5,13 @@ import os
 from dataclasses import dataclass, field
 
 from enemy import Enemy, Flee, Defend, Attack, Pursue, Idle, _NullKeys
+from combat import (
+    LaserWeapon,
+    MineWeapon,
+    DroneWeapon,
+    MissileWeapon,
+    BasicWeapon,
+)
 import config
 
 
@@ -133,7 +140,13 @@ def create_learning_enemy(region):
     y = random.randint(region.y, region.y + region.height)
     enemy = LearningEnemy(Ship(x, y, model), species, region)
     enemy.load_q_table()
-    # Set the weapon cooldown using the configured value
-    if enemy.ship.weapons:
-        enemy.ship.weapons[0].cooldown = config.ENEMY_WEAPON_COOLDOWN
+    # Replace the default weapon with a random one
+    weapon_cls = random.choice(
+        [LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon, BasicWeapon]
+    )
+    enemy.ship.weapons = [weapon_cls()]
+    for w in enemy.ship.weapons:
+        w.owner = enemy.ship
+        # Set the weapon cooldown using the configured value
+        w.cooldown = config.ENEMY_WEAPON_COOLDOWN
     return enemy

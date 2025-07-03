@@ -6,6 +6,13 @@ import py_trees
 
 from character import Alien, Human, Robot
 from ship import Ship, SHIP_MODELS
+from combat import (
+    LaserWeapon,
+    MineWeapon,
+    DroneWeapon,
+    MissileWeapon,
+    BasicWeapon,
+)
 from sector import Sector
 import config
 
@@ -245,7 +252,13 @@ def create_random_enemy(region: Sector) -> Enemy:
     x = random.randint(region.x, region.x + region.width)
     y = random.randint(region.y, region.y + region.height)
     enemy = Enemy(Ship(x, y, model), species, region)
-    if enemy.ship.weapons:
+    # Replace the default weapon with a random one
+    weapon_cls = random.choice(
+        [LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon, BasicWeapon]
+    )
+    enemy.ship.weapons = [weapon_cls()]
+    for w in enemy.ship.weapons:
+        w.owner = enemy.ship
         # Use a configurable cooldown so enemies don't spam shots
-        enemy.ship.weapons[0].cooldown = config.ENEMY_WEAPON_COOLDOWN
+        w.cooldown = config.ENEMY_WEAPON_COOLDOWN
     return enemy
