@@ -46,6 +46,8 @@ BLACKHOLE_RADIUS = 25         # radius of the dangerous core
 # Worm hole settings
 WORMHOLE_CHANCE = 0.05       # probability of a sector containing a wormhole pair
 WORMHOLE_MIN_DISTANCE = 400  # minimum distance from star systems and black holes
+# Minimum distance allowed between the two wormholes in a pair
+WORMHOLE_PAIR_MIN_DISTANCE = 1200
 WORMHOLE_RADIUS = 20         # visible size of a worm hole
 WORMHOLE_COLOR = (150, 100, 200)
 WORMHOLE_DELAY = 5.0         # seconds before teleport occurs

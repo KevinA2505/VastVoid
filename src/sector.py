@@ -81,7 +81,7 @@ class Sector:
                 if math.hypot(hole.x - wx, hole.y - wy) < config.WORMHOLE_MIN_DISTANCE:
                     too_close = True
                     break
-            if math.hypot(first.x - wx, first.y - wy) < config.WORMHOLE_MIN_DISTANCE:
+            if math.hypot(first.x - wx, first.y - wy) < config.WORMHOLE_PAIR_MIN_DISTANCE:
                 too_close = True
             if not too_close:
                 second = WormHole(wx, wy)
