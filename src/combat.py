@@ -353,15 +353,21 @@ class TimedMine:
 
 
 class Drone:
-    """Autonomous drone that orbits the owner and fires at enemies."""
+    """Autonomous drone that orbits the owner and fires at enemies.
 
-    def __init__(self, owner, hp: float = 10.0, lifetime: float = 8.0) -> None:
+    Drones persist until their hit points reach zero rather than expiring
+    after a timed duration. A small size value defines a hitbox so enemy
+    projectiles can damage them.
+    """
+
+    def __init__(self, owner, hp: float = 5.0, lifetime: float = float("inf")) -> None:
         self.owner = owner
         self.angle = 0.0
         # Increased orbit range so drones keep a bit more distance
         self.radius = owner.size * 3
         self.hp = hp
         self.lifetime = lifetime
+        self.size = 10
         self.projectiles: List[Projectile] = []
         # Slightly faster fire rate
         self.fire_cooldown = 0.8
