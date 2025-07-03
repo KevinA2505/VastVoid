@@ -11,6 +11,7 @@ from combat import (
     LaserBeam,
     TimedMine,
     Drone,
+    MissileWeapon,
 )
 
 
@@ -60,6 +61,7 @@ class Ship:
             w.owner = self
         self.projectiles: list[Projectile] = []
         self.specials: list = []
+        self._enemy_list: list | None = None
         self.shield = Shield()
         self.hull = 100
         if model:
@@ -89,6 +91,7 @@ class Ship:
         blackholes: list | None = None,
         enemies: list | None = None,
     ) -> None:
+        self._enemy_list = enemies
         if self.orbit_cooldown > 0:
             self.orbit_cooldown = max(0.0, self.orbit_cooldown - dt)
 
@@ -313,7 +316,21 @@ class Ship:
                     proj.vx *= config.ORBIT_PROJECTILE_SPEED_MULTIPLIER
                     proj.vy *= config.ORBIT_PROJECTILE_SPEED_MULTIPLIER
         else:
-            proj = weapon.fire(self.x, self.y, tx, ty)
+            if isinstance(weapon, MissileWeapon) and self._enemy_list:
+                nearest = None
+                min_d = float("inf")
+                for en in self._enemy_list:
+                    d = math.hypot(en.ship.x - self.x, en.ship.y - self.y)
+                    if d < min_d:
+                        min_d = d
+                        nearest = en.ship
+                if nearest:
+                    weapon.target = nearest
+                    proj = weapon.fire(self.x, self.y, nearest.x, nearest.y)
+                else:
+                    proj = weapon.fire(self.x, self.y, tx, ty)
+            else:
+                proj = weapon.fire(self.x, self.y, tx, ty)
         if proj:
             if isinstance(proj, (LaserBeam, TimedMine, Drone)):
                 self.specials.append(proj)

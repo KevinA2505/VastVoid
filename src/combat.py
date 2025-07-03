@@ -118,6 +118,59 @@ class HomingProjectile(Projectile):
         super().update(dt)
 
 
+class GuidedMissile(Projectile):
+    """Missile that waits before accelerating towards a target."""
+
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        target,
+        speed: float,
+        damage: int,
+        delay: float = 1.0,
+        lifetime: float = 5.0,
+        turn_rate: float = config.HOMING_PROJECTILE_TURN_RATE,
+    ) -> None:
+        super().__init__(x, y, target.x, target.y, 0.0, damage, 0.0, max_distance=0)
+        self.target = target
+        self.speed = speed + 5
+        self.delay = delay
+        self.lifetime = lifetime
+        self.turn_rate = turn_rate
+
+    def update(self, dt: float) -> None:
+        if self.lifetime > 0:
+            self.lifetime -= dt
+        if self.lifetime <= 0:
+            return
+        if self.delay > 0:
+            self.delay -= dt
+            if self.delay <= 0:
+                dx = self.target.x - self.x
+                dy = self.target.y - self.y
+                dist = math.hypot(dx, dy) or 1.0
+                self.vx = dx / dist * self.speed
+                self.vy = dy / dist * self.speed
+            return
+        dx = self.target.x - self.x
+        dy = self.target.y - self.y
+        desired = math.atan2(dy, dx)
+        current = math.atan2(self.vy, self.vx)
+        diff = (desired - current + math.pi) % (2 * math.pi) - math.pi
+        max_turn = self.turn_rate * dt
+        if abs(diff) > max_turn:
+            current += max_turn if diff > 0 else -max_turn
+        else:
+            current = desired
+        self.vx = math.cos(current) * self.speed
+        self.vy = math.sin(current) * self.speed
+        super().update(dt)
+
+    def expired(self) -> bool:
+        return self.lifetime <= 0
+
+
 @dataclass
 class Shield:
     """Basic energy shield that absorbs damage and recharges over time."""
@@ -410,13 +463,15 @@ class MissileWeapon(Weapon):
 
     def __init__(self) -> None:
         super().__init__("Misil hiperguiado", 50, 250, cooldown=4.5)
+        self.target = None
 
     def fire(self, x: float, y: float, tx: float, ty: float):
         if not self.can_fire():
             return None
         self._timer = 0.0
-        target = type("T", (), {"x": tx, "y": ty})()
-        return HomingProjectile(x, y, target, self.speed, self.damage)
+        target = self.target or type("T", (), {"x": tx, "y": ty})()
+        self.target = None
+        return GuidedMissile(x, y, target, self.speed, self.damage)
 
 
 class BasicWeapon(Weapon):
