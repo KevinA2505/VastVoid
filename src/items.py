@@ -206,6 +206,7 @@ ARMAS: List[Item] = [
     Item("mina temporizada", "arma", 1.0, 20, "Explosivo que detona tras unos segundos."),
     Item("dron asistente", "arma", 2.0, 120, "Pequena nave que orbita y dispara."),
     Item("misil hiperguiado", "arma", 3.5, 90, "Proyectil pesado con guiado extremo."),
+    Item("arma generica", "arma", 1.0, 20, "Arma básica de poco poder."),
 ]
 
 # --- Herramientas ----------------------------------------------------------
