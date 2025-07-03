@@ -364,13 +364,14 @@ class Drone:
         self.owner = owner
         self.angle = 0.0
         # Increased orbit range so drones keep a bit more distance
-        self.radius = owner.size * 3
+        # and engage targets from farther away
+        self.radius = owner.size * 4
         self.hp = hp
         self.lifetime = lifetime
         self.size = 10
         self.projectiles: List[Projectile] = []
         # Slightly faster fire rate
-        self.fire_cooldown = 0.8
+        self.fire_cooldown = 0.72
         self._timer = 0.0
         self.x = owner.x
         self.y = owner.y
@@ -402,7 +403,8 @@ class Drone:
 
     def _find_target(self, enemies: List):
         nearest = None
-        min_d = 150.0
+        # Increased engagement range
+        min_d = 250.0
         for en in enemies:
             d = math.hypot(en.ship.x - self.x, en.ship.y - self.y)
             if d < min_d:
