@@ -104,6 +104,13 @@ class LearningEnemy(Enemy):
         action = self.choose_action(state)
         self.perform_action(action)
         self.ship.update(_NullKeys(), dt, world_width, world_height, sectors, blackholes)
+
+        if (
+            player_ship.boost_time > 0
+            and self.ship.orbit_target is player_ship
+            and self.ship.orbit_time > 0
+        ):
+            self.ship.cancel_orbit()
         reward = self.compute_reward()
         next_state = self._state()
         self.learn(state, action, reward, next_state)
