@@ -138,40 +138,42 @@ class Shield:
 
 
 class LaserBeam:
-    """Continuous beam dealing damage along a line for a short duration."""
+    """Laser beam with probe and channelling phases."""
 
     def __init__(
         self,
-        x: float,
-        y: float,
+        owner,
         angle: float,
         length: float = 600.0,
-        duration: float = 3.0,
-        damage_rate: float = 20.0,
+        damage_rate: float = 10.0,
+        probe_time: float = 1.0,
+        channel_time: float = 3.0,
     ) -> None:
-        self.x = x
-        self.y = y
+        self.owner = owner
         self.angle = angle
         self.length = length
-        self.timer = duration
         self.damage_rate = damage_rate
+        self.probe_time = probe_time
+        self.channel_time = channel_time
+        self.timer = probe_time
+        self.state = "probe"
+        self.target = None
+        self.alpha = 255
 
-    def update(self, dt: float) -> None:
-        self.timer -= dt
+    def _start_point(self) -> tuple[float, float]:
+        return self.owner.x, self.owner.y
 
-    def expired(self) -> bool:
-        return self.timer <= 0
-
-    def end_point(self) -> tuple[float, float]:
-        ex = self.x + math.cos(self.angle) * self.length
-        ey = self.y + math.sin(self.angle) * self.length
+    def _end_point(self) -> tuple[float, float]:
+        x1, y1 = self._start_point()
+        ex = x1 + math.cos(self.angle) * self.length
+        ey = y1 + math.sin(self.angle) * self.length
         return ex, ey
 
     def hits(self, target) -> bool:
         px, py = target.x, target.y
         half = target.size / 2
-        x1, y1 = self.x, self.y
-        x2, y2 = self.end_point()
+        x1, y1 = self._start_point()
+        x2, y2 = self._end_point()
         dx, dy = x2 - x1, y2 - y1
         denom = dx * dx + dy * dy
         if denom == 0:
@@ -182,6 +184,42 @@ class LaserBeam:
         dist = math.hypot(px - cx, py - cy)
         return dist <= half
 
+    def update(self, dt: float, enemies: list) -> None:
+        if self.state == "probe":
+            for en in enemies:
+                if self.hits(en.ship):
+                    self.target = en.ship
+                    self.state = "channel"
+                    self.timer = self.channel_time
+                    break
+            self.timer -= dt
+            if self.timer <= 0 and self.state != "channel":
+                self.state = "fizzle"
+                self.timer = self.probe_time
+        elif self.state == "channel":
+            if not self.target or self.target.hull <= 0:
+                self.state = "done"
+            else:
+                sx, sy = self._start_point()
+                dx = self.target.x - sx
+                dy = self.target.y - sy
+                if math.hypot(dx, dy) > self.length:
+                    self.state = "done"
+                else:
+                    self.angle = math.atan2(dy, dx)
+                    self.target.take_damage(self.damage_rate * dt)
+                    self.timer -= dt
+                    if self.timer <= 0:
+                        self.state = "done"
+        elif self.state == "fizzle":
+            self.timer -= dt
+            self.alpha = int(255 * (self.timer / self.probe_time))
+            if self.timer <= 0:
+                self.state = "done"
+
+    def expired(self) -> bool:
+        return self.state == "done"
+
     def draw(
         self,
         screen: pygame.Surface,
@@ -189,11 +227,27 @@ class LaserBeam:
         offset_y: float = 0.0,
         zoom: float = 1.0,
     ) -> None:
-        start = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
-        ex, ey = self.end_point()
+        start = (int((self.owner.x - offset_x) * zoom), int((self.owner.y - offset_y) * zoom))
+        if self.state == "channel" and self.target:
+            ex, ey = self.target.x, self.target.y
+        else:
+            ex, ey = self._end_point()
         end = (int((ex - offset_x) * zoom), int((ey - offset_y) * zoom))
-        width = max(1, int(3 * zoom))
-        pygame.draw.line(screen, (255, 50, 50), start, end, width)
+        if self.state == "channel":
+            width = max(1, int(5 * zoom))
+            color = (255, 100, 100)
+            alpha = 255
+        elif self.state == "fizzle":
+            width = max(1, int(3 * zoom))
+            color = (255, 50, 50)
+            alpha = max(0, self.alpha)
+        else:
+            width = max(1, int(3 * zoom))
+            color = (255, 50, 50)
+            alpha = 200
+        surf = pygame.Surface((config.WINDOW_WIDTH, config.WINDOW_HEIGHT), pygame.SRCALPHA)
+        pygame.draw.line(surf, (*color, alpha), start, end, width)
+        screen.blit(surf, (0, 0))
 
 
 class TimedMine:
@@ -314,13 +368,15 @@ class LaserWeapon(Weapon):
 
     def __init__(self) -> None:
         super().__init__("Laser de rafaga", 0, 0, cooldown=6.0)
+        self.beam_length = 600.0
+        self.damage_rate = 10.0
 
     def fire(self, x: float, y: float, tx: float, ty: float):
         if not self.can_fire():
             return None
         self._timer = 0.0
         angle = math.atan2(ty - y, tx - x)
-        return LaserBeam(x, y, angle)
+        return LaserBeam(self.owner, angle, self.beam_length, self.damage_rate)
 
 
 class MineWeapon(Weapon):
