@@ -11,6 +11,7 @@ from combat import (
     LaserBeam,
     TimedMine,
     Drone,
+    BombDrone,
     MissileWeapon,
 )
 
@@ -332,7 +333,7 @@ class Ship:
             else:
                 proj = weapon.fire(self.x, self.y, tx, ty)
         if proj:
-            if isinstance(proj, (LaserBeam, TimedMine, Drone)):
+            if isinstance(proj, (LaserBeam, TimedMine, Drone, BombDrone)):
                 self.specials.append(proj)
             else:
                 self.projectiles.append(proj)
@@ -344,7 +345,7 @@ class Ship:
         weapon = self.weapons[self.active_weapon]
         proj = weapon.fire_homing(self.x, self.y, target)
         if proj:
-            if isinstance(proj, (LaserBeam, TimedMine, Drone)):
+            if isinstance(proj, (LaserBeam, TimedMine, Drone, BombDrone)):
                 self.specials.append(proj)
             else:
                 self.projectiles.append(proj)
@@ -397,6 +398,42 @@ class Ship:
                             en.ship.projectiles.remove(proj)
                             if obj.hp <= 0:
                                 break
+                if obj.expired():
+                    self.specials.remove(obj)
+            elif isinstance(obj, BombDrone):
+                obj.update(dt, enemies or [])
+                bomb_rect = pygame.Rect(
+                    obj.x - obj.size / 2,
+                    obj.y - obj.size / 2,
+                    obj.size,
+                    obj.size,
+                )
+                hit = False
+                for en in enemies or []:
+                    for proj in list(en.ship.projectiles):
+                        if bomb_rect.collidepoint(proj.x, proj.y):
+                            obj.hp -= proj.damage
+                            en.ship.projectiles.remove(proj)
+                            if obj.hp <= 0:
+                                hit = True
+                                break
+                    if hit:
+                        break
+                    enemy_rect = pygame.Rect(
+                        en.ship.x - en.ship.size / 2,
+                        en.ship.y - en.ship.size / 2,
+                        en.ship.size,
+                        en.ship.size,
+                    )
+                    if enemy_rect.collidepoint(obj.x, obj.y):
+                        hit = True
+                        break
+                if hit:
+                    obj._explode()
+                if obj.exploded and enemies:
+                    for en in enemies:
+                        if math.hypot(en.ship.x - obj.x, en.ship.y - obj.y) <= obj.radius:
+                            en.ship.take_damage(obj.damage)
                 if obj.expired():
                     self.specials.remove(obj)
 

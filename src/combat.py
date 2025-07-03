@@ -352,6 +352,84 @@ class TimedMine:
             pygame.draw.circle(screen, (255, 100, 50), pos, int(self.radius * zoom), 1)
 
 
+class BombDrone:
+    """Slow homing drone that explodes on impact."""
+
+    def __init__(
+        self,
+        owner,
+        direction: float = 0.0,
+        hp: float = 40.0,
+        speed: float = 80.0,
+        lifetime: float = 6.0,
+        radius: float = 140.0,
+        damage: float = 60.0,
+    ) -> None:
+        self.owner = owner
+        self.target = None
+        self.hp = hp
+        self.speed = speed
+        self.lifetime = lifetime
+        self.radius = radius
+        self.damage = damage
+        self.size = 12
+        self.exploded = False
+        self.timer = 0.0
+        self.x = owner.x
+        self.y = owner.y
+        self.vx = math.cos(direction) * speed
+        self.vy = math.sin(direction) * speed
+
+    def _find_target(self, enemies: List):
+        if not enemies:
+            return None
+        nearest = None
+        min_d = float("inf")
+        for en in enemies:
+            d = math.hypot(en.ship.x - self.x, en.ship.y - self.y)
+            if d < min_d:
+                min_d = d
+                nearest = en
+        return nearest
+
+    def _explode(self) -> None:
+        if not self.exploded:
+            self.exploded = True
+            self.timer = 0.2
+
+    def update(self, dt: float, enemies: List) -> None:
+        if self.exploded:
+            self.timer -= dt
+            return
+        self.lifetime -= dt
+        if self.lifetime <= 0 or self.hp <= 0:
+            self._explode()
+            return
+        target = self._find_target(enemies)
+        if target:
+            dx = target.ship.x - self.x
+            dy = target.ship.y - self.y
+            dist = math.hypot(dx, dy) or 1.0
+            self.vx = dx / dist * self.speed
+            self.vy = dy / dist * self.speed
+        self.x += self.vx * dt
+        self.y += self.vy * dt
+
+    def expired(self) -> bool:
+        return self.exploded and self.timer <= 0
+
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
+        pygame.draw.circle(screen, (200, 120, 50), pos, max(2, int(6 * zoom)))
+        if self.exploded:
+            pygame.draw.circle(screen, (255, 100, 50), pos, int(self.radius * zoom), 1)
+
 class Drone:
     """Autonomous drone that orbits the owner and fires at enemies.
 
@@ -445,16 +523,17 @@ class LaserWeapon(Weapon):
 
 
 class MineWeapon(Weapon):
-    """Weapon that deploys timed mines."""
+    """Remote bomb drone launcher."""
 
     def __init__(self) -> None:
-        super().__init__("Mina temporizada", 0, 0, cooldown=4.0)
+        super().__init__("Dron bomba", 0, 0, cooldown=10.0)
 
     def fire(self, x: float, y: float, tx: float, ty: float):
         if not self.can_fire():
             return None
         self._timer = 0.0
-        return TimedMine(x, y)
+        angle = math.atan2(ty - y, tx - x)
+        return BombDrone(self.owner, direction=angle)
 
 
 class DroneWeapon(Weapon):
