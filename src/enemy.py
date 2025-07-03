@@ -177,7 +177,7 @@ class Enemy:
     ship: Ship
     species: object
     region: Sector
-    attack_range: float = 350.0
+    attack_range: float = 385.0
     detection_range: float = 800.0
     flee_threshold: int = 30
     state: str = field(default="idle", init=False)
