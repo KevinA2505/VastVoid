@@ -225,7 +225,6 @@ class Ship:
             if self.weapons:
                 weapon = self.weapons[0]
                 if weapon.can_fire():
-                    weapon._timer = 0.0
                     proj = weapon.fire_homing(self.x, self.y, self.orbit_target)
                     if proj:
                         proj.vx *= config.ORBIT_PROJECTILE_SPEED_MULTIPLIER
@@ -291,7 +290,6 @@ class Ship:
         if self.orbit_target and self.orbit_time > 0:
             target = self.orbit_target
             if weapon.can_fire():
-                weapon._timer = 0.0
                 proj = weapon.fire_homing(self.x, self.y, target)
                 if proj:
                     proj.vx *= config.ORBIT_PROJECTILE_SPEED_MULTIPLIER
