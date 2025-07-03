@@ -384,6 +384,19 @@ class Ship:
                             en.ship.take_damage(proj.damage)
                             obj.projectiles.remove(proj)
                             break
+                drone_rect = pygame.Rect(
+                    obj.x - obj.size / 2,
+                    obj.y - obj.size / 2,
+                    obj.size,
+                    obj.size,
+                )
+                for en in enemies or []:
+                    for proj in list(en.ship.projectiles):
+                        if drone_rect.collidepoint(proj.x, proj.y):
+                            obj.hp -= proj.damage
+                            en.ship.projectiles.remove(proj)
+                            if obj.hp <= 0:
+                                break
                 if obj.expired():
                     self.specials.remove(obj)
 
