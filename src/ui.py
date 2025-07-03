@@ -163,6 +163,50 @@ class InventoryWindow:
         screen.blit(exit_txt, exit_rect)
 
 
+class WeaponMenu:
+    """Menu to switch the ship's active weapon."""
+
+    def __init__(self, ship) -> None:
+        self.ship = ship
+        self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
+        self.weapon_rects: list[tuple[int, pygame.Rect]] = []
+
+    def handle_event(self, event) -> bool:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.close_rect.collidepoint(event.pos):
+                return True
+            for idx, rect in self.weapon_rects:
+                if rect.collidepoint(event.pos):
+                    self.ship.set_active_weapon(idx)
+                    return True
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            return True
+        return False
+
+    def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        screen.fill((20, 20, 40))
+        title = font.render("Weapons", True, (255, 255, 255))
+        screen.blit(title, (20, 20))
+        self.weapon_rects.clear()
+        x0, y0 = 20, 60
+        w, h = 200, 30
+        for i, weapon in enumerate(self.ship.weapons):
+            rect = pygame.Rect(x0, y0 + i * (h + 5), w, h)
+            self.weapon_rects.append((i, rect))
+            pygame.draw.rect(screen, (60, 60, 90), rect)
+            pygame.draw.rect(screen, (200, 200, 200), rect, 1)
+            name = weapon.name
+            if i == self.ship.active_weapon:
+                name = "> " + name
+            txt = font.render(name, True, (255, 255, 255))
+            txt_rect = txt.get_rect(center=rect.center)
+            screen.blit(txt, txt_rect)
+        pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
+        txt = font.render("Close", True, (255, 255, 255))
+        screen.blit(txt, txt.get_rect(center=self.close_rect.center))
+
+
 class AbilityBar:
     """Display up to five ability slots at the bottom of the screen."""
 

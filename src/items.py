@@ -202,6 +202,10 @@ ARMAS: List[Item] = [
     Item("flagelador de partículas", "arma", 6.0, 110, "Arma devastadora que desintegra molecularmente."),
     Item("hacha de batalla", "arma", 2.8, 25, "Hacha pesada para combate cuerpo a cuerpo."),
     Item("cerbatana toxica", "arma", 0.4, 12, "Dispara dardos con veneno paralizante."),
+    Item("laser de rafaga", "arma", 4.0, 70, "Haz continuo de alta energia de tres segundos."),
+    Item("mina temporizada", "arma", 1.0, 20, "Explosivo que detona tras unos segundos."),
+    Item("dron asistente", "arma", 2.0, 120, "Pequena nave que orbita y dispara."),
+    Item("misil hiperguiado", "arma", 3.5, 90, "Proyectil pesado con guiado extremo."),
 ]
 
 # --- Herramientas ----------------------------------------------------------
