@@ -80,7 +80,7 @@ class Attack(_EnemyBehaviour):
         dest_x = player.x - math.cos(angle) * 120
         dest_y = player.y - math.sin(angle) * 120
         ship.start_autopilot(_Point(dest_x, dest_y))
-        ship.fire_homing(player)
+        ship.fire(player.x, player.y)
         return py_trees.common.Status.SUCCESS
 
 

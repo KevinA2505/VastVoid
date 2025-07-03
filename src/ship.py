@@ -288,22 +288,14 @@ class Ship:
             return
         weapon = self.weapons[0]
         proj = None
-        bullet_speed = weapon.speed
         if self.orbit_target and self.orbit_time > 0:
             target = self.orbit_target
-            bullet_speed *= config.ORBIT_PROJECTILE_SPEED_MULTIPLIER
-            tx, ty = self._predict_target_position(target, bullet_speed)
             if weapon.can_fire():
                 weapon._timer = 0.0
-                proj = Projectile(
-                    self.x,
-                    self.y,
-                    tx,
-                    ty,
-                    bullet_speed,
-                    weapon.damage,
-                    curvature=config.ORBIT_PROJECTILE_CURVATURE,
-                )
+                proj = weapon.fire_homing(self.x, self.y, target)
+                if proj:
+                    proj.vx *= config.ORBIT_PROJECTILE_SPEED_MULTIPLIER
+                    proj.vy *= config.ORBIT_PROJECTILE_SPEED_MULTIPLIER
         else:
             proj = weapon.fire(self.x, self.y, tx, ty)
         if proj:
