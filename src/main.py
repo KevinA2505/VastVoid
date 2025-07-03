@@ -3,13 +3,14 @@ import math
 import random
 import config
 from ship import Ship, choose_ship
+from combat import LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon
 from enemy_learning import create_learning_enemy
 from sector import create_sectors
 from wormhole import WormHole
 from star import Star
 from planet import Planet
 from station import SpaceStation
-from ui import DropdownMenu, RoutePlanner, InventoryWindow, AbilityBar
+from ui import DropdownMenu, RoutePlanner, InventoryWindow, AbilityBar, WeaponMenu
 from planet_surface import PlanetSurface
 from character import create_player
 
@@ -68,14 +69,23 @@ def main():
     chosen_model = choose_ship(screen)
     player.ship_model = chosen_model
     ship = Ship(world_width // 2, world_height // 2, chosen_model)
+    ship.weapons.extend([
+        LaserWeapon(),
+        MineWeapon(),
+        DroneWeapon(),
+        MissileWeapon(),
+    ])
+    for w in ship.weapons:
+        w.owner = ship
 
     zoom = 1.0
     selected_object = None
     info_font = pygame.font.Font(None, 20)
-    menu = DropdownMenu(10, 10, 100, 25, ["Plan Route", "Inventory"])
+    menu = DropdownMenu(10, 10, 100, 25, ["Plan Route", "Inventory", "Weapons"])
     route_planner = RoutePlanner()
     ability_bar = AbilityBar()
     inventory_window = None
+    weapon_menu = None
     current_station = None
     current_surface = None
     approaching_planet = None
@@ -117,6 +127,9 @@ def main():
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_i:
                     inventory_window = InventoryWindow(player)
                     continue
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                    weapon_menu = WeaponMenu(ship)
+                    continue
                 if (
                     event.type == pygame.MOUSEBUTTONDOWN
                     and event.button == 1
@@ -151,6 +164,19 @@ def main():
                     break
             if inventory_window:
                 inventory_window.draw(screen, info_font)
+                pygame.display.flip()
+                continue
+
+        if weapon_menu:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+                if weapon_menu.handle_event(event):
+                    weapon_menu = None
+                    break
+            if weapon_menu:
+                weapon_menu.draw(screen, info_font)
                 pygame.display.flip()
                 continue
 
@@ -191,6 +217,9 @@ def main():
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_i:
                     inventory_window = InventoryWindow(player)
                     continue
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                    weapon_menu = WeaponMenu(ship)
+                    continue
                 if (
                     event.type == pygame.MOUSEBUTTONDOWN
                     and event.button == 1
@@ -214,6 +243,8 @@ def main():
                 route_planner.start()
             elif selection == "Inventory":
                 inventory_window = InventoryWindow(player)
+            elif selection == "Weapons":
+                weapon_menu = WeaponMenu(ship)
 
             route_planner.handle_event(event, sectors, (camera_x, camera_y), zoom)
             ability_bar.handle_event(event, ship, enemies)
@@ -244,6 +275,8 @@ def main():
                     selected_object = None
                 elif event.key == pygame.K_i:
                     inventory_window = InventoryWindow(player)
+                elif event.key == pygame.K_f:
+                    weapon_menu = WeaponMenu(ship)
                 elif event.key == pygame.K_r:
                     nearest = None
                     min_dist = float("inf")
@@ -312,7 +345,7 @@ def main():
             continue
 
         keys = pygame.key.get_pressed()
-        ship.update(keys, dt, world_width, world_height, sectors, blackholes)
+        ship.update(keys, dt, world_width, world_height, sectors, blackholes, enemies)
         for enemy in list(enemies):
             enemy.update(ship, dt, world_width, world_height, sectors, blackholes)
 
@@ -403,6 +436,7 @@ def main():
         for enemy in enemies:
             enemy.ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         ship.draw_projectiles(screen, offset_x, offset_y, zoom)
+        ship.draw_specials(screen, offset_x, offset_y, zoom)
         for enemy in enemies:
             enemy.ship.draw_at(screen, offset_x, offset_y, zoom)
         ship.draw(screen, zoom)

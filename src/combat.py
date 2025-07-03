@@ -1,5 +1,6 @@
 import math
 from dataclasses import dataclass, field
+from typing import List
 import pygame
 import config
 
@@ -12,6 +13,7 @@ class Weapon:
     speed: float
     cooldown: float = 0.5
     _timer: float = field(default=0.0, init=False, repr=False)
+    owner: object | None = field(default=None, init=False, repr=False)
 
     def update(self, dt: float) -> None:
         if self._timer < self.cooldown:
@@ -133,3 +135,229 @@ class Shield:
 
     def take_damage(self, amount: float) -> None:
         self.strength = max(0.0, self.strength - amount)
+
+
+class LaserBeam:
+    """Continuous beam dealing damage along a line for a short duration."""
+
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        angle: float,
+        length: float = 600.0,
+        duration: float = 3.0,
+        damage_rate: float = 20.0,
+    ) -> None:
+        self.x = x
+        self.y = y
+        self.angle = angle
+        self.length = length
+        self.timer = duration
+        self.damage_rate = damage_rate
+
+    def update(self, dt: float) -> None:
+        self.timer -= dt
+
+    def expired(self) -> bool:
+        return self.timer <= 0
+
+    def end_point(self) -> tuple[float, float]:
+        ex = self.x + math.cos(self.angle) * self.length
+        ey = self.y + math.sin(self.angle) * self.length
+        return ex, ey
+
+    def hits(self, target) -> bool:
+        px, py = target.x, target.y
+        half = target.size / 2
+        x1, y1 = self.x, self.y
+        x2, y2 = self.end_point()
+        dx, dy = x2 - x1, y2 - y1
+        denom = dx * dx + dy * dy
+        if denom == 0:
+            return False
+        t = max(0.0, min(1.0, ((px - x1) * dx + (py - y1) * dy) / denom))
+        cx = x1 + dx * t
+        cy = y1 + dy * t
+        dist = math.hypot(px - cx, py - cy)
+        return dist <= half
+
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        start = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
+        ex, ey = self.end_point()
+        end = (int((ex - offset_x) * zoom), int((ey - offset_y) * zoom))
+        width = max(1, int(3 * zoom))
+        pygame.draw.line(screen, (255, 50, 50), start, end, width)
+
+
+class TimedMine:
+    """Explosive that detonates after a short delay."""
+
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        fuse: float = 5.0,
+        radius: float = 80.0,
+        damage: float = 30.0,
+    ) -> None:
+        self.x = x
+        self.y = y
+        self.timer = fuse
+        self.radius = radius
+        self.damage = damage
+        self.exploded = False
+
+    def update(self, dt: float) -> None:
+        if self.exploded:
+            self.timer -= dt
+        else:
+            self.timer -= dt
+            if self.timer <= 0:
+                self.exploded = True
+                self.timer = 0.2  # short aftermath before removal
+
+    def expired(self) -> bool:
+        return self.exploded and self.timer <= 0
+
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
+        color = (200, 200, 50)
+        radius = max(2, int(4 * zoom))
+        pygame.draw.circle(screen, color, pos, radius)
+        if not self.exploded:
+            halo = int(self.radius * max(0.0, self.timer / 5.0) * zoom)
+            if halo > 0:
+                pygame.draw.circle(screen, (255, 100, 50), pos, halo, 1)
+        else:
+            pygame.draw.circle(screen, (255, 100, 50), pos, int(self.radius * zoom), 1)
+
+
+class Drone:
+    """Autonomous drone that orbits the owner and fires at enemies."""
+
+    def __init__(self, owner, hp: float = 25.0) -> None:
+        self.owner = owner
+        self.angle = 0.0
+        self.radius = owner.size * 2
+        self.hp = hp
+        self.projectiles: List[Projectile] = []
+        self.fire_cooldown = 1.0
+        self._timer = 0.0
+        self.x = owner.x
+        self.y = owner.y
+
+    def update(self, dt: float, enemies: List) -> None:
+        self.angle += 2.0 * dt
+        self.x = self.owner.x + math.cos(self.angle) * self.radius
+        self.y = self.owner.y + math.sin(self.angle) * self.radius
+        if self._timer > 0:
+            self._timer -= dt
+        else:
+            target = self._find_target(enemies)
+            if target:
+                proj = Projectile(
+                    self.x,
+                    self.y,
+                    target.ship.x,
+                    target.ship.y,
+                    350,
+                    5,
+                )
+                self.projectiles.append(proj)
+                self._timer = self.fire_cooldown
+        for proj in list(self.projectiles):
+            proj.update(dt)
+            if proj.expired():
+                self.projectiles.remove(proj)
+
+    def _find_target(self, enemies: List):
+        nearest = None
+        min_d = 100.0
+        for en in enemies:
+            d = math.hypot(en.ship.x - self.x, en.ship.y - self.y)
+            if d < min_d:
+                min_d = d
+                nearest = en
+        return nearest
+
+    def expired(self) -> bool:
+        return self.hp <= 0
+
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
+        pygame.draw.circle(screen, (150, 150, 255), pos, max(2, int(5 * zoom)))
+        for proj in self.projectiles:
+            proj.draw(screen, offset_x, offset_y, zoom)
+
+
+class LaserWeapon(Weapon):
+    """Weapon that fires a sustained laser beam."""
+
+    def __init__(self) -> None:
+        super().__init__("Laser de rafaga", 0, 0, cooldown=6.0)
+
+    def fire(self, x: float, y: float, tx: float, ty: float):
+        if not self.can_fire():
+            return None
+        self._timer = 0.0
+        angle = math.atan2(ty - y, tx - x)
+        return LaserBeam(x, y, angle)
+
+
+class MineWeapon(Weapon):
+    """Weapon that deploys timed mines."""
+
+    def __init__(self) -> None:
+        super().__init__("Mina temporizada", 0, 0, cooldown=4.0)
+
+    def fire(self, x: float, y: float, tx: float, ty: float):
+        if not self.can_fire():
+            return None
+        self._timer = 0.0
+        return TimedMine(x, y)
+
+
+class DroneWeapon(Weapon):
+    """Weapon that releases an assisting drone."""
+
+    def __init__(self) -> None:
+        super().__init__("Dron asistente", 0, 0, cooldown=8.0)
+
+    def fire(self, x: float, y: float, tx: float, ty: float):
+        if not self.can_fire():
+            return None
+        self._timer = 0.0
+        return Drone(self.owner)
+
+
+class MissileWeapon(Weapon):
+    """Heavy homing missile launcher."""
+
+    def __init__(self) -> None:
+        super().__init__("Misil hiperguiado", 50, 250, cooldown=4.5)
+
+    def fire(self, x: float, y: float, tx: float, ty: float):
+        if not self.can_fire():
+            return None
+        self._timer = 0.0
+        target = type("T", (), {"x": tx, "y": ty})()
+        return HomingProjectile(x, y, target, self.speed, self.damage)

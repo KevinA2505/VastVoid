@@ -103,7 +103,7 @@ class LearningEnemy(Enemy):
         state = self._state()
         action = self.choose_action(state)
         self.perform_action(action)
-        self.ship.update(_NullKeys(), dt, world_width, world_height, sectors, blackholes)
+        self.ship.update(_NullKeys(), dt, world_width, world_height, sectors, blackholes, None)
 
         if (
             player_ship.boost_time > 0

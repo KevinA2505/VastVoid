@@ -4,7 +4,14 @@ from dataclasses import dataclass
 import config
 from planet import Planet
 from names import get_ship_name
-from combat import Weapon, Projectile, Shield
+from combat import (
+    Weapon,
+    Projectile,
+    Shield,
+    LaserBeam,
+    TimedMine,
+    Drone,
+)
 
 
 @dataclass
@@ -48,7 +55,11 @@ class Ship:
         self.model = model
         self.name = get_ship_name()
         self.weapons: list[Weapon] = [Weapon("Laser", 10, 400)]
+        self.active_weapon: int = 0
+        for w in self.weapons:
+            w.owner = self
         self.projectiles: list[Projectile] = []
+        self.specials: list = []
         self.shield = Shield()
         self.hull = 100
         if model:
@@ -64,6 +75,10 @@ class Ship:
             self.color = config.SHIP_COLOR
             self.accel_factor = 1.0
 
+    def set_active_weapon(self, index: int) -> None:
+        if 0 <= index < len(self.weapons):
+            self.active_weapon = index
+
     def update(
         self,
         keys: pygame.key.ScancodeWrapper,
@@ -72,6 +87,7 @@ class Ship:
         world_height: int,
         sectors: list,
         blackholes: list | None = None,
+        enemies: list | None = None,
     ) -> None:
         if self.orbit_cooldown > 0:
             self.orbit_cooldown = max(0.0, self.orbit_cooldown - dt)
@@ -84,6 +100,7 @@ class Ship:
         if self.orbit_time > 0 and self.orbit_target:
             self._update_orbit(dt)
             self._update_projectiles(dt, world_width, world_height)
+            self._update_specials(dt, world_width, world_height, enemies)
             if self.boost_time > 0 and self.orbit_forced:
                 self.cancel_orbit()
             return
@@ -136,6 +153,7 @@ class Ship:
             self.vy = 0
 
         self._update_projectiles(dt, world_width, world_height)
+        self._update_specials(dt, world_width, world_height, enemies)
 
     def start_autopilot(self, target) -> None:
         self.autopilot_target = target
@@ -285,7 +303,7 @@ class Ship:
     def fire(self, tx: float, ty: float) -> None:
         if not self.weapons:
             return
-        weapon = self.weapons[0]
+        weapon = self.weapons[self.active_weapon]
         proj = None
         if self.orbit_target and self.orbit_time > 0:
             target = self.orbit_target
@@ -297,16 +315,22 @@ class Ship:
         else:
             proj = weapon.fire(self.x, self.y, tx, ty)
         if proj:
-            self.projectiles.append(proj)
+            if isinstance(proj, (LaserBeam, TimedMine, Drone)):
+                self.specials.append(proj)
+            else:
+                self.projectiles.append(proj)
 
     def fire_homing(self, target) -> None:
         """Fire a homing projectile at ``target`` using the first weapon."""
         if not self.weapons:
             return
-        weapon = self.weapons[0]
+        weapon = self.weapons[self.active_weapon]
         proj = weapon.fire_homing(self.x, self.y, target)
         if proj:
-            self.projectiles.append(proj)
+            if isinstance(proj, (LaserBeam, TimedMine, Drone)):
+                self.specials.append(proj)
+            else:
+                self.projectiles.append(proj)
 
     def _update_projectiles(self, dt: float, world_width: int, world_height: int) -> None:
         for proj in list(self.projectiles):
@@ -314,6 +338,41 @@ class Ship:
             out_of_bounds = not (0 <= proj.x <= world_width and 0 <= proj.y <= world_height)
             if proj.expired() or out_of_bounds:
                 self.projectiles.remove(proj)
+
+    def _update_specials(self, dt: float, world_width: int, world_height: int, enemies: list | None = None) -> None:
+        for obj in list(self.specials):
+            if isinstance(obj, LaserBeam):
+                obj.update(dt)
+                if enemies:
+                    for en in enemies:
+                        if obj.hits(en.ship):
+                            en.ship.take_damage(obj.damage_rate * dt)
+                if obj.expired():
+                    self.specials.remove(obj)
+            elif isinstance(obj, TimedMine):
+                obj.update(dt)
+                if obj.exploded and enemies:
+                    for en in enemies:
+                        if math.hypot(en.ship.x - obj.x, en.ship.y - obj.y) <= obj.radius:
+                            en.ship.take_damage(obj.damage)
+                if obj.expired():
+                    self.specials.remove(obj)
+            elif isinstance(obj, Drone):
+                obj.update(dt, enemies or [])
+                for proj in list(obj.projectiles):
+                    for en in enemies or []:
+                        rect = pygame.Rect(
+                            en.ship.x - en.ship.size / 2,
+                            en.ship.y - en.ship.size / 2,
+                            en.ship.size,
+                            en.ship.size,
+                        )
+                        if rect.collidepoint(proj.x, proj.y):
+                            en.ship.take_damage(proj.damage)
+                            obj.projectiles.remove(proj)
+                            break
+                if obj.expired():
+                    self.specials.remove(obj)
 
     def take_damage(self, amount: float) -> None:
         """Apply damage to the shield and hull."""
@@ -329,6 +388,13 @@ class Ship:
     def draw_projectiles(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
         for proj in self.projectiles:
             proj.draw(screen, offset_x, offset_y, zoom)
+
+    def draw_specials(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
+        for obj in self.specials:
+            if isinstance(obj, Drone):
+                for proj in obj.projectiles:
+                    proj.draw(screen, offset_x, offset_y, zoom)
+            obj.draw(screen, offset_x, offset_y, zoom)
 
     def draw_at(
         self,
