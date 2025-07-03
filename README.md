@@ -37,6 +37,10 @@ Wormholes now appear at least once in every generated universe, allowing
 instant travel between two distant points. The two ends of a pair are
 placed far apart thanks to the `WORMHOLE_PAIR_MIN_DISTANCE` setting.
 
+Dust clouds can also form within sectors. These large hazy areas dim any
+objects behind them and each has a 15% chance of concealing an abandoned
+station in its midst.
+
 ### Enemy AI
 
 A new `Enemy` class lives in `src/enemy.py`. It creates autonomous pilots

@@ -71,3 +71,9 @@ ENEMY_WEAPON_COOLDOWN = 0.3
 # How often enemies attempt an orbit attack
 ENEMY_ORBIT_INTERVAL = 12.0  # seconds between orbit attempts
 ENEMY_ORBIT_PROBABILITY = 0.35  # chance of starting an orbit each interval
+
+# Dust cloud settings
+DUST_CLOUD_MIN_RADIUS = 200
+DUST_CLOUD_MAX_RADIUS = 400
+DUST_CLOUD_COLOR = (80, 70, 70)
+ABANDONED_STATION_CHANCE = 0.15

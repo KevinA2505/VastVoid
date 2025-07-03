@@ -4,6 +4,7 @@ import pygame
 from star_system import StarSystem
 from blackhole import BlackHole
 from wormhole import WormHole
+from dust_cloud import DustCloud
 import config
 
 class Sector:
@@ -48,6 +49,17 @@ class Sector:
         self.wormholes = []
         if random.random() < config.WORMHOLE_CHANCE:
             self._add_wormhole_pair()
+
+        # Add a few dust clouds that may hide abandoned stations
+        self.dust_clouds = []
+        for _ in range(random.randint(0, 2)):
+            cloud = DustCloud.random_cloud(
+                self.x + 100,
+                self.x + self.width - 100,
+                self.y + 100,
+                self.y + self.height - 100,
+            )
+            self.dust_clouds.append(cloud)
 
     def _add_wormhole_pair(self) -> None:
         """Generate and store a paired set of wormholes in this sector."""
@@ -106,6 +118,8 @@ class Sector:
             hole.draw(screen, offset_x, offset_y, zoom)
         for hole in self.wormholes:
             hole.draw(screen, offset_x, offset_y, zoom)
+        for cloud in self.dust_clouds:
+            cloud.draw(screen, offset_x, offset_y, zoom)
 
     def collides_with_point(self, x: float, y: float, radius: float) -> bool:
         if not (self.x <= x <= self.x + self.width and self.y <= y <= self.y + self.height):
@@ -126,6 +140,9 @@ class Sector:
             obj = system.get_object_at_point(x, y, radius)
             if obj:
                 return obj
+        for cloud in self.dust_clouds:
+            if cloud.station and math.hypot(cloud.station.x - x, cloud.station.y - y) < cloud.station.radius + radius:
+                return cloud.station
         return None
 
 

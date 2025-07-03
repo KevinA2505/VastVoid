@@ -210,14 +210,24 @@ def main():
         near_station = None
         if not current_station:
             for sector in sectors:
+                found = False
                 for system in sector.systems:
                     for station in system.stations:
                         if math.hypot(station.x - ship.x, station.y - ship.y) < station.radius + 40:
                             near_station = station
+                            found = True
                             break
-                    if near_station:
+                    if found:
                         break
-                if near_station:
+                if found:
+                    break
+                for cloud in sector.dust_clouds:
+                    st = cloud.station
+                    if st and math.hypot(st.x - ship.x, st.y - ship.y) < st.radius + 40:
+                        near_station = st
+                        found = True
+                        break
+                if found:
                     break
         cancel_rect = pygame.Rect(
             config.WINDOW_WIDTH // 2 - 70, config.WINDOW_HEIGHT - 40, 20, 20
