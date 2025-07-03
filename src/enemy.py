@@ -76,10 +76,15 @@ class Attack(_EnemyBehaviour):
         if not (in_region and dist <= enemy.attack_range) or ship.hull <= enemy.flee_threshold:
             return py_trees.common.Status.FAILURE
         enemy.state = "attack"
-        angle = math.atan2(dy, dx)
-        dest_x = player.x - math.cos(angle) * 120
-        dest_y = player.y - math.sin(angle) * 120
-        ship.start_autopilot(_Point(dest_x, dest_y))
+        # If close enough, orbit the player instead of moving directly towards
+        # them. This uses the same orbit parameters available to the player.
+        if ship.orbit_time <= 0 and dist <= enemy.attack_range:
+            ship.start_orbit(player, speed=config.SHIP_ORBIT_SPEED * 0.5)
+        if ship.orbit_time <= 0:
+            angle = math.atan2(dy, dx)
+            dest_x = player.x - math.cos(angle) * 120
+            dest_y = player.y - math.sin(angle) * 120
+            ship.start_autopilot(_Point(dest_x, dest_y))
         ship.fire(player.x, player.y)
         return py_trees.common.Status.SUCCESS
 
@@ -208,6 +213,14 @@ class Enemy:
             self.tree.tick()
 
         self.ship.update(_NullKeys(), dt, world_width, world_height, sectors, blackholes)
+
+        # Break orbit if the player is boosting so the enemy can't keep up
+        if (
+            player_ship.boost_time > 0
+            and self.ship.orbit_target is player_ship
+            and self.ship.orbit_time > 0
+        ):
+            self.ship.cancel_orbit()
 
         if self.state == "idle" and self.ship.autopilot_target is None:
             self._wander_target = None
