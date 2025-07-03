@@ -417,3 +417,10 @@ class MissileWeapon(Weapon):
         self._timer = 0.0
         target = type("T", (), {"x": tx, "y": ty})()
         return HomingProjectile(x, y, target, self.speed, self.damage)
+
+
+class BasicWeapon(Weapon):
+    """Generic low damage weapon for starting ships."""
+
+    def __init__(self) -> None:
+        super().__init__("Basic", 8, 380, cooldown=0.6)

@@ -3,7 +3,7 @@ import math
 import random
 import config
 from ship import Ship, choose_ship
-from combat import LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon
+from combat import LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon, BasicWeapon
 from enemy_learning import create_learning_enemy
 from sector import create_sectors
 from wormhole import WormHole
@@ -74,6 +74,7 @@ def main():
         MineWeapon(),
         DroneWeapon(),
         MissileWeapon(),
+        BasicWeapon(),
     ])
     for w in ship.weapons:
         w.owner = ship
