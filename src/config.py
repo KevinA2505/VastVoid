@@ -60,3 +60,7 @@ MAX_ENEMIES = 12
 # 0.5, so enemies fire slightly faster but still allow the player to
 # dodge incoming shots.
 ENEMY_WEAPON_COOLDOWN = 0.3
+
+# How often enemies attempt an orbit attack
+ENEMY_ORBIT_INTERVAL = 10.0  # seconds between orbit attempts
+ENEMY_ORBIT_PROBABILITY = 0.2  # chance of starting an orbit each interval

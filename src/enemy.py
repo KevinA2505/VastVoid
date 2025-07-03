@@ -79,7 +79,10 @@ class Attack(_EnemyBehaviour):
         # If close enough, orbit the player instead of moving directly towards
         # them. This uses the same orbit parameters available to the player.
         if ship.orbit_time <= 0 and dist <= enemy.attack_range:
-            ship.start_orbit(player, speed=config.SHIP_ORBIT_SPEED * 0.5)
+            if enemy.orbit_timer <= 0:
+                enemy.orbit_timer = config.ENEMY_ORBIT_INTERVAL
+                if random.random() < config.ENEMY_ORBIT_PROBABILITY:
+                    ship.start_orbit(player, speed=config.SHIP_ORBIT_SPEED * 0.5)
         if ship.orbit_time <= 0:
             angle = math.atan2(dy, dx)
             dest_x = player.x - math.cos(angle) * 120
@@ -182,6 +185,11 @@ class Enemy:
     _wander_target: _Point | None = field(default=None, init=False, repr=False)
     player_ship: Ship | None = field(default=None, init=False, repr=False)
     tree: py_trees.trees.BehaviourTree | None = field(default=None, init=False, repr=False)
+    orbit_timer: float = field(
+        default=config.ENEMY_ORBIT_INTERVAL,
+        init=False,
+        repr=False,
+    )
 
     def __post_init__(self) -> None:
         self.build_tree()
@@ -209,6 +217,7 @@ class Enemy:
         """Update ship movement after behaviour tree tick."""
 
         self.player_ship = player_ship
+        self.orbit_timer = max(0.0, self.orbit_timer - dt)
         if self.tree:
             self.tree.tick()
 
