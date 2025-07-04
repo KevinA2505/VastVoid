@@ -337,3 +337,16 @@ class DecoyArtifact(Artifact):
         user.specials.append(Decoy(user))
         user.invisible_timer = 3.0
 
+
+# Registry of all artifact types available in the game. This is used by the
+# UI to display every artifact even if the player's ship has not equipped it
+# yet.
+AVAILABLE_ARTIFACTS: list[type[Artifact]] = [
+    EMPArtifact,
+    AreaShieldArtifact,
+    GravityTractorArtifact,
+    NanobotArtifact,
+    SolarGeneratorArtifact,
+    DecoyArtifact,
+]
+

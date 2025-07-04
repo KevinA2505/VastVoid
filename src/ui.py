@@ -1,6 +1,7 @@
 import pygame
 import config
 import math
+from artifact import Artifact
 
 class DropdownMenu:
     """Simple dropdown menu triggered by a button."""
@@ -208,36 +209,86 @@ class WeaponMenu:
 
 
 class ArtifactMenu:
-    """Display the artifacts currently equipped on the ship."""
+    """Menu to equip artifacts into the ship's ability slots."""
 
-    def __init__(self, ship) -> None:
+    def __init__(self, ship, ability_bar) -> None:
         self.ship = ship
+        self.ability_bar = ability_bar
         self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
+        self.artifact_rects: list[tuple[type[Artifact], pygame.Rect]] = []
+        self.pending_artifact: type[Artifact] | None = None
 
     def handle_event(self, event) -> bool:
+        if self.pending_artifact:
+            if event.type == pygame.KEYDOWN and event.key in (
+                pygame.K_1,
+                pygame.K_2,
+                pygame.K_3,
+            ):
+                idx = event.key - pygame.K_1
+                art = self.pending_artifact()
+                if idx < len(self.ship.artifacts):
+                    self.ship.artifacts[idx] = art
+                else:
+                    while len(self.ship.artifacts) < idx:
+                        self.ship.artifacts.append(art)
+                    if len(self.ship.artifacts) == idx:
+                        self.ship.artifacts.append(art)
+                self.ability_bar.set_ship(self.ship)
+                self.pending_artifact = None
+                return False
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                self.pending_artifact = None
+                return False
+
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.close_rect.collidepoint(event.pos):
                 return True
+            for cls, rect in self.artifact_rects:
+                if rect.collidepoint(event.pos):
+                    self.pending_artifact = cls
+                    return False
+
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             return True
+
         return False
 
     def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        from artifact import AVAILABLE_ARTIFACTS
+
         screen.fill((20, 20, 40))
         title = font.render("Artifacts", True, (255, 255, 255))
         screen.blit(title, (20, 20))
+
+        self.artifact_rects.clear()
         x0, y0 = 20, 60
         w, h = 200, 30
-        for i, art in enumerate(self.ship.artifacts):
+        for i, cls in enumerate(AVAILABLE_ARTIFACTS):
             rect = pygame.Rect(x0, y0 + i * (h + 5), w, h)
-            pygame.draw.rect(screen, (60, 60, 90), rect)
+            self.artifact_rects.append((cls, rect))
+            color = (60, 60, 90)
+            if self.pending_artifact is cls:
+                color = (80, 80, 120)
+            pygame.draw.rect(screen, color, rect)
             pygame.draw.rect(screen, (200, 200, 200), rect, 1)
-            txt = font.render(art.name, True, (255, 255, 255))
+            name = cls().name
+            txt = font.render(name, True, (255, 255, 255))
             screen.blit(txt, txt.get_rect(center=rect.center))
+
+        if self.pending_artifact:
+            prompt = font.render(
+                "Press 1-3 to assign slot", True, (255, 255, 255)
+            )
+            screen.blit(prompt, (240, 60))
+
         pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
         pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
         txt = font.render("Close", True, (255, 255, 255))
         screen.blit(txt, txt.get_rect(center=self.close_rect.center))
+
+        # Draw current ability bar so the player knows which slot to replace
+        self.ability_bar.draw(screen, font)
 
 
 class AbilityBar:
