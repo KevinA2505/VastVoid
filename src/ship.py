@@ -14,6 +14,7 @@ from combat import (
     BombDrone,
     MissileWeapon,
 )
+from artifact import Artifact, EMPArtifact, AreaShieldArtifact, AreaShieldAura
 
 
 @dataclass
@@ -70,6 +71,8 @@ class Ship:
         self.specials: list = []
         self._enemy_list: list | None = None
         self.shield = Shield()
+        self.artifacts: list[Artifact] = []
+        self.area_shield: AreaShieldAura | None = None
         self.hull = hull
         if model:
             self.brand = model.brand
@@ -106,6 +109,8 @@ class Ship:
         self.shield.recharge(dt)
         for weapon in self.weapons:
             weapon.update(dt)
+        for art in self.artifacts:
+            art.update(dt)
 
         if self.orbit_time > 0 and self.orbit_target:
             self._update_orbit(dt)
@@ -356,6 +361,13 @@ class Ship:
             else:
                 self.projectiles.append(proj)
 
+    def use_artifact(self, index: int, enemies: list) -> None:
+        """Activate an equipped artifact if possible."""
+        if 0 <= index < len(self.artifacts):
+            art = self.artifacts[index]
+            if art.can_use():
+                art.activate(self, enemies)
+
     def _update_projectiles(self, dt: float, world_width: int, world_height: int) -> None:
         for proj in list(self.projectiles):
             proj.update(dt)
@@ -442,9 +454,25 @@ class Ship:
                             en.ship.take_damage(obj.damage)
                 if obj.expired():
                     self.specials.remove(obj)
+            elif isinstance(obj, AreaShieldAura):
+                # Intercept incoming projectiles while the aura holds
+                for en in enemies or []:
+                    for proj in list(en.ship.projectiles):
+                        if math.hypot(proj.x - self.x, proj.y - self.y) <= obj.radius:
+                            obj.take_damage(proj.damage)
+                            en.ship.projectiles.remove(proj)
+                if obj.expired():
+                    self.area_shield = None
+                    self.specials.remove(obj)
 
     def take_damage(self, amount: float) -> None:
         """Apply damage to the shield and hull."""
+        if self.area_shield and self.area_shield.strength > 0:
+            self.area_shield.take_damage(amount)
+            if self.area_shield.expired():
+                self.specials.remove(self.area_shield)
+                self.area_shield = None
+            return
         if self.shield.strength > 0:
             before = self.shield.strength
             self.shield.take_damage(amount)
@@ -464,6 +492,8 @@ class Ship:
                 for proj in obj.projectiles:
                     proj.draw(screen, offset_x, offset_y, zoom)
             obj.draw(screen, offset_x, offset_y, zoom)
+        if self.area_shield:
+            self.area_shield.draw(screen, offset_x, offset_y, zoom)
 
     def draw_at(
         self,

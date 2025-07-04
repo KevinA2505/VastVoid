@@ -10,7 +10,8 @@ from wormhole import WormHole
 from star import Star
 from planet import Planet
 from station import SpaceStation
-from ui import DropdownMenu, RoutePlanner, InventoryWindow, AbilityBar, WeaponMenu
+from ui import DropdownMenu, RoutePlanner, InventoryWindow, AbilityBar, WeaponMenu, ArtifactMenu
+from artifact import EMPArtifact, AreaShieldArtifact
 from planet_surface import PlanetSurface
 from character import create_player
 
@@ -104,15 +105,18 @@ def main():
     ])
     for w in ship.weapons:
         w.owner = ship
+    ship.artifacts = [EMPArtifact(), AreaShieldArtifact()]
 
     zoom = 1.0
     selected_object = None
     info_font = pygame.font.Font(None, 20)
-    menu = DropdownMenu(10, 10, 100, 25, ["Plan Route", "Inventory", "Weapons"])
+    menu = DropdownMenu(10, 10, 100, 25, ["Plan Route", "Inventory", "Weapons", "Artifacts"])
     route_planner = RoutePlanner()
     ability_bar = AbilityBar()
+    ability_bar.set_ship(ship)
     inventory_window = None
     weapon_menu = None
+    artifact_menu = None
     current_station = None
     current_surface = None
     approaching_planet = None
@@ -156,6 +160,12 @@ def main():
                     continue
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
                     weapon_menu = WeaponMenu(ship)
+                    continue
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_g:
+                    artifact_menu = ArtifactMenu(ship)
+                    continue
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_g:
+                    artifact_menu = ArtifactMenu(ship)
                     continue
                 if (
                     event.type == pygame.MOUSEBUTTONDOWN
@@ -204,6 +214,19 @@ def main():
                     break
             if weapon_menu:
                 weapon_menu.draw(screen, info_font)
+                pygame.display.flip()
+                continue
+
+        if artifact_menu:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+                if artifact_menu.handle_event(event):
+                    artifact_menu = None
+                    break
+            if artifact_menu:
+                artifact_menu.draw(screen, info_font)
                 pygame.display.flip()
                 continue
 
@@ -272,6 +295,8 @@ def main():
                 inventory_window = InventoryWindow(player)
             elif selection == "Weapons":
                 weapon_menu = WeaponMenu(ship)
+            elif selection == "Artifacts":
+                artifact_menu = ArtifactMenu(ship)
 
             route_planner.handle_event(event, sectors, (camera_x, camera_y), zoom)
             ability_bar.handle_event(event, ship, enemies)
@@ -304,6 +329,8 @@ def main():
                     inventory_window = InventoryWindow(player)
                 elif event.key == pygame.K_f:
                     weapon_menu = WeaponMenu(ship)
+                elif event.key == pygame.K_g:
+                    artifact_menu = ArtifactMenu(ship)
                 elif event.key == pygame.K_r:
                     nearest = None
                     min_dist = float("inf")
