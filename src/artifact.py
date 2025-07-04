@@ -110,11 +110,60 @@ class AreaShieldArtifact(Artifact):
         user.specials.append(user.area_shield)
 
 
+class TractorProbe:
+    """Projectile-like probe that deploys a gravity tractor after travel."""
+
+    def __init__(
+        self, owner, target_x: float, target_y: float, travel_time: float = 5.0
+    ) -> None:
+        self.owner = owner
+        self.start_x = owner.x
+        self.start_y = owner.y
+        self.x = self.start_x
+        self.y = self.start_y
+        self.target_x = target_x
+        self.target_y = target_y
+        self.duration = travel_time
+        self.timer = 0.0
+        self.deployed = False
+
+    def update(self, dt: float) -> None:
+        if self.deployed:
+            return
+        self.timer += dt
+        progress = min(1.0, self.timer / self.duration)
+        self.x = self.start_x + (self.target_x - self.start_x) * progress
+        self.y = self.start_y + (self.target_y - self.start_y) * progress
+        if self.timer >= self.duration and not self.deployed:
+            from blackhole import TemporaryBlackHole
+
+            strength = 15000.0 * 1.25
+            lifetime = 15.0 + 15.0
+            hole = TemporaryBlackHole(
+                self.target_x, self.target_y, strength=strength, lifetime=lifetime
+            )
+            self.owner.specials.append(hole)
+            self.deployed = True
+
+    def expired(self) -> bool:
+        return self.deployed
+
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
+        pygame.draw.circle(screen, (200, 200, 50), pos, max(2, int(4 * zoom)))
+
+
 class GravityTractorArtifact(Artifact):
     """Spawn a small gravity well that tugs nearby ships."""
 
     def __init__(self) -> None:
-        super().__init__("Gravity Tractor", cooldown=30.0)
+        super().__init__("Gravity Tractor", cooldown=35.0)
         self.awaiting_click: bool = False
         self._pending_user = None
 
@@ -129,11 +178,9 @@ class GravityTractorArtifact(Artifact):
         """Place the tractor at ``(x, y)`` once the target is chosen."""
         if not self.awaiting_click or not self._pending_user:
             return
-        from blackhole import TemporaryBlackHole
-
         self._timer = 0.0
-        hole = TemporaryBlackHole(x, y)
-        self._pending_user.specials.append(hole)
+        probe = TractorProbe(self._pending_user, x, y)
+        self._pending_user.specials.append(probe)
         self.awaiting_click = False
         self._pending_user = None
 

@@ -82,6 +82,7 @@ travel in a straight line.
 ### Artifacts
 Ships can equip artifacts that provide situational abilities. The EMP now only
 disables enemy shields and triggers a visible shockwave around the player.
-Along with the Area Shield, a new **Gravity Tractor** generates a miniature
-black hole that weakly pulls nearby ships for 15 seconds. It has a
-30&nbsp;second cooldown before it can be deployed again.
+Along with the Area Shield, the **Gravity Tractor** now launches a probe toward
+the selected point. After five seconds the probe deploys a miniature black hole
+that pulls nearby ships 25% harder and lasts 30 seconds. This ability has a
+35&nbsp;second cooldown before it can be deployed again.
