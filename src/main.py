@@ -167,10 +167,7 @@ def main():
                     weapon_menu = WeaponMenu(ship)
                     continue
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_g:
-                    artifact_menu = ArtifactMenu(ship)
-                    continue
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_g:
-                    artifact_menu = ArtifactMenu(ship)
+                    artifact_menu = ArtifactMenu(ship, ability_bar)
                     continue
                 if (
                     event.type == pygame.MOUSEBUTTONDOWN
@@ -301,7 +298,7 @@ def main():
             elif selection == "Weapons":
                 weapon_menu = WeaponMenu(ship)
             elif selection == "Artifacts":
-                artifact_menu = ArtifactMenu(ship)
+                artifact_menu = ArtifactMenu(ship, ability_bar)
 
             route_planner.handle_event(event, sectors, (camera_x, camera_y), zoom)
             ability_bar.handle_event(event, ship, enemies)
@@ -350,7 +347,7 @@ def main():
                 elif event.key == pygame.K_f:
                     weapon_menu = WeaponMenu(ship)
                 elif event.key == pygame.K_g:
-                    artifact_menu = ArtifactMenu(ship)
+                    artifact_menu = ArtifactMenu(ship, ability_bar)
                 elif event.key == pygame.K_r:
                     nearest = None
                     min_dist = float("inf")

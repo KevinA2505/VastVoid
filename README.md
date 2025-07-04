@@ -104,3 +104,7 @@ Three additional artifacts expand your tactical options:
 * **Decoy** – projects a fragile copy of the ship that lasts a few seconds or
   until destroyed. Activating it cloaks your ship for three seconds. Cooldown:
   18&nbsp;seconds.
+
+Press **G** to open the artifact menu. All available artifacts are listed and
+clicking one lets you choose the ability slot by pressing **1**, **2** or **3**.
+The first two slots (Boost and Orbit) cannot be replaced.
