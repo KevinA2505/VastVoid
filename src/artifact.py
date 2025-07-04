@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import math
 import pygame
+import config
 
 
 @dataclass
@@ -46,8 +47,37 @@ class AreaShieldAura:
         pygame.draw.circle(screen, (50, 100, 200), pos, int(self.radius * zoom), 1)
 
 
+class EMPWave:
+    """Short lived visual effect for an EMP blast."""
+
+    def __init__(self, x: float, y: float, radius: float, duration: float = 0.6) -> None:
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.duration = duration
+        self.timer = 0.0
+
+    def update(self, dt: float) -> None:
+        self.timer += dt
+
+    def expired(self) -> bool:
+        return self.timer >= self.duration
+
+    def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
+        progress = min(1.0, self.timer / self.duration)
+        cur_radius = self.radius * progress
+        alpha = max(0, int(255 * (1.0 - progress)))
+        surf = pygame.Surface((config.WINDOW_WIDTH, config.WINDOW_HEIGHT), pygame.SRCALPHA)
+        pos = (
+            int((self.x - offset_x) * zoom),
+            int((self.y - offset_y) * zoom),
+        )
+        pygame.draw.circle(surf, (100, 200, 255, alpha), pos, int(cur_radius * zoom), 2)
+        screen.blit(surf, (0, 0))
+
+
 class EMPArtifact(Artifact):
-    """Electromagnetic pulse that disables shields in range including the owner's."""
+    """Electromagnetic pulse that disables nearby shields."""
 
     def __init__(self, radius: float = 300.0) -> None:
         super().__init__("EMP", cooldown=8.0)
@@ -57,9 +87,7 @@ class EMPArtifact(Artifact):
         if not self.can_use():
             return
         self._timer = 0.0
-        user.shield.strength = 0.0
-        if getattr(user, "area_shield", None):
-            user.area_shield.strength = 0.0
+        user.specials.append(EMPWave(user.x, user.y, self.radius))
         for en in enemies:
             dist = math.hypot(en.ship.x - user.x, en.ship.y - user.y)
             if dist <= self.radius:
