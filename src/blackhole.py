@@ -23,9 +23,20 @@ class BlackHole:
     def draw(self, screen: pygame.Surface, offset_x: float = 0,
              offset_y: float = 0, zoom: float = 1.0) -> None:
         scaled_radius = max(1, int(self.radius * zoom))
-        center = (int((self.x - offset_x) * zoom),
-                  int((self.y - offset_y) * zoom))
+        center = (
+            int((self.x - offset_x) * zoom),
+            int((self.y - offset_y) * zoom),
+        )
         pygame.draw.circle(screen, (10, 10, 10), center, scaled_radius)
+
+        # Add a faint swirling halo for a more dramatic look
+        for i in range(1, 4):
+            halo_radius = scaled_radius + i * int(5 * zoom)
+            halo = pygame.Surface((halo_radius * 2, halo_radius * 2), pygame.SRCALPHA)
+            color = (80, 0, 120, max(30, 90 - i * 20))
+            pygame.draw.circle(halo, color, (halo_radius, halo_radius), halo_radius, 2)
+            screen.blit(halo, (center[0] - halo_radius, center[1] - halo_radius))
+
         pygame.draw.circle(screen, (80, 0, 80), center, scaled_radius, 1)
 
         # visualize the pull range for debugging
@@ -52,7 +63,7 @@ class TemporaryBlackHole(BlackHole):
         x: float,
         y: float,
         radius: int = 15,
-        pull_range: int = 220,
+        pull_range: int = 253,  # 15% larger pull range for artifact holes
         strength: float = 15000.0,
         lifetime: float = 15.0,
     ) -> None:

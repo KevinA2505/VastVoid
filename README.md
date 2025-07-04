@@ -37,6 +37,11 @@ Wormholes now appear at least once in every generated universe, allowing
 instant travel between two distant points. The two ends of a pair are
 placed far apart thanks to the `WORMHOLE_PAIR_MIN_DISTANCE` setting.
 
+### Black holes
+The ominous singularities exert their pull from farther away. Normal black
+holes now affect ships within a 25% larger radius and feature a swirling
+purple halo to emphasize their danger.
+
 ### Enemy AI
 
 A new `Enemy` class lives in `src/enemy.py`. It creates autonomous pilots
@@ -84,5 +89,6 @@ Ships can equip artifacts that provide situational abilities. The EMP now only
 disables enemy shields and triggers a visible shockwave around the player.
 Along with the Area Shield, the **Gravity Tractor** now launches a probe toward
 the selected point. After five seconds the probe deploys a miniature black hole
-that pulls nearby ships 25% harder and lasts 30 seconds. This ability has a
-35&nbsp;second cooldown before it can be deployed again.
+that tugs nearby ships 25% harder, covers a 15% wider radius and lasts
+30&nbsp;seconds. This ability has a 35&nbsp;second cooldown before it can be
+deployed again.
