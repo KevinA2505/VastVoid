@@ -6,6 +6,7 @@ import py_trees
 
 from character import Alien, Human, Robot
 from ship import Ship, SHIP_MODELS
+from artifact import Decoy
 from combat import (
     LaserWeapon,
     MineWeapon,
@@ -47,9 +48,9 @@ class Flee(_EnemyBehaviour):
     def update(self) -> py_trees.common.Status:
         enemy = self.enemy
         ship = enemy.ship
-        player = enemy.player_ship
-        dx = player.x - ship.x
-        dy = player.y - ship.y
+        target = enemy.target
+        dx = target.x - ship.x
+        dy = target.y - ship.y
         if ship.hull > enemy.flee_threshold:
             return py_trees.common.Status.FAILURE
         enemy.state = "flee"
@@ -72,13 +73,13 @@ class Attack(_EnemyBehaviour):
     def update(self) -> py_trees.common.Status:
         enemy = self.enemy
         ship = enemy.ship
-        player = enemy.player_ship
-        dx = player.x - ship.x
-        dy = player.y - ship.y
+        target = enemy.target
+        dx = target.x - ship.x
+        dy = target.y - ship.y
         dist = math.hypot(dx, dy)
         in_region = (
-            enemy.region.x <= player.x <= enemy.region.x + enemy.region.width
-            and enemy.region.y <= player.y <= enemy.region.y + enemy.region.height
+            enemy.region.x <= target.x <= enemy.region.x + enemy.region.width
+            and enemy.region.y <= target.y <= enemy.region.y + enemy.region.height
         )
         if not (in_region and dist <= enemy.attack_range) or ship.hull <= enemy.flee_threshold:
             return py_trees.common.Status.FAILURE
@@ -89,13 +90,13 @@ class Attack(_EnemyBehaviour):
             if enemy.orbit_timer <= 0:
                 enemy.orbit_timer = config.ENEMY_ORBIT_INTERVAL
                 if random.random() < config.ENEMY_ORBIT_PROBABILITY:
-                    ship.start_orbit(player, speed=config.SHIP_ORBIT_SPEED * 0.5)
+                    ship.start_orbit(target, speed=config.SHIP_ORBIT_SPEED * 0.5)
         if ship.orbit_time <= 0:
             angle = math.atan2(dy, dx)
-            dest_x = player.x - math.cos(angle) * 120
-            dest_y = player.y - math.sin(angle) * 120
+            dest_x = target.x - math.cos(angle) * 120
+            dest_y = target.y - math.sin(angle) * 120
             ship.start_autopilot(_Point(dest_x, dest_y))
-        ship.fire(player.x, player.y)
+        ship.fire(target.x, target.y)
         return py_trees.common.Status.SUCCESS
 
 
@@ -111,6 +112,7 @@ class Defend(_EnemyBehaviour):
     def update(self) -> py_trees.common.Status:
         enemy = self.enemy
         ship = enemy.ship
+        target = enemy.target
         player = enemy.player_ship
         if not player:
             return py_trees.common.Status.FAILURE
@@ -123,8 +125,8 @@ class Defend(_EnemyBehaviour):
 
         if shield_ratio < self.SHIELD_THRESHOLD or near_proj:
             enemy.state = "defend"
-            dx = player.x - ship.x
-            dy = player.y - ship.y
+            dx = target.x - ship.x
+            dy = target.y - ship.y
             angle = math.atan2(dy, dx) + math.pi / 2
             dist = enemy.detection_range / 2
             dest_x = ship.x + math.cos(angle) * dist
@@ -142,18 +144,18 @@ class Pursue(_EnemyBehaviour):
     def update(self) -> py_trees.common.Status:
         enemy = self.enemy
         ship = enemy.ship
-        player = enemy.player_ship
-        dx = player.x - ship.x
-        dy = player.y - ship.y
+        target = enemy.target
+        dx = target.x - ship.x
+        dy = target.y - ship.y
         dist = math.hypot(dx, dy)
         in_region = (
-            enemy.region.x <= player.x <= enemy.region.x + enemy.region.width
-            and enemy.region.y <= player.y <= enemy.region.y + enemy.region.height
+            enemy.region.x <= target.x <= enemy.region.x + enemy.region.width
+            and enemy.region.y <= target.y <= enemy.region.y + enemy.region.height
         )
         if not (in_region and dist <= enemy.detection_range) or ship.hull <= enemy.flee_threshold:
             return py_trees.common.Status.FAILURE
         enemy.state = "pursue"
-        ship.start_autopilot(player)
+        ship.start_autopilot(target)
         if ship.boost_charge >= 1.0:
             ship.boost_time = config.BOOST_DURATION
             ship.boost_charge = 0.0
@@ -191,6 +193,7 @@ class Enemy:
     _flee_target: _Point | None = field(default=None, init=False, repr=False)
     _wander_target: _Point | None = field(default=None, init=False, repr=False)
     player_ship: Ship | None = field(default=None, init=False, repr=False)
+    target: object | None = field(default=None, init=False, repr=False)
     tree: py_trees.trees.BehaviourTree | None = field(default=None, init=False, repr=False)
     orbit_timer: float = field(
         default=config.ENEMY_ORBIT_INTERVAL,
@@ -224,6 +227,13 @@ class Enemy:
         """Update ship movement after behaviour tree tick."""
 
         self.player_ship = player_ship
+        self.target = player_ship
+        for obj in getattr(player_ship, "specials", []):
+            if isinstance(obj, Decoy) and not obj.expired():
+                self.target = obj
+                break
+        if isinstance(self.ship.orbit_target, Decoy) and self.ship.orbit_target.expired():
+            self.ship.cancel_orbit()
         self.orbit_timer = max(0.0, self.orbit_timer - dt)
         if self.tree:
             self.tree.tick()

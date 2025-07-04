@@ -5,6 +5,7 @@ import os
 from dataclasses import dataclass, field
 
 from enemy import Enemy, Flee, Defend, Attack, Pursue, Idle, _NullKeys
+from artifact import Decoy
 from combat import (
     LaserWeapon,
     MineWeapon,
@@ -103,6 +104,13 @@ class LearningEnemy(Enemy):
         blackholes: list | None = None,
     ) -> None:
         self.player_ship = player_ship
+        self.target = player_ship
+        for obj in getattr(player_ship, "specials", []):
+            if isinstance(obj, Decoy) and not obj.expired():
+                self.target = obj
+                break
+        if isinstance(self.ship.orbit_target, Decoy) and self.ship.orbit_target.expired():
+            self.ship.cancel_orbit()
         if not self.prev_hull:
             self.prev_hull = self.ship.hull
         if not self.player_prev_hull:
