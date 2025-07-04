@@ -21,7 +21,7 @@ from ui import (
 )
 from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
 from planet_surface import PlanetSurface
-from character import choose_player
+from character import choose_player_table
 
 
 def draw_station_ui(
@@ -90,7 +90,7 @@ def main():
     screen = pygame.display.set_mode((config.WINDOW_WIDTH, config.WINDOW_HEIGHT))
     pygame.display.set_caption("VastVoid")
 
-    player = choose_player(screen)
+    player = choose_player_table(screen)
 
     sectors = create_sectors(
         config.GRID_SIZE, config.SECTOR_WIDTH, config.SECTOR_HEIGHT
