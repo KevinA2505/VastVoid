@@ -185,3 +185,155 @@ class GravityTractorArtifact(Artifact):
         self.awaiting_click = False
         self._pending_user = None
 
+
+class RepairNanobots:
+    """Swarm that slowly repairs hull and shields."""
+
+    def __init__(self, owner, duration: float = 5.0) -> None:
+        self.owner = owner
+        self.duration = duration
+        self.timer = 0.0
+        self.hull_rate = 8.0
+        self.shield_rate = 12.0
+
+    def update(self, dt: float) -> None:
+        self.timer += dt
+        if self.owner.hull < self.owner.max_hull:
+            self.owner.hull = min(self.owner.max_hull, self.owner.hull + self.hull_rate * dt)
+        shield = self.owner.shield
+        if shield.strength < shield.max_strength:
+            shield.strength = min(shield.max_strength, shield.strength + self.shield_rate * dt)
+
+    def expired(self) -> bool:
+        return self.timer >= self.duration
+
+    def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
+        pos = (int((self.owner.x - offset_x) * zoom), int((self.owner.y - offset_y) * zoom))
+        radius = int(self.owner.size * 0.7 * zoom)
+        pygame.draw.circle(screen, (100, 255, 100), pos, radius, 1)
+
+
+class NanobotArtifact(Artifact):
+    """Deploy repair nanobots around the ship."""
+
+    def __init__(self) -> None:
+        super().__init__("Repair Bots", cooldown=15.0)
+
+    def activate(self, user, enemies: list) -> None:
+        if not self.can_use():
+            return
+        self._timer = 0.0
+        user.specials.append(RepairNanobots(user))
+
+
+class SolarLink:
+    """Connect the ship to a nearby star boosting recharge rates."""
+
+    def __init__(self, owner, star, duration: float = 6.0) -> None:
+        self.owner = owner
+        self.star = star
+        self.duration = duration
+        self.timer = 0.0
+        self._boost = 1.5
+        self._weapon_factor = 0.7
+        self._prev_rate = owner.shield.recharge_rate
+        self._prev_cooldowns = [w.cooldown for w in owner.weapons]
+        owner.shield.recharge_rate *= self._boost
+        for w in owner.weapons:
+            w.cooldown *= self._weapon_factor
+
+    def update(self, dt: float) -> None:
+        self.timer += dt
+
+    def expired(self) -> bool:
+        if self.timer >= self.duration:
+            self.owner.shield.recharge_rate = self._prev_rate
+            for w, cd in zip(self.owner.weapons, self._prev_cooldowns):
+                w.cooldown = cd
+            return True
+        return False
+
+    def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
+        start = (int((self.owner.x - offset_x) * zoom), int((self.owner.y - offset_y) * zoom))
+        end = (int((self.star.x - offset_x) * zoom), int((self.star.y - offset_y) * zoom))
+        pygame.draw.line(screen, (255, 255, 100), start, end, max(1, int(2 * zoom)))
+
+
+class SolarGeneratorArtifact(Artifact):
+    """Channel energy from the nearest star if within range."""
+
+    def __init__(self, range_: float = 500.0) -> None:
+        super().__init__("Solar Link", cooldown=20.0)
+        self.range = range_
+
+    def activate(self, user, enemies: list) -> None:
+        if not self.can_use() or not hasattr(user, "_sectors"):
+            return
+        nearest = None
+        min_d = float("inf")
+        for sec in user._sectors:
+            for system in sec.systems:
+                star = system.star
+                d = math.hypot(star.x - user.x, star.y - user.y)
+                if d < min_d:
+                    min_d = d
+                    nearest = star
+        if nearest is None or min_d > self.range:
+            return
+        self._timer = 0.0
+        user.specials.append(SolarLink(user, nearest))
+
+
+class Decoy:
+    """Fragile copy of the ship that draws enemy fire."""
+
+    def __init__(self, owner, lifetime: float = 6.0, hp: float = 20.0) -> None:
+        self.owner = owner
+        self.x = owner.x
+        self.y = owner.y
+        self.size = owner.size
+        self.lifetime = lifetime
+        self.hp = hp
+
+    def update(self, dt: float, enemies: list) -> None:
+        self.lifetime -= dt
+        rect = pygame.Rect(
+            self.x - self.size / 2,
+            self.y - self.size / 2,
+            self.size,
+            self.size,
+        )
+        for en in enemies:
+            for proj in list(en.ship.projectiles):
+                if rect.collidepoint(proj.x, proj.y):
+                    self.hp -= proj.damage
+                    en.ship.projectiles.remove(proj)
+                    if self.hp <= 0:
+                        break
+
+    def expired(self) -> bool:
+        return self.lifetime <= 0 or self.hp <= 0
+
+    def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
+        rect = pygame.Rect(
+            int((self.x - offset_x) * zoom - self.size * zoom / 2),
+            int((self.y - offset_y) * zoom - self.size * zoom / 2),
+            int(self.size * zoom),
+            int(self.size * zoom),
+        )
+        pygame.draw.rect(screen, (120, 120, 120), rect)
+
+
+class DecoyArtifact(Artifact):
+    """Create a holographic decoy and cloak the user briefly."""
+
+    def __init__(self) -> None:
+        super().__init__("Decoy", cooldown=18.0)
+
+    def activate(self, user, enemies: list) -> None:
+        if not self.can_use():
+            return
+        self._timer = 0.0
+        user.specials.append(Decoy(user))
+        user.invisible_timer = 3.0
+
