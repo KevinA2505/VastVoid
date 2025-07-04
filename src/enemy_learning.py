@@ -5,6 +5,7 @@ import os
 from dataclasses import dataclass, field
 
 from enemy import Enemy, Flee, Defend, Attack, Pursue, Idle, _NullKeys
+from fraction import FRACTIONS
 from artifact import Decoy
 from combat import (
     LaserWeapon,
@@ -102,8 +103,17 @@ class LearningEnemy(Enemy):
         world_height: int,
         sectors: list,
         blackholes: list | None = None,
+        player_fraction=None,
     ) -> None:
         self.player_ship = player_ship
+        if player_fraction is not None and player_fraction == self.fraction:
+            self.state = "ally"
+            self.ship.update(_NullKeys(), dt, world_width, world_height, sectors, blackholes, None)
+            if self.ship.autopilot_target is None:
+                self._wander_target = None
+            self.prev_hull = self.ship.hull
+            self.player_prev_hull = player_ship.hull
+            return
         self.target = player_ship
         for obj in getattr(player_ship, "specials", []):
             if isinstance(obj, Decoy) and not obj.expired():
@@ -146,7 +156,13 @@ def create_learning_enemy(region):
     model = random.choice(SHIP_MODELS)
     x = random.randint(region.x, region.x + region.width)
     y = random.randint(region.y, region.y + region.height)
-    enemy = LearningEnemy(Ship(x, y, model, hull=config.ENEMY_MAX_HULL), species, region)
+    fraction = random.choice(FRACTIONS)
+    enemy = LearningEnemy(
+        Ship(x, y, model, hull=config.ENEMY_MAX_HULL),
+        species,
+        region,
+        fraction,
+    )
     enemy.load_q_table()
     # Replace the default weapon with a random one
     weapon_cls = random.choice(

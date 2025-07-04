@@ -1,6 +1,7 @@
 import math
 import random
 from dataclasses import dataclass, field
+from fraction import Fraction, FRACTIONS
 
 import py_trees
 
@@ -186,6 +187,7 @@ class Enemy:
     ship: Ship
     species: object
     region: Sector
+    fraction: Fraction
     attack_range: float = 385.0
     detection_range: float = 800.0
     flee_threshold: int = 30
@@ -223,10 +225,19 @@ class Enemy:
         world_height: int,
         sectors: list,
         blackholes: list | None = None,
+        player_fraction: Fraction | None = None,
     ) -> None:
         """Update ship movement after behaviour tree tick."""
 
         self.player_ship = player_ship
+        if player_fraction is not None and player_fraction == self.fraction:
+            self.state = "ally"
+            self.ship.update(
+                _NullKeys(), dt, world_width, world_height, sectors, blackholes, None
+            )
+            if self.ship.autopilot_target is None:
+                self._wander_target = None
+            return
         self.target = player_ship
         for obj in getattr(player_ship, "specials", []):
             if isinstance(obj, Decoy) and not obj.expired():
@@ -261,7 +272,13 @@ def create_random_enemy(region: Sector) -> Enemy:
     model = random.choice(SHIP_MODELS)
     x = random.randint(region.x, region.x + region.width)
     y = random.randint(region.y, region.y + region.height)
-    enemy = Enemy(Ship(x, y, model, hull=config.ENEMY_MAX_HULL), species, region)
+    fraction = random.choice(FRACTIONS)
+    enemy = Enemy(
+        Ship(x, y, model, hull=config.ENEMY_MAX_HULL),
+        species,
+        region,
+        fraction,
+    )
     # Replace the default weapon with a random one
     weapon_cls = random.choice(
         [LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon, BasicWeapon]
