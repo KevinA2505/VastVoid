@@ -15,6 +15,7 @@ from combat import (
     MissileWeapon,
 )
 from artifact import Artifact, EMPArtifact, AreaShieldArtifact, AreaShieldAura
+from blackhole import TemporaryBlackHole
 
 
 @dataclass
@@ -452,6 +453,13 @@ class Ship:
                     for en in enemies:
                         if math.hypot(en.ship.x - obj.x, en.ship.y - obj.y) <= obj.radius:
                             en.ship.take_damage(obj.damage)
+                if obj.expired():
+                    self.specials.remove(obj)
+            elif isinstance(obj, TemporaryBlackHole):
+                obj.update(dt)
+                obj.apply_pull(self, dt)
+                for en in enemies or []:
+                    obj.apply_pull(en.ship, dt)
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, AreaShieldAura):

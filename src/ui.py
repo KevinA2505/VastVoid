@@ -244,8 +244,8 @@ class AbilityBar:
     """Display up to five ability slots at the bottom of the screen."""
 
     SLOT_COUNT = 5
-    SLOT_W = 60
-    SLOT_H = 30
+    SLOT_W = 80
+    SLOT_H = 40
     MARGIN = 5
 
     def __init__(self) -> None:
@@ -312,7 +312,10 @@ class AbilityBar:
             pygame.draw.rect(screen, (200, 200, 200), rect, 1)
             name, key = self.slots[i]
             if name:
-                txt = font.render(f"{name} ({key})", True, (255, 255, 255))
-                txt_rect = txt.get_rect(center=rect.center)
+                txt = font.render(name, True, (255, 255, 255))
+                txt_rect = txt.get_rect(center=(rect.centerx, rect.centery - 8))
                 screen.blit(txt, txt_rect)
+            key_txt = font.render(key, True, (255, 255, 255))
+            key_rect = key_txt.get_rect(bottomright=(rect.right - 4, rect.bottom - 2))
+            screen.blit(key_txt, key_rect)
 

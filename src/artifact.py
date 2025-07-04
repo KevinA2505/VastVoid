@@ -81,3 +81,19 @@ class AreaShieldArtifact(Artifact):
         user.area_shield = AreaShieldAura(user)
         user.specials.append(user.area_shield)
 
+
+class GravityTractorArtifact(Artifact):
+    """Spawn a small gravity well that tugs nearby ships."""
+
+    def __init__(self) -> None:
+        super().__init__("Gravity Tractor", cooldown=30.0)
+
+    def activate(self, user, enemies: list) -> None:
+        if not self.can_use():
+            return
+        from blackhole import TemporaryBlackHole
+
+        self._timer = 0.0
+        hole = TemporaryBlackHole(user.x, user.y)
+        user.specials.append(hole)
+

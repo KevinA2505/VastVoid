@@ -43,3 +43,25 @@ class BlackHole:
             ship.vx += dx / dist * pull * dt
             ship.vy += dy / dist * pull * dt
 
+
+class TemporaryBlackHole(BlackHole):
+    """A short-lived version of ``BlackHole`` used by artifacts."""
+
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        radius: int = 15,
+        pull_range: int = 220,
+        strength: float = 15000.0,
+        lifetime: float = 15.0,
+    ) -> None:
+        super().__init__(x, y, radius, pull_range, strength)
+        self.lifetime = lifetime
+
+    def update(self, dt: float) -> None:
+        self.lifetime -= dt
+
+    def expired(self) -> bool:
+        return self.lifetime <= 0
+

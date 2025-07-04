@@ -11,7 +11,7 @@ from star import Star
 from planet import Planet
 from station import SpaceStation
 from ui import DropdownMenu, RoutePlanner, InventoryWindow, AbilityBar, WeaponMenu, ArtifactMenu
-from artifact import EMPArtifact, AreaShieldArtifact
+from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
 from planet_surface import PlanetSurface
 from character import create_player
 
@@ -105,7 +105,7 @@ def main():
     ])
     for w in ship.weapons:
         w.owner = ship
-    ship.artifacts = [EMPArtifact(), AreaShieldArtifact()]
+    ship.artifacts = [EMPArtifact(), AreaShieldArtifact(), GravityTractorArtifact()]
 
     zoom = 1.0
     selected_object = None
