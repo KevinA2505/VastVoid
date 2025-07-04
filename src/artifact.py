@@ -137,7 +137,8 @@ class TractorProbe:
         if self.timer >= self.duration and not self.deployed:
             from blackhole import TemporaryBlackHole
 
-            strength = 15000.0 * 1.25
+            # 20% stronger gravitational pull
+            strength = 15000.0 * 1.25 * 1.2
             lifetime = 15.0 + 15.0
             hole = TemporaryBlackHole(
                 self.target_x, self.target_y, strength=strength, lifetime=lifetime

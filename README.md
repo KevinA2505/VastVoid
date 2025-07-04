@@ -40,7 +40,8 @@ placed far apart thanks to the `WORMHOLE_PAIR_MIN_DISTANCE` setting.
 ### Black holes
 The ominous singularities exert their pull from farther away. Normal black
 holes now affect ships within a 25% larger radius and feature a swirling
-purple halo to emphasize their danger.
+purple halo to emphasize their danger. Dark purple particles now orbit
+throughout the entire pull range, and the gravitational force is 20% stronger.
 
 ### Enemy AI
 
