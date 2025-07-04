@@ -124,6 +124,8 @@ def main():
     teleport_timer = 0.0
     wormhole_cooldown = 0.0
     teleport_flash_timer = 0.0
+    blackhole_flash_timer = 0.0
+    swallowed = False
     pending_tractor = None
     camera_x = ship.x
     camera_y = ship.y
@@ -137,6 +139,8 @@ def main():
             wormhole_cooldown -= dt
         if teleport_flash_timer > 0:
             teleport_flash_timer -= dt
+        if blackhole_flash_timer > 0:
+            blackhole_flash_timer -= dt
 
         if teleport_timer > 0:
             teleport_timer -= dt
@@ -470,8 +474,11 @@ def main():
         for hole in blackholes:
             if math.hypot(hole.x - ship.x, hole.y - ship.y) < hole.radius:
                 print("You were swallowed by a black hole!")
-                running = False
+                swallowed = True
+                blackhole_flash_timer = config.BLACKHOLE_FLASH_TIME
                 break
+        if swallowed and blackhole_flash_timer <= 0:
+            running = False
         if not running:
             continue
 
@@ -484,7 +491,7 @@ def main():
                         print("Entering wormhole...")
                     break
         for sector in sectors:
-            sector.update()
+            sector.update(dt)
 
         screen.fill(config.BACKGROUND_COLOR)
         if route_planner.active:
@@ -631,6 +638,11 @@ def main():
 
         if teleport_flash_timer > 0:
             alpha = int(255 * (teleport_flash_timer / config.WORMHOLE_FLASH_TIME))
+            flash = pygame.Surface((config.WINDOW_WIDTH, config.WINDOW_HEIGHT), pygame.SRCALPHA)
+            flash.fill((255, 255, 255, alpha))
+            screen.blit(flash, (0, 0))
+        if blackhole_flash_timer > 0:
+            alpha = int(255 * (blackhole_flash_timer / config.BLACKHOLE_FLASH_TIME))
             flash = pygame.Surface((config.WINDOW_WIDTH, config.WINDOW_HEIGHT), pygame.SRCALPHA)
             flash.fill((255, 255, 255, alpha))
             screen.blit(flash, (0, 0))
