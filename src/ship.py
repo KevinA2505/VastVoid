@@ -20,6 +20,7 @@ from artifact import (
     AreaShieldArtifact,
     AreaShieldAura,
     EMPWave,
+    TractorProbe,
 )
 from blackhole import TemporaryBlackHole
 
@@ -462,6 +463,10 @@ class Ship:
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, EMPWave):
+                obj.update(dt)
+                if obj.expired():
+                    self.specials.remove(obj)
+            elif isinstance(obj, TractorProbe):
                 obj.update(dt)
                 if obj.expired():
                     self.specials.remove(obj)
