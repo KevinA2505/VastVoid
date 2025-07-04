@@ -23,6 +23,8 @@ small catalogue of models, each with its own brand and classification.
 Saved profiles are presented in a simple table when the game launches.
 Each row lists the player's name alongside **Load** and **Delete** buttons,
 and a separate *New Profile* button lets you create a fresh character.
+New profiles are saved automatically once created so they appear on the list
+the next time you run the game.
 
 ## Running the game
 
