@@ -3,7 +3,7 @@ import pygame
 import random
 import config
 from biome import BIOMES, Biome
-from items import ITEM_NAMES
+
 
 
 ENV_COLORS = {

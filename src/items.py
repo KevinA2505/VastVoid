@@ -259,5 +259,13 @@ ITEMS_BY_TYPE: Dict[str, List[Item]] = {
 # Flatten list with all items
 ITEMS: List[Item] = [item for group in ITEMS_BY_TYPE.values() for item in group]
 
+# Fast lookup table by item name
+ITEMS_BY_NAME: Dict[str, Item] = {item.nombre: item for item in ITEMS}
+
+
+def get_item(name: str) -> Item:
+    """Return the :class:`Item` matching ``name``."""
+    return ITEMS_BY_NAME[name]
+
 # List of item names for backwards compatibility
-ITEM_NAMES: List[str] = [item.nombre for item in ITEMS]
+ITEM_NAMES: List[str] = list(ITEMS_BY_NAME.keys())

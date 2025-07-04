@@ -1,7 +1,7 @@
 import pygame
 import config
 from fraction import FRACTIONS, Fraction
-from items import ITEM_NAMES
+from items import ITEMS_BY_NAME
 
 class Alien:
     """Basic Alien species."""
@@ -37,7 +37,7 @@ class Player:
         self.ship_model = ship_model
         self.credits = credits
         # Inventory starts empty but contains an entry for each known item
-        self.inventory: dict[str, int] = {item: 0 for item in ITEM_NAMES}
+        self.inventory: dict[str, int] = {name: 0 for name in ITEMS_BY_NAME}
 
     def add_item(self, item: str, quantity: int = 1) -> None:
         """Add `quantity` of `item` to the inventory."""
