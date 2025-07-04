@@ -21,12 +21,21 @@ class Robot:
 class Player:
     """The player controlled character."""
 
-    def __init__(self, name: str, age: int, species, fraction: Fraction, ship_model=None):
+    def __init__(
+        self,
+        name: str,
+        age: int,
+        species,
+        fraction: Fraction,
+        ship_model=None,
+        credits: int = 0,
+    ):
         self.name = name
         self.age = age
         self.species = species
         self.fraction = fraction
         self.ship_model = ship_model
+        self.credits = credits
         # Inventory starts empty but contains an entry for each known item
         self.inventory: dict[str, int] = {item: 0 for item in ITEM_NAMES}
 
@@ -122,5 +131,49 @@ def create_player(screen: pygame.Surface) -> Player:
             for i, line in enumerate(lines):
                 msg = font.render(line, True, (255, 255, 255))
                 screen.blit(msg, (50, 100 + i * 30))
+        pygame.display.flip()
+        clock.tick(30)
+
+
+def choose_player(screen: pygame.Surface) -> Player:
+    """Let the user pick an existing profile or create/delete one."""
+    from savegame import list_players, load_player, delete_player
+
+    font = pygame.font.Font(None, 32)
+    clock = pygame.time.Clock()
+    deleting = False
+    while True:
+        profiles = list_players()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                raise SystemExit
+            if event.type == pygame.KEYDOWN:
+                if deleting and event.unicode.isdigit():
+                    idx = int(event.unicode) - 1
+                    if 0 <= idx < len(profiles):
+                        delete_player(profiles[idx])
+                    deleting = False
+                elif event.unicode.isdigit():
+                    idx = int(event.unicode) - 1
+                    if 0 <= idx < len(profiles):
+                        return load_player(profiles[idx])
+                elif event.unicode.lower() == "n":
+                    player = create_player(screen)
+                    return player
+                elif event.unicode.lower() == "d":
+                    deleting = True
+
+        screen.fill(config.BACKGROUND_COLOR)
+        lines = ["Choose profile:"]
+        for i, name in enumerate(profiles):
+            lines.append(f"{i+1} - {name}")
+        lines.append("N - New profile")
+        lines.append("D - Delete profile")
+        if deleting:
+            lines.append("Select number to delete")
+        for i, line in enumerate(lines):
+            msg = font.render(line, True, (255, 255, 255))
+            screen.blit(msg, (50, 100 + i * 30))
         pygame.display.flip()
         clock.tick(30)
