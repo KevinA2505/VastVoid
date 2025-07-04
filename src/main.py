@@ -416,9 +416,18 @@ def main():
             continue
 
         keys = pygame.key.get_pressed()
-        ship.update(keys, dt, world_width, world_height, sectors, blackholes, enemies)
+        hostiles = [en for en in enemies if en.fraction != player.fraction]
+        ship.update(keys, dt, world_width, world_height, sectors, blackholes, hostiles)
         for enemy in list(enemies):
-            enemy.update(ship, dt, world_width, world_height, sectors, blackholes)
+            enemy.update(
+                ship,
+                dt,
+                world_width,
+                world_height,
+                sectors,
+                blackholes,
+                player.fraction,
+            )
 
             enemy_rect = pygame.Rect(
                 enemy.ship.x - enemy.ship.size / 2,
@@ -433,15 +442,16 @@ def main():
                 ship.size,
             )
 
-            for proj in list(ship.projectiles):
-                if enemy_rect.collidepoint(proj.x, proj.y):
-                    enemy.ship.take_damage(proj.damage)
-                    ship.projectiles.remove(proj)
+            if enemy.fraction != player.fraction:
+                for proj in list(ship.projectiles):
+                    if enemy_rect.collidepoint(proj.x, proj.y):
+                        enemy.ship.take_damage(proj.damage)
+                        ship.projectiles.remove(proj)
 
-            for proj in list(enemy.ship.projectiles):
-                if ship_rect.collidepoint(proj.x, proj.y):
-                    ship.take_damage(proj.damage)
-                    enemy.ship.projectiles.remove(proj)
+                for proj in list(enemy.ship.projectiles):
+                    if ship_rect.collidepoint(proj.x, proj.y):
+                        ship.take_damage(proj.damage)
+                        enemy.ship.projectiles.remove(proj)
 
             if enemy.ship.hull <= 0:
                 enemies.remove(enemy)
