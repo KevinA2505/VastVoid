@@ -87,13 +87,25 @@ class GravityTractorArtifact(Artifact):
 
     def __init__(self) -> None:
         super().__init__("Gravity Tractor", cooldown=30.0)
+        self.awaiting_click: bool = False
+        self._pending_user = None
 
     def activate(self, user, enemies: list) -> None:
-        if not self.can_use():
+        if not self.can_use() or self.awaiting_click:
+            return
+        # Activation now waits for the player to choose a point.
+        self.awaiting_click = True
+        self._pending_user = user
+
+    def confirm(self, x: float, y: float) -> None:
+        """Place the tractor at ``(x, y)`` once the target is chosen."""
+        if not self.awaiting_click or not self._pending_user:
             return
         from blackhole import TemporaryBlackHole
 
         self._timer = 0.0
-        hole = TemporaryBlackHole(user.x, user.y)
-        user.specials.append(hole)
+        hole = TemporaryBlackHole(x, y)
+        self._pending_user.specials.append(hole)
+        self.awaiting_click = False
+        self._pending_user = None
 
