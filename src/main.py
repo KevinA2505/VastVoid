@@ -10,18 +10,33 @@ from wormhole import WormHole
 from star import Star
 from planet import Planet
 from station import SpaceStation
-from ui import DropdownMenu, RoutePlanner, InventoryWindow, AbilityBar, WeaponMenu, ArtifactMenu
+from ui import (
+    DropdownMenu,
+    RoutePlanner,
+    InventoryWindow,
+    MarketWindow,
+    AbilityBar,
+    WeaponMenu,
+    ArtifactMenu,
+)
 from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
 from planet_surface import PlanetSurface
 from character import choose_player
 
 
-def draw_station_ui(screen: pygame.Surface, station: SpaceStation, font: pygame.font.Font) -> tuple[pygame.Rect, pygame.Rect]:
+def draw_station_ui(
+    screen: pygame.Surface,
+    station: SpaceStation,
+    font: pygame.font.Font,
+    player,
+) -> tuple[pygame.Rect, pygame.Rect, pygame.Rect]:
     """Draw a simple interface for a space station and return button rects."""
     screen.fill((20, 20, 40))
     title = font.render(station.name, True, (255, 255, 255))
     screen.blit(title, (20, 20))
-    y = 60
+    credits_txt = font.render(f"Credits: {player.credits}", True, (255, 255, 255))
+    screen.blit(credits_txt, (20, 40))
+    y = 80
     for i, hangar in enumerate(station.hangars):
         status = "Occupied" if hangar.occupied else "Free"
         text = font.render(f"Hangar {i+1}: {status}", True, (255, 255, 255))
@@ -40,7 +55,13 @@ def draw_station_ui(screen: pygame.Surface, station: SpaceStation, font: pygame.
     inv_txt = font.render("Items", True, (255, 255, 255))
     inv_txt_rect = inv_txt.get_rect(center=inv_rect.center)
     screen.blit(inv_txt, inv_txt_rect)
-    return exit_rect, inv_rect
+    market_rect = pygame.Rect(10, 50, 100, 30)
+    pygame.draw.rect(screen, (60, 60, 90), market_rect)
+    pygame.draw.rect(screen, (200, 200, 200), market_rect, 1)
+    market_txt = font.render("Market", True, (255, 255, 255))
+    market_txt_rect = market_txt.get_rect(center=market_rect.center)
+    screen.blit(market_txt, market_txt_rect)
+    return exit_rect, inv_rect, market_rect
 
 
 def draw_enemy_health_bar(
@@ -115,6 +136,7 @@ def main():
     ability_bar = AbilityBar()
     ability_bar.set_ship(ship)
     inventory_window = None
+    market_window = None
     weapon_menu = None
     artifact_menu = None
     current_station = None
@@ -232,6 +254,19 @@ def main():
                 pygame.display.flip()
                 continue
 
+        if market_window:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+                if market_window.handle_event(event):
+                    market_window = None
+                    break
+            if market_window:
+                market_window.draw(screen, info_font)
+                pygame.display.flip()
+                continue
+
         near_station = None
         if not current_station:
             for sector in sectors:
@@ -261,6 +296,7 @@ def main():
             if current_station:
                 leave_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
                 inv_rect = pygame.Rect(10, 10, 100, 30)
+                market_rect = pygame.Rect(10, 50, 100, 30)
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     current_station.undock_ship(ship)
                     ship.x = current_station.x + current_station.radius + 40
@@ -268,6 +304,9 @@ def main():
                     continue
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_i:
                     inventory_window = InventoryWindow(player)
+                    continue
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
+                    market_window = MarketWindow(current_station, player)
                     continue
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
                     weapon_menu = WeaponMenu(ship)
@@ -287,6 +326,13 @@ def main():
                     and inv_rect.collidepoint(event.pos)
                 ):
                     inventory_window = InventoryWindow(player)
+                    continue
+                if (
+                    event.type == pygame.MOUSEBUTTONDOWN
+                    and event.button == 1
+                    and market_rect.collidepoint(event.pos)
+                ):
+                    market_window = MarketWindow(current_station, player)
                     continue
                 continue
 
@@ -411,7 +457,9 @@ def main():
                     selected_object = None
 
         if current_station:
-            leave_rect, inv_rect = draw_station_ui(screen, current_station, info_font)
+            leave_rect, inv_rect, market_rect = draw_station_ui(
+                screen, current_station, info_font, player
+            )
             pygame.display.flip()
             continue
 

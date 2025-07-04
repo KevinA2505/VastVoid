@@ -3,6 +3,7 @@ import random
 import math
 from dataclasses import dataclass
 from names import get_station_name
+from items import ITEMS, ITEMS_BY_NAME
 
 
 @dataclass
@@ -30,6 +31,15 @@ class SpaceStation:
         self.radius = radius
         self.hangars = [Hangar() for _ in range(num_hangars)]
         self.rooms = [Room(f"Room {i+1}") for i in range(num_rooms)]
+        # Randomly populate the market with items for trade
+        self.market: dict[str, int] = {}
+        self._populate_market()
+
+    def _populate_market(self) -> None:
+        """Fill the station market with a selection of random items."""
+        sample = random.sample(ITEMS, k=min(10, len(ITEMS)))
+        for item in sample:
+            self.market[item.nombre] = random.randint(1, 5)
 
     @staticmethod
     def random_station(star, distance: float) -> "SpaceStation":
@@ -37,6 +47,38 @@ class SpaceStation:
         x = star.x + distance * math.cos(angle)
         y = star.y + distance * math.sin(angle)
         return SpaceStation(x, y)
+
+    # --- Trading ---------------------------------------------------------
+
+    def buy_item(self, player, item_name: str, qty: int = 1) -> bool:
+        """Allow ``player`` to buy ``qty`` of ``item_name`` if available."""
+        if item_name not in self.market or self.market[item_name] < qty:
+            return False
+        item = ITEMS_BY_NAME[item_name]
+        price = item.valor * qty
+        if getattr(player, "fraction", None) and player.fraction.name == "Cosmic Guild":
+            price = int(price * 0.9)
+        if player.credits < price:
+            return False
+        player.credits -= price
+        player.add_item(item_name, qty)
+        self.market[item_name] -= qty
+        if self.market[item_name] <= 0:
+            del self.market[item_name]
+        return True
+
+    def sell_item(self, player, item_name: str, qty: int = 1) -> bool:
+        """Buy items from the player."""
+        if player.inventory.get(item_name, 0) < qty:
+            return False
+        item = ITEMS_BY_NAME[item_name]
+        price = item.valor * qty
+        if getattr(player, "fraction", None) and player.fraction.name == "Cosmic Guild":
+            price = int(price * 1.1)
+        player.credits += price
+        player.remove_item(item_name, qty)
+        self.market[item_name] = self.market.get(item_name, 0) + qty
+        return True
 
     def has_free_hangar(self) -> bool:
         return any(not h.occupied for h in self.hangars)

@@ -164,6 +164,75 @@ class InventoryWindow:
         screen.blit(exit_txt, exit_rect)
 
 
+class MarketWindow:
+    """Trade items between the player and a station."""
+
+    def __init__(self, station, player) -> None:
+        self.station = station
+        self.player = player
+        self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
+        self.buy_rects: list[tuple[str, pygame.Rect]] = []
+        self.sell_rects: list[tuple[str, pygame.Rect]] = []
+
+    def handle_event(self, event) -> bool:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.close_rect.collidepoint(event.pos):
+                return True
+            for name, rect in self.buy_rects:
+                if rect.collidepoint(event.pos):
+                    self.station.buy_item(self.player, name, 1)
+                    return False
+            for name, rect in self.sell_rects:
+                if rect.collidepoint(event.pos):
+                    self.station.sell_item(self.player, name, 1)
+                    return False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            return True
+        return False
+
+    def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        from items import ITEMS_BY_NAME
+
+        screen.fill((20, 20, 40))
+        title = font.render(f"Market - {self.player.credits} cr", True, (255, 255, 255))
+        screen.blit(title, (20, 20))
+
+        self.buy_rects.clear()
+        self.sell_rects.clear()
+        x0, y0 = 20, 60
+        w, h = 200, 30
+        for i, (name, qty) in enumerate(self.station.market.items()):
+            rect = pygame.Rect(x0, y0 + i * (h + 5), w, h)
+            self.buy_rects.append((name, rect))
+            pygame.draw.rect(screen, (60, 60, 90), rect)
+            pygame.draw.rect(screen, (200, 200, 200), rect, 1)
+            item = ITEMS_BY_NAME[name]
+            price = item.valor
+            if self.player.fraction.name == "Cosmic Guild":
+                price = int(price * 0.9)
+            txt = font.render(f"Buy {name} ({qty}) - {price}", True, (255, 255, 255))
+            screen.blit(txt, txt.get_rect(center=rect.center))
+
+        x1 = x0 + w + 40
+        sell_items = [(n, q) for n, q in self.player.inventory.items() if q > 0]
+        for i, (name, qty) in enumerate(sell_items):
+            rect = pygame.Rect(x1, y0 + i * (h + 5), w, h)
+            self.sell_rects.append((name, rect))
+            pygame.draw.rect(screen, (60, 60, 90), rect)
+            pygame.draw.rect(screen, (200, 200, 200), rect, 1)
+            item = ITEMS_BY_NAME[name]
+            price = item.valor
+            if self.player.fraction.name == "Cosmic Guild":
+                price = int(price * 1.1)
+            txt = font.render(f"Sell {name} ({qty}) +{price}", True, (255, 255, 255))
+            screen.blit(txt, txt.get_rect(center=rect.center))
+
+        pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
+        txt = font.render("Close", True, (255, 255, 255))
+        screen.blit(txt, txt.get_rect(center=self.close_rect.center))
+
+
 class WeaponMenu:
     """Menu to switch the ship's active weapon."""
 
