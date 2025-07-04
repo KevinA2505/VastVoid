@@ -46,7 +46,7 @@ BLACKHOLE_CHANCE = 0.15       # probability of a sector containing a black hole
 BLACKHOLE_MIN_DISTANCE = 600  # minimum distance from any star system
 # distance at which the ship feels the pull
 BLACKHOLE_RANGE = 375         # increased by 25% for a stronger presence
-BLACKHOLE_STRENGTH = 40000    # acceleration force applied when near
+BLACKHOLE_STRENGTH = 48000    # acceleration force applied when near (20% stronger)
 BLACKHOLE_RADIUS = 25         # radius of the dangerous core
 BLACKHOLE_FLASH_TIME = 1.0    # duration of whiteout when swallowed
 

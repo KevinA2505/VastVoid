@@ -9,9 +9,12 @@ class _Particle:
 
     def __init__(self, hole: "BlackHole") -> None:
         self.angle = random.uniform(0, math.tau)
-        self.radius = random.uniform(hole.radius + 10, hole.radius + 40)
+        # Particles now span the full gravitational range for a wider swirl
+        self.radius = random.uniform(hole.radius, hole.pull_range)
         self.speed = random.uniform(0.5, 1.2)
         self.size = random.randint(1, 3)
+        # Dark purple hue for a more ominous effect
+        self.color = (80, 0, 80)
         self.lifetime = random.uniform(4.0, 8.0)
 
     def update(self, dt: float) -> None:
@@ -72,11 +75,11 @@ class BlackHole:
             pygame.draw.circle(halo, color, (halo_radius, halo_radius), halo_radius, 2)
             screen.blit(halo, (center[0] - halo_radius, center[1] - halo_radius))
 
-        # Draw orbiting particles
+        # Draw orbiting particles in a dark purple hue
         for p in self.particles:
             px = center[0] + int(math.cos(p.angle) * p.radius * zoom)
             py = center[1] + int(math.sin(p.angle) * p.radius * zoom)
-            pygame.draw.circle(screen, (200, 200, 255), (px, py), max(1, int(p.size * zoom)))
+            pygame.draw.circle(screen, p.color, (px, py), max(1, int(p.size * zoom)))
 
         pygame.draw.circle(screen, (80, 0, 80), center, scaled_radius, 1)
 
@@ -105,7 +108,7 @@ class TemporaryBlackHole(BlackHole):
         y: float,
         radius: int = 15,
         pull_range: int = 253,  # 15% larger pull range for artifact holes
-        strength: float = 15000.0,
+        strength: float = 18000.0,  # 20% stronger gravitational pull
         lifetime: float = 15.0,
     ) -> None:
         super().__init__(x, y, radius, pull_range, strength)
