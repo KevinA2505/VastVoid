@@ -4,17 +4,17 @@ import pickle
 import os
 from dataclasses import dataclass, field
 
-from enemy import Enemy, Flee, Defend, Attack, Pursue, Idle, _NullKeys
-from fraction import FRACTIONS
-from artifact import Decoy
-from combat import (
+from .enemy import Enemy, Flee, Defend, Attack, Pursue, Idle, _NullKeys
+from ..mechanics.fraction import FRACTIONS
+from .artifact import Decoy
+from ..mechanics.combat import (
     LaserWeapon,
     MineWeapon,
     DroneWeapon,
     MissileWeapon,
     BasicWeapon,
 )
-import config
+from .. import config
 
 
 Q_TABLE_PATH = "learning_enemy_q_table.pkl"
@@ -147,9 +147,9 @@ class LearningEnemy(Enemy):
 
 def create_learning_enemy(region):
     """Return a LearningEnemy with random species and ship model."""
-    from ship import Ship, SHIP_MODELS
-    from sector import Sector
-    from character import Alien, Human, Robot
+    from .ship import Ship, SHIP_MODELS
+    from ..world.sector import Sector
+    from .character import Alien, Human, Robot
 
     species_cls = random.choice([Human, Alien, Robot])
     species = species_cls()

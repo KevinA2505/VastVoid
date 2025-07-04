@@ -1,11 +1,11 @@
 import math
 import random
 import pygame
-import config
-from star import Star
-from names import get_planet_name, PLANET_ENVIRONMENTS
-from biome import BIOMES
-from planet_surface import ENV_COLORS
+from .. import config
+from .star import Star
+from ..names import get_planet_name, PLANET_ENVIRONMENTS
+from .biome import BIOMES
+from .planet_surface import ENV_COLORS
 
 
 def _lighter_color(color: tuple[int, int, int], factor: float = 1.3) -> tuple[int, int, int]:

@@ -1,6 +1,6 @@
 import pygame
 import random
-from names import get_star_name
+from ..names import get_star_name
 
 
 class Star:

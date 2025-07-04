@@ -1,7 +1,7 @@
 import pygame
-import config
+from .. import config
 import math
-from artifact import Artifact
+from ..entities.artifact import Artifact
 
 class DropdownMenu:
     """Simple dropdown menu triggered by a button."""
@@ -191,7 +191,7 @@ class MarketWindow:
         return False
 
     def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
-        from items import ITEMS_BY_NAME
+        from ..mechanics.items import ITEMS_BY_NAME
 
         screen.fill((20, 20, 40))
         title = font.render(f"Market - {self.player.credits} cr", True, (255, 255, 255))
@@ -324,7 +324,7 @@ class ArtifactMenu:
         return False
 
     def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
-        from artifact import AVAILABLE_ARTIFACTS
+        from ..entities.artifact import AVAILABLE_ARTIFACTS
 
         screen.fill((20, 20, 40))
         title = font.render("Artifacts", True, (255, 255, 255))

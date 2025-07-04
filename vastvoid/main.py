@@ -1,16 +1,22 @@
 import pygame
 import math
 import random
-import config
-from ship import Ship, choose_ship
-from combat import LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon, BasicWeapon
-from enemy_learning import create_learning_enemy
-from sector import create_sectors
-from wormhole import WormHole
-from star import Star
-from planet import Planet
-from station import SpaceStation
-from ui import (
+from . import config
+from .entities.ship import Ship, choose_ship
+from .mechanics.combat import (
+    LaserWeapon,
+    MineWeapon,
+    DroneWeapon,
+    MissileWeapon,
+    BasicWeapon,
+)
+from .entities.enemy_learning import create_learning_enemy
+from .world.sector import create_sectors
+from .world.wormhole import WormHole
+from .world.star import Star
+from .world.planet import Planet
+from .world.station import SpaceStation
+from .ui.ui import (
     DropdownMenu,
     RoutePlanner,
     InventoryWindow,
@@ -19,9 +25,13 @@ from ui import (
     WeaponMenu,
     ArtifactMenu,
 )
-from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
-from planet_surface import PlanetSurface
-from character import choose_player
+from .entities.artifact import (
+    EMPArtifact,
+    AreaShieldArtifact,
+    GravityTractorArtifact,
+)
+from .world.planet_surface import PlanetSurface
+from .entities.character import choose_player
 
 
 def draw_station_ui(

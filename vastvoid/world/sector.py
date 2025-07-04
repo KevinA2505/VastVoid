@@ -1,10 +1,10 @@
 import random
 import math
 import pygame
-from star_system import StarSystem
-from blackhole import BlackHole
-from wormhole import WormHole
-import config
+from .star_system import StarSystem
+from .blackhole import BlackHole
+from .wormhole import WormHole
+from .. import config
 
 class Sector:
     """Large region containing multiple star systems."""

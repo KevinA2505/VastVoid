@@ -1,6 +1,6 @@
 import pygame
 import random
-import config
+from .. import config
 
 class WormHole:
     """Paired anomaly that teleports ships between two points."""

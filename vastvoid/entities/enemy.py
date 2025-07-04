@@ -1,22 +1,22 @@
 import math
 import random
 from dataclasses import dataclass, field
-from fraction import Fraction, FRACTIONS
+from ..mechanics.fraction import Fraction, FRACTIONS
 
 import py_trees
 
-from character import Alien, Human, Robot
-from ship import Ship, SHIP_MODELS
-from artifact import Decoy
-from combat import (
+from .character import Alien, Human, Robot
+from .ship import Ship, SHIP_MODELS
+from .artifact import Decoy
+from ..mechanics.combat import (
     LaserWeapon,
     MineWeapon,
     DroneWeapon,
     MissileWeapon,
     BasicWeapon,
 )
-from sector import Sector
-import config
+from ..world.sector import Sector
+from .. import config
 
 
 class _NullKeys:

@@ -1,7 +1,7 @@
 import pygame
-import config
-from fraction import FRACTIONS, Fraction
-from items import ITEMS_BY_NAME
+from .. import config
+from ..mechanics.fraction import FRACTIONS, Fraction
+from ..mechanics.items import ITEMS_BY_NAME
 
 class Alien:
     """Basic Alien species."""
@@ -137,7 +137,11 @@ def create_player(screen: pygame.Surface) -> Player:
 
 def choose_player(screen: pygame.Surface) -> Player:
     """Let the user pick an existing profile or create/delete one."""
-    from savegame import list_players, load_player, delete_player
+    from ..mechanics.savegame import (
+        list_players,
+        load_player,
+        delete_player,
+    )
 
     font = pygame.font.Font(None, 32)
     clock = pygame.time.Clock()

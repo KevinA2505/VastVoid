@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import math
 import pygame
-import config
+from .. import config
 
 
 @dataclass
@@ -135,7 +135,7 @@ class TractorProbe:
         self.x = self.start_x + (self.target_x - self.start_x) * progress
         self.y = self.start_y + (self.target_y - self.start_y) * progress
         if self.timer >= self.duration and not self.deployed:
-            from blackhole import TemporaryBlackHole
+            from ..world.blackhole import TemporaryBlackHole
 
             # 20% stronger gravitational pull
             strength = 15000.0 * 1.25 * 1.2

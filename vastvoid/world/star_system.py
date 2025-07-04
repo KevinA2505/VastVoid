@@ -1,11 +1,11 @@
 import math
 import random
 import pygame
-from star import Star
-from planet import Planet
-from station import SpaceStation
-from names import get_system_name
-import config
+from .star import Star
+from .planet import Planet
+from .station import SpaceStation
+from ..names import get_system_name
+from .. import config
 
 class StarSystem:
     """Collection of a star with orbiting planets."""

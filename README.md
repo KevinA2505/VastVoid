@@ -3,8 +3,8 @@
 `VastVoid` is a small Pygame project that displays a world of star systems.
 You can control a ship and travel across a plane populated by stars with
 orbiting planets.
-The core game classes now live in separate modules within `src` and are
-initialized from a single entry point (`main.py`).
+The core game classes now live in a package called `vastvoid` and are
+initialized from a single entry point (`vastvoid/main.py`).
 
 You can select any planet and choose **Visit planet** to land on its surface
 and explore a procedurally generated map. Press `Escape` or use the *Take Off*
@@ -23,7 +23,7 @@ small catalogue of models, each with its own brand and classification.
 ## Running the game
 
 ```bash
-python src/main.py
+python -m vastvoid.main
 ```
 
 ### Planet surfaces
@@ -33,7 +33,7 @@ generate multiple item pickups. Approach an item to see its name displayed on
 screen and know exactly what you are collecting.
 
 The original example scripts (`black_plane.py`, `nave.py`, `space_objects.py`
-and `colliding_star_systems.py`) remain in the `src` directory for reference.
+and `colliding_star_systems.py`) remain under `vastvoid/examples` for reference.
 
 Wormholes now appear at least once in every generated universe, allowing
 instant travel between two distant points. The two ends of a pair are
@@ -47,7 +47,7 @@ throughout the entire pull range, and the gravitational force is 20% stronger.
 
 ### Enemy AI
 
-A new `Enemy` class lives in `src/enemy.py`. It creates autonomous pilots
+A new `Enemy` class lives in `vastvoid/entities/enemy.py`. It creates autonomous pilots
 with their own ships and simple state-based behaviour. Enemies can pursue
 the player, fire at close range, or retreat when their hull integrity is
 low. When a new game starts, a random number of enemies is generated and
@@ -65,7 +65,7 @@ and navigation work exactly like the earlier state machine implementation.
 
 ### Learning enemies
 Enemies now use the experimental `LearningEnemy` class from
-`src/enemy_learning.py`. It replaces the behaviour tree with a simple
+`vastvoid/entities/enemy_learning.py`. It replaces the behaviour tree with a simple
 Q-learning algorithm so that each enemy chooses actions like pursue or attack
 based on a learned Q-table updated every frame. Enemies are spawned through the
 `create_learning_enemy()` helper by default and will adapt slightly to the

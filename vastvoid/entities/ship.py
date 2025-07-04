@@ -1,10 +1,10 @@
 import pygame
 import math
 from dataclasses import dataclass
-import config
-from planet import Planet
-from names import get_ship_name
-from combat import (
+from .. import config
+from ..world.planet import Planet
+from ..names import get_ship_name
+from ..mechanics.combat import (
     Weapon,
     Projectile,
     Shield,
@@ -14,7 +14,7 @@ from combat import (
     BombDrone,
     MissileWeapon,
 )
-from artifact import (
+from .artifact import (
     Artifact,
     EMPArtifact,
     AreaShieldArtifact,
@@ -25,7 +25,7 @@ from artifact import (
     SolarLink,
     Decoy,
 )
-from blackhole import TemporaryBlackHole
+from ..world.blackhole import TemporaryBlackHole
 
 
 @dataclass

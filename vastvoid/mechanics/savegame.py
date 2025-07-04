@@ -2,12 +2,14 @@ import json
 import os
 from typing import List
 
-from character import Player, Human, Alien, Robot
-from fraction import FRACTIONS
-from items import ITEMS_BY_NAME
-from ship import SHIP_MODELS, ShipModel
+from ..entities.character import Player, Human, Alien, Robot
+from .fraction import FRACTIONS
+from .items import ITEMS_BY_NAME
+from ..entities.ship import SHIP_MODELS, ShipModel
 
-SAVE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "saves")
+SAVE_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "saves"
+)
 
 
 def _model_to_dict(model: ShipModel | None):

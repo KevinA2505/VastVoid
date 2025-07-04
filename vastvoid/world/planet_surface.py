@@ -1,8 +1,8 @@
 import math
 import pygame
 import random
-import config
-from biome import BIOMES, Biome
+from .. import config
+from .biome import BIOMES, Biome
 
 
 

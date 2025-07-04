@@ -2,8 +2,8 @@ import pygame
 import random
 import math
 from dataclasses import dataclass
-from names import get_station_name
-from items import ITEMS, ITEMS_BY_NAME
+from ..names import get_station_name
+from ..mechanics.items import ITEMS, ITEMS_BY_NAME
 
 
 @dataclass
