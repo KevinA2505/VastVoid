@@ -207,6 +207,39 @@ class WeaponMenu:
         screen.blit(txt, txt.get_rect(center=self.close_rect.center))
 
 
+class ArtifactMenu:
+    """Display the artifacts currently equipped on the ship."""
+
+    def __init__(self, ship) -> None:
+        self.ship = ship
+        self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
+
+    def handle_event(self, event) -> bool:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.close_rect.collidepoint(event.pos):
+                return True
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            return True
+        return False
+
+    def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        screen.fill((20, 20, 40))
+        title = font.render("Artifacts", True, (255, 255, 255))
+        screen.blit(title, (20, 20))
+        x0, y0 = 20, 60
+        w, h = 200, 30
+        for i, art in enumerate(self.ship.artifacts):
+            rect = pygame.Rect(x0, y0 + i * (h + 5), w, h)
+            pygame.draw.rect(screen, (60, 60, 90), rect)
+            pygame.draw.rect(screen, (200, 200, 200), rect, 1)
+            txt = font.render(art.name, True, (255, 255, 255))
+            screen.blit(txt, txt.get_rect(center=rect.center))
+        pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
+        txt = font.render("Close", True, (255, 255, 255))
+        screen.blit(txt, txt.get_rect(center=self.close_rect.center))
+
+
 class AbilityBar:
     """Display up to five ability slots at the bottom of the screen."""
 
@@ -219,10 +252,11 @@ class AbilityBar:
         self.slots: list[tuple[str, str]] = [
             ("Boost", "LShift"),
             ("Orbit", "R"),
-            ("", ""),
-            ("", ""),
-            ("", ""),
+            ("", "1"),
+            ("", "2"),
+            ("", "3"),
         ]
+        self.ship = None
         self.rects: list[pygame.Rect] = []
         total_w = self.SLOT_COUNT * (self.SLOT_W + self.MARGIN) - self.MARGIN
         start_x = (config.WINDOW_WIDTH - total_w) // 2
@@ -232,6 +266,17 @@ class AbilityBar:
                 start_x + i * (self.SLOT_W + self.MARGIN), y, self.SLOT_W, self.SLOT_H
             )
             self.rects.append(rect)
+
+    def set_ship(self, ship) -> None:
+        self.ship = ship
+        self._update_artifact_names()
+
+    def _update_artifact_names(self) -> None:
+        for i in range(3):
+            name = ""
+            if self.ship and i < len(self.ship.artifacts):
+                name = self.ship.artifacts[i].name
+            self.slots[2 + i] = (name, str(i + 1))
 
     def handle_event(self, event, ship, enemies: list) -> None:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -243,6 +288,12 @@ class AbilityBar:
                             ship.boost_charge = 0.0
                     elif idx == 1:
                         self._trigger_orbit(ship, enemies)
+                    elif idx >= 2:
+                        ship.use_artifact(idx - 2, enemies)
+        elif event.type == pygame.KEYDOWN:
+            if event.key in (pygame.K_1, pygame.K_2, pygame.K_3):
+                idx = event.key - pygame.K_1
+                ship.use_artifact(idx, enemies)
 
     def _trigger_orbit(self, ship, enemies: list) -> None:
         nearest = None
