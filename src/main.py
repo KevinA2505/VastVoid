@@ -124,6 +124,7 @@ def main():
     teleport_timer = 0.0
     wormhole_cooldown = 0.0
     teleport_flash_timer = 0.0
+    pending_tractor = None
     camera_x = ship.x
     camera_y = ship.y
 
@@ -300,6 +301,21 @@ def main():
 
             route_planner.handle_event(event, sectors, (camera_x, camera_y), zoom)
             ability_bar.handle_event(event, ship, enemies)
+
+            if pending_tractor is None:
+                for art in ship.artifacts:
+                    if isinstance(art, GravityTractorArtifact) and art.awaiting_click:
+                        pending_tractor = art
+                        break
+
+            if pending_tractor and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
+                offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
+                world_x = event.pos[0] / zoom + offset_x
+                world_y = event.pos[1] / zoom + offset_y
+                pending_tractor.confirm(world_x, world_y)
+                pending_tractor = None
+                continue
 
             if route_planner.destination:
                 if (
@@ -602,6 +618,16 @@ def main():
             pygame.draw.rect(screen, (150, 0, 0), (bar_x, hull_y, hull_fill, bar_height))
         ability_bar.draw(screen, info_font)
         menu.draw(screen, info_font)
+
+        if pending_tractor:
+            width, height = 220, 40
+            rect = pygame.Rect((config.WINDOW_WIDTH - width) // 2, 40, width, height)
+            pygame.draw.rect(screen, (30, 30, 60), rect)
+            pygame.draw.rect(screen, (200, 200, 200), rect, 1)
+            lines = ["Place Gravity Tractor", "Click a location"]
+            for i, line in enumerate(lines):
+                txt = info_font.render(line, True, (255, 255, 255))
+                screen.blit(txt, (rect.x + 5, rect.y + 5 + i * 20))
 
         if teleport_flash_timer > 0:
             alpha = int(255 * (teleport_flash_timer / config.WORMHOLE_FLASH_TIME))
