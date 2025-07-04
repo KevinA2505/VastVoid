@@ -4,7 +4,7 @@ from typing import List
 
 from character import Player, Human, Alien, Robot
 from fraction import FRACTIONS
-from items import ITEM_NAMES
+from items import ITEMS_BY_NAME
 from ship import SHIP_MODELS, ShipModel
 
 SAVE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "saves")
@@ -64,7 +64,7 @@ def load_player(name: str) -> Player:
         ship_model=_dict_to_model(data.get("ship_model")),
         credits=int(data.get("credits", 0)),
     )
-    inv = {item: 0 for item in ITEM_NAMES}
+    inv = {name: 0 for name in ITEMS_BY_NAME}
     inv.update(data.get("inventory", {}))
     player.inventory = inv
     return player
