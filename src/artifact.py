@@ -234,8 +234,8 @@ class SolarLink:
         self.star = star
         self.duration = duration
         self.timer = 0.0
-        self._boost = 1.5
-        self._weapon_factor = 0.7
+        self._boost = 2.0
+        self._weapon_factor = 0.5
         self._prev_rate = owner.shield.recharge_rate
         self._prev_cooldowns = [w.cooldown for w in owner.weapons]
         owner.shield.recharge_rate *= self._boost
@@ -335,7 +335,7 @@ class DecoyArtifact(Artifact):
             return
         self._timer = 0.0
         user.specials.append(Decoy(user))
-        user.invisible_timer = 3.0
+        user.invisible_timer = 5.0
 
 
 # Registry of all artifact types available in the game. This is used by the
