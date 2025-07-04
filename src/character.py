@@ -137,7 +137,7 @@ def create_player(screen: pygame.Surface) -> Player:
 
 def choose_player(screen: pygame.Surface) -> Player:
     """Let the user pick an existing profile or create/delete one."""
-    from savegame import list_players, load_player, delete_player
+    from savegame import list_players, load_player, delete_player, save_player
 
     font = pygame.font.Font(None, 32)
     clock = pygame.time.Clock()
@@ -160,6 +160,7 @@ def choose_player(screen: pygame.Surface) -> Player:
                         return load_player(profiles[idx])
                 elif event.unicode.lower() == "n":
                     player = create_player(screen)
+                    save_player(player)
                     return player
                 elif event.unicode.lower() == "d":
                     deleting = True
@@ -181,7 +182,7 @@ def choose_player(screen: pygame.Surface) -> Player:
 
 def choose_player_table(screen: pygame.Surface) -> Player:
     """GUI with buttons to load or delete a profile."""
-    from savegame import list_players, load_player, delete_player
+    from savegame import list_players, load_player, delete_player, save_player
 
     font = pygame.font.Font(None, 32)
     clock = pygame.time.Clock()
@@ -213,7 +214,9 @@ def choose_player_table(screen: pygame.Surface) -> Player:
                     if del_rect.collidepoint(event.pos):
                         delete_player(profiles[idx])
                 if new_rect.collidepoint(event.pos):
-                    return create_player(screen)
+                    player = create_player(screen)
+                    save_player(player)
+                    return player
 
         screen.fill(config.BACKGROUND_COLOR)
         y = start_y
