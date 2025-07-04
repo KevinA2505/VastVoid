@@ -93,3 +93,14 @@ the selected point. After five seconds the probe deploys a miniature black hole
 that tugs nearby ships 25% harder, covers a 15% wider radius and lasts
 30&nbsp;seconds. This ability has a 35&nbsp;second cooldown before it can be
 deployed again.
+
+Three additional artifacts expand your tactical options:
+
+* **Repair Bots** – releases nanobots that restore hull and shields over five
+  seconds. This ability has a 15&nbsp;second cooldown.
+* **Solar Link** – connects the ship to the nearest star within 500 pixels,
+  boosting shield recharge and weapon rates for six seconds. It cannot be used
+  if no star is close. Cooldown: 20&nbsp;seconds.
+* **Decoy** – projects a fragile copy of the ship that lasts a few seconds or
+  until destroyed. Activating it cloaks your ship for three seconds. Cooldown:
+  18&nbsp;seconds.

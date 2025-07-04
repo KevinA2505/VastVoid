@@ -21,6 +21,9 @@ from artifact import (
     AreaShieldAura,
     EMPWave,
     TractorProbe,
+    RepairNanobots,
+    SolarLink,
+    Decoy,
 )
 from blackhole import TemporaryBlackHole
 
@@ -82,6 +85,8 @@ class Ship:
         self.artifacts: list[Artifact] = []
         self.area_shield: AreaShieldAura | None = None
         self.hull = hull
+        self.max_hull = hull
+        self.invisible_timer = 0.0
         if model:
             self.brand = model.brand
             self.classification = model.classification
@@ -110,6 +115,9 @@ class Ship:
         enemies: list | None = None,
     ) -> None:
         self._enemy_list = enemies
+        self._sectors = sectors
+        if self.invisible_timer > 0:
+            self.invisible_timer = max(0.0, self.invisible_timer - dt)
         if self.orbit_cooldown > 0:
             self.orbit_cooldown = max(0.0, self.orbit_cooldown - dt)
 
@@ -487,9 +495,23 @@ class Ship:
                 if obj.expired():
                     self.area_shield = None
                     self.specials.remove(obj)
+            elif isinstance(obj, RepairNanobots):
+                obj.update(dt)
+                if obj.expired():
+                    self.specials.remove(obj)
+            elif isinstance(obj, SolarLink):
+                obj.update(dt)
+                if obj.expired():
+                    self.specials.remove(obj)
+            elif isinstance(obj, Decoy):
+                obj.update(dt, enemies or [])
+                if obj.expired():
+                    self.specials.remove(obj)
 
     def take_damage(self, amount: float) -> None:
         """Apply damage to the shield and hull."""
+        if self.invisible_timer > 0:
+            return
         if self.area_shield and self.area_shield.strength > 0:
             self.area_shield.take_damage(amount)
             if self.area_shield.expired():
@@ -526,6 +548,8 @@ class Ship:
         zoom: float = 1.0,
     ) -> None:
         """Draw the ship on screen applying an offset and zoom."""
+        if self.invisible_timer > 0:
+            return
         size = max(1, int(self.size * zoom ** 0.5))
         ship_rect = pygame.Rect(
             int((self.x - offset_x) * zoom) - size // 2,
