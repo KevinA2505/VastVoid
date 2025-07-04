@@ -78,3 +78,9 @@ is a short cooldown before it can be triggered again.
 Projectiles now vanish after travelling around 1200 pixels. Shots fired while
 orbiting curve sharply towards the target so they rarely miss. Normal shots
 travel in a straight line.
+
+### Artifacts
+Ships can equip artifacts that provide situational abilities. Along with the EMP
+and Area Shield, a new **Gravity Tractor** generates a miniature black hole that
+weakly pulls nearby ships for 15 seconds. It has a 30&nbsp;second cooldown before
+it can be deployed again.
