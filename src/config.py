@@ -48,6 +48,7 @@ BLACKHOLE_MIN_DISTANCE = 600  # minimum distance from any star system
 BLACKHOLE_RANGE = 375         # increased by 25% for a stronger presence
 BLACKHOLE_STRENGTH = 40000    # acceleration force applied when near
 BLACKHOLE_RADIUS = 25         # radius of the dangerous core
+BLACKHOLE_FLASH_TIME = 1.0    # duration of whiteout when swallowed
 
 # Worm hole settings
 WORMHOLE_CHANCE = 0.05       # probability of a sector containing a wormhole pair

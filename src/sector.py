@@ -89,9 +89,11 @@ class Sector:
                 self.wormholes.extend([first, second])
                 break
 
-    def update(self) -> None:
+    def update(self, dt: float) -> None:
         for system in self.systems:
             system.update()
+        for hole in self.blackholes:
+            hole.update(dt)
 
     def draw(
         self,
