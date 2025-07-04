@@ -20,6 +20,10 @@ your fraction behave as allies while the rest remain hostile.
 After the character is created you can also choose a starting ship from a
 small catalogue of models, each with its own brand and classification.
 
+Saved profiles are presented in a simple table when the game launches.
+Each row lists the player's name alongside **Load** and **Delete** buttons,
+and a separate *New Profile* button lets you create a fresh character.
+
 ## Running the game
 
 ```bash

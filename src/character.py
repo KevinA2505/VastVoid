@@ -177,3 +177,69 @@ def choose_player(screen: pygame.Surface) -> Player:
             screen.blit(msg, (50, 100 + i * 30))
         pygame.display.flip()
         clock.tick(30)
+
+
+def choose_player_table(screen: pygame.Surface) -> Player:
+    """GUI with buttons to load or delete a profile."""
+    from savegame import list_players, load_player, delete_player
+
+    font = pygame.font.Font(None, 32)
+    clock = pygame.time.Clock()
+    name_w, btn_w, row_h = 200, 100, 40
+    spacing = 10
+    start_x, start_y = 50, 100
+
+    while True:
+        profiles = list_players()
+        row_rects: list[tuple[pygame.Rect, pygame.Rect]] = []
+        y = start_y
+        for _ in profiles:
+            load_rect = pygame.Rect(start_x + name_w + spacing, y, btn_w, row_h)
+            del_rect = pygame.Rect(
+                start_x + name_w + spacing * 2 + btn_w, y, btn_w, row_h
+            )
+            row_rects.append((load_rect, del_rect))
+            y += row_h + 5
+        new_rect = pygame.Rect(start_x, y + 20, btn_w * 2, row_h)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                raise SystemExit
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                for idx, (load_rect, del_rect) in enumerate(row_rects):
+                    if load_rect.collidepoint(event.pos):
+                        return load_player(profiles[idx])
+                    if del_rect.collidepoint(event.pos):
+                        delete_player(profiles[idx])
+                if new_rect.collidepoint(event.pos):
+                    return create_player(screen)
+
+        screen.fill(config.BACKGROUND_COLOR)
+        y = start_y
+        for i, name in enumerate(profiles):
+            name_rect = pygame.Rect(start_x, y, name_w, row_h)
+            pygame.draw.rect(screen, (60, 60, 90), name_rect)
+            pygame.draw.rect(screen, (200, 200, 200), name_rect, 1)
+            txt = font.render(name, True, (255, 255, 255))
+            screen.blit(txt, txt.get_rect(center=name_rect.center))
+
+            load_rect, del_rect = row_rects[i]
+            pygame.draw.rect(screen, (60, 60, 90), load_rect)
+            pygame.draw.rect(screen, (200, 200, 200), load_rect, 1)
+            load_txt = font.render("Load", True, (255, 255, 255))
+            screen.blit(load_txt, load_txt.get_rect(center=load_rect.center))
+
+            pygame.draw.rect(screen, (60, 60, 90), del_rect)
+            pygame.draw.rect(screen, (200, 200, 200), del_rect, 1)
+            del_txt = font.render("Delete", True, (255, 255, 255))
+            screen.blit(del_txt, del_txt.get_rect(center=del_rect.center))
+            y += row_h + 5
+
+        pygame.draw.rect(screen, (60, 60, 90), new_rect)
+        pygame.draw.rect(screen, (200, 200, 200), new_rect, 1)
+        new_txt = font.render("New Profile", True, (255, 255, 255))
+        screen.blit(new_txt, new_txt.get_rect(center=new_rect.center))
+
+        pygame.display.flip()
+        clock.tick(30)
