@@ -80,8 +80,8 @@ ENEMY_ORBIT_PROBABILITY = 0.35  # chance of starting an orbit each interval
 HYPERJUMP_COOLDOWN = 8.0
 HYPERJUMP_DELAY = 1.0
 # Base hyperjump velocity in parsecs per second
-# Vastly increased base hyperjump velocity (pc/s)
-HYPERJUMP_BASE_SPEED = 2.0
+# Further increased base hyperjump velocity (pc/s)
+HYPERJUMP_BASE_SPEED = 4.0
 # Shorter reference distance for noticeable scaling
 HYPERJUMP_D0 = 0.5
 # Stronger scaling so far targets only take a bit longer

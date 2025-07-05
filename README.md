@@ -108,7 +108,7 @@ v(d) = v0 · (1 + k · log10(1 + d / d0))
 t(d) = d / v(d)
 ```
 
-where `v0` is 2.0 pc/s, `d0` is 0.5 pc and `k` is 3.
+where `v0` is 4.0 pc/s, `d0` is 0.5 pc and `k` is 3.
 
 Travel time is clamped between 1 and 60 seconds so even nearby jumps last at
 least a second while distant ones never exceed a minute. The vignette overlay is
