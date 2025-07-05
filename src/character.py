@@ -36,6 +36,7 @@ class Player:
         self.fraction = fraction
         self.ship_model = ship_model
         self.credits = credits
+        self.ship = None
         # Inventory starts empty but contains an entry for each known item
         self.inventory: dict[str, int] = {name: 0 for name in ITEMS_BY_NAME}
 

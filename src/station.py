@@ -4,6 +4,7 @@ import math
 from dataclasses import dataclass
 from names import get_station_name
 from items import ITEMS, ITEMS_BY_NAME
+import config
 
 
 @dataclass
@@ -65,6 +66,8 @@ class SpaceStation:
             return False
         player.credits -= price
         player.add_item(item_name, qty)
+        if item.tipo == "combustible" and getattr(player, "ship", None):
+            player.ship.fuel += item.peso * qty * config.FUEL_PER_WEIGHT
         self.market[item_name] -= qty
         if self.market[item_name] <= 0:
             del self.market[item_name]

@@ -25,6 +25,7 @@ from artifact import (
 )
 from blackhole import TemporaryBlackHole
 from pathfinding import find_safe_path
+from items import ITEMS_BY_NAME
 
 
 @dataclass
@@ -56,6 +57,7 @@ class Ship:
         y: float,
         model: ShipModel | None = None,
         hull: int = 100,
+        player=None,
     ) -> None:
         self.x = float(x)
         self.y = float(y)
@@ -79,6 +81,12 @@ class Ship:
         self._hyperjump_start = (0.0, 0.0)
         self.boost_charge = 1.0
         self.boost_time = 0.0
+        self.fuel = 0.0
+        if player is not None:
+            for name, qty in player.inventory.items():
+                item = ITEMS_BY_NAME.get(name)
+                if item and item.tipo == "combustible" and qty > 0:
+                    self.fuel += item.peso * qty * config.FUEL_PER_WEIGHT
         self.model = model
         self.name = get_ship_name()
         self.weapons: list[Weapon] = [Weapon("Laser", 8, 400)]
@@ -165,14 +173,22 @@ class Ship:
         if self.boost_time > 0:
             accel *= config.BOOST_MULTIPLIER
 
-        if keys[pygame.K_w]:
-            self.vy -= accel * dt
-        if keys[pygame.K_s]:
-            self.vy += accel * dt
-        if keys[pygame.K_a]:
-            self.vx -= accel * dt
-        if keys[pygame.K_d]:
-            self.vx += accel * dt
+        used_thruster = False
+        if self.fuel > 0:
+            if keys[pygame.K_w]:
+                self.vy -= accel * dt
+                used_thruster = True
+            if keys[pygame.K_s]:
+                self.vy += accel * dt
+                used_thruster = True
+            if keys[pygame.K_a]:
+                self.vx -= accel * dt
+                used_thruster = True
+            if keys[pygame.K_d]:
+                self.vx += accel * dt
+                used_thruster = True
+        if used_thruster:
+            self.fuel = max(0.0, self.fuel - config.FUEL_BURN_RATE * dt)
 
         self.vx *= config.SHIP_FRICTION
         self.vy *= config.SHIP_FRICTION
@@ -213,6 +229,9 @@ class Ship:
             or self.hyperjump_target is not None
         ):
             return
+        if self.fuel < config.HYPERJUMP_FUEL_COST:
+            return
+        self.fuel -= config.HYPERJUMP_FUEL_COST
         self.hyperjump_target = (float(x), float(y))
         self.hyperjump_timer = config.HYPERJUMP_DELAY
         dist = math.hypot(x - self.x, y - self.y)
@@ -334,9 +353,15 @@ class Ship:
                 self.autopilot_path = None
             return
 
+        if self.fuel <= 0:
+            self.autopilot_target = None
+            self.autopilot_path = None
+            return
+
         old_x, old_y = self.x, self.y
         self.x += dx / distance * step
         self.y += dy / distance * step
+        self.fuel = max(0.0, self.fuel - config.FUEL_BURN_RATE * dt)
         self.x = max(0, min(world_width, self.x))
         self.y = max(0, min(world_height, self.y))
 
