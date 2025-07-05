@@ -100,8 +100,15 @@ is a short cooldown before it can be triggered again.
 A round **Hyper** button sits to the right of the slots. Clicking it opens a
 large map of the surrounding sectors. Left-click anywhere on the map to place a
 destination marker, then press **Confirm** to initiate a jump. Right-click and
-drag to pan the view, or hold the left button to drag while pressed. Hyperjumps occur after a brief one-second delay and you
-must wait eight seconds before jumping again.
+drag to pan the view, or hold the left button to drag while pressed. Hyperjumps occur after a brief one-second delay and you must wait eight seconds before jumping again.
+During the jump the ship violently streaks toward the destination while a large vignette darkens the screen. The travel time scales with distance using
+
+```
+v(d) = v0 · (1 + k · log10(1 + d / d0))
+t(d) = d / v(d)
+```
+
+where `v0` is 0.05 pc/s, `d0` is 1 pc and `k` is 2.
 
 Projectiles now vanish after travelling around 1200 pixels. Shots fired while
 orbiting curve sharply towards the target so they rarely miss. Normal shots

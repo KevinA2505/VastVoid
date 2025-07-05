@@ -73,6 +73,9 @@ class Ship:
         self.hyperjump_target: tuple[float, float] | None = None
         self.hyperjump_timer = 0.0
         self.hyperjump_cooldown = 0.0
+        self.hyperjump_anim_time = 0.0
+        self.hyperjump_elapsed = 0.0
+        self._hyperjump_start = (0.0, 0.0)
         self.boost_charge = 1.0
         self.boost_time = 0.0
         self.model = model
@@ -201,10 +204,22 @@ class Ship:
 
     def start_hyperjump(self, x: float, y: float) -> None:
         """Initiate a hyperjump to the given coordinates."""
-        if self.hyperjump_cooldown > 0 or self.hyperjump_timer > 0:
+        if (
+            self.hyperjump_cooldown > 0
+            or self.hyperjump_timer > 0
+            or self.hyperjump_target is not None
+        ):
             return
         self.hyperjump_target = (float(x), float(y))
         self.hyperjump_timer = config.HYPERJUMP_DELAY
+        dist = math.hypot(x - self.x, y - self.y)
+        d_pc = dist / config.HYPERJUMP_UNIT
+        v = config.HYPERJUMP_BASE_SPEED * (
+            1 + config.HYPERJUMP_SPEED_SCALE * math.log10(1 + d_pc / config.HYPERJUMP_D0)
+        )
+        self.hyperjump_anim_time = d_pc / v if v > 0 else 0.0
+        self.hyperjump_elapsed = 0.0
+        self._hyperjump_start = (self.x, self.y)
         self.autopilot_target = None
         self.cancel_orbit()
 
@@ -247,15 +262,31 @@ class Ship:
         """Handle hyperjump countdown and teleportation."""
         if self.hyperjump_timer > 0:
             self.hyperjump_timer -= dt
-            if self.hyperjump_timer <= 0 and self.hyperjump_target:
-                self.x, self.y = self.hyperjump_target
-                self.vx = 0.0
-                self.vy = 0.0
-                self.hyperjump_target = None
-                self.hyperjump_cooldown = config.HYPERJUMP_COOLDOWN
+            self.vx = 0.0
+            self.vy = 0.0
             self._update_projectiles(dt, world_width, world_height)
             self._update_specials(dt, world_width, world_height, enemies)
             return True
+
+        if self.hyperjump_target is not None:
+            self.hyperjump_elapsed += dt
+            t = (
+                self.hyperjump_elapsed / self.hyperjump_anim_time
+                if self.hyperjump_anim_time > 0
+                else 1.0
+            )
+            t = min(1.0, t)
+            self.x = (1 - t) * self._hyperjump_start[0] + t * self.hyperjump_target[0]
+            self.y = (1 - t) * self._hyperjump_start[1] + t * self.hyperjump_target[1]
+            self.vx = 0.0
+            self.vy = 0.0
+            self._update_projectiles(dt, world_width, world_height)
+            self._update_specials(dt, world_width, world_height, enemies)
+            if t >= 1.0:
+                self.hyperjump_target = None
+                self.hyperjump_cooldown = config.HYPERJUMP_COOLDOWN
+            return True
+
         return False
 
     def _update_autopilot(
@@ -367,6 +398,11 @@ class Ship:
         if self.boost_time > 0:
             return 0.0
         return self.boost_charge
+
+    @property
+    def hyperjump_active(self) -> bool:
+        """Return ``True`` while a hyperjump animation is playing."""
+        return self.hyperjump_timer > 0 or self.hyperjump_target is not None
 
     def fire(self, tx: float, ty: float) -> None:
         if not self.weapons:
