@@ -1,2 +1,4 @@
 __pycache__/
 *.pyc
+
+learning_enemy_q_table.pkl
