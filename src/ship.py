@@ -16,8 +16,6 @@ from combat import (
 )
 from artifact import (
     Artifact,
-    EMPArtifact,
-    AreaShieldArtifact,
     AreaShieldAura,
     EMPWave,
     TractorProbe,
