@@ -156,6 +156,7 @@ class LearningEnemy(Enemy):
         sectors: list,
         blackholes: list | None = None,
         player_fraction=None,
+        structures: list | None = None,
     ) -> None:
         self.player_ship = player_ship
         self._blackholes = blackholes
@@ -170,6 +171,7 @@ class LearningEnemy(Enemy):
                 sectors,
                 blackholes,
                 [player_target],
+                structures,
             )
             if self.ship.autopilot_target is None:
                 self._wander_target = None
@@ -199,6 +201,7 @@ class LearningEnemy(Enemy):
             sectors,
             blackholes,
             [player_target],
+            structures,
         )
 
         if (

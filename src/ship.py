@@ -85,6 +85,7 @@ class Ship:
         self.projectiles: list[Projectile] = []
         self.specials: list = []
         self._enemy_list: list | None = None
+        self._structures: list | None = None
         self.shield = Shield()
         self.artifacts: list[Artifact] = []
         self.area_shield: AreaShieldAura | None = None
@@ -117,8 +118,10 @@ class Ship:
         sectors: list,
         blackholes: list | None = None,
         enemies: list | None = None,
+        structures: list | None = None,
     ) -> None:
         self._enemy_list = enemies
+        self._structures = structures or []
         self._sectors = sectors
         if self.invisible_timer > 0:
             self.invisible_timer = max(0.0, self.invisible_timer - dt)
@@ -380,6 +383,16 @@ class Ship:
         half_size = self.size / 2
         for sector in sectors:
             if sector.collides_with_point(self.x, self.y, half_size):
+                return True
+        for obj in self._enemy_list or []:
+            other = getattr(obj, "ship", obj)
+            if other is self:
+                continue
+            if math.hypot(other.x - self.x, other.y - self.y) < half_size + other.size / 2:
+                return True
+        for struct in self._structures:
+            radius = getattr(struct, "radius", getattr(struct, "size", 0) / 2)
+            if math.hypot(struct.x - self.x, struct.y - self.y) < half_size + radius:
                 return True
         return False
 

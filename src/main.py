@@ -496,7 +496,16 @@ def main():
 
         keys = pygame.key.get_pressed()
         hostiles = [en for en in enemies if en.fraction != player.fraction]
-        ship.update(keys, dt, world_width, world_height, sectors, blackholes, hostiles)
+        ship.update(
+            keys,
+            dt,
+            world_width,
+            world_height,
+            sectors,
+            blackholes,
+            hostiles,
+            capital_ships,
+        )
         for enemy in list(enemies):
             enemy.update(
                 ship,
@@ -506,6 +515,7 @@ def main():
                 sectors,
                 blackholes,
                 player.fraction,
+                capital_ships,
             )
 
             enemy_rect = pygame.Rect(

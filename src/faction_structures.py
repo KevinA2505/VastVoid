@@ -42,6 +42,7 @@ class CapitalShip(FactionStructure):
     hull: int = 1000
     hangar_capacity: int = 4
     energy_sources: list[Any] = field(default_factory=list)
+    radius: int = 50
 
     def apply_fraction_traits(self, fraction: Fraction) -> None:
         super().apply_fraction_traits(fraction)
@@ -129,6 +130,10 @@ class CapitalShip(FactionStructure):
             vert = pygame.Rect(x - scaled // 8, y - scaled // 2, scaled // 4, scaled)
             pygame.draw.rect(screen, color, horiz)
             pygame.draw.rect(screen, color, vert)
+
+    def collides_with_point(self, x: float, y: float, radius: float) -> bool:
+        """Return ``True`` if ``(x, y)`` overlaps this capital ship."""
+        return math.hypot(self.x - x, self.y - y) < self.radius + radius
 
 
 @dataclass
