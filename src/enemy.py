@@ -249,8 +249,15 @@ class Enemy:
         if self.tree:
             self.tree.tick()
 
+        player_target = type("_PlayerTarget", (), {"ship": player_ship})()
         self.ship.update(
-            _NullKeys(), dt, world_width, world_height, sectors, blackholes, None
+            _NullKeys(),
+            dt,
+            world_width,
+            world_height,
+            sectors,
+            blackholes,
+            [player_target],
         )
 
         # Break orbit if the player is boosting so the enemy can't keep up
