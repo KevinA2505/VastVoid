@@ -218,6 +218,10 @@ class Ship:
             1 + config.HYPERJUMP_SPEED_SCALE * math.log10(1 + d_pc / config.HYPERJUMP_D0)
         )
         self.hyperjump_anim_time = d_pc / v if v > 0 else 0.0
+        self.hyperjump_anim_time = max(
+            config.HYPERJUMP_MIN_TIME,
+            min(self.hyperjump_anim_time, config.HYPERJUMP_MAX_TIME),
+        )
         self.hyperjump_elapsed = 0.0
         self._hyperjump_start = (self.x, self.y)
         self.autopilot_target = None

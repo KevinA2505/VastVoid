@@ -110,6 +110,10 @@ t(d) = d / v(d)
 
 where `v0` is 2.0 pc/s, `d0` is 0.5 pc and `k` is 3.
 
+Travel time is clamped between 1 and 60 seconds so even nearby jumps last at
+least a second while distant ones never exceed a minute. The vignette overlay is
+darker to emphasize the effect.
+
 Projectiles now vanish after travelling around 1200 pixels. Shots fired while
 orbiting curve sharply towards the target so they rarely miss. Normal shots
 travel in a straight line.

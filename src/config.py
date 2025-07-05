@@ -88,4 +88,8 @@ HYPERJUMP_SPEED_SCALE = 3.0
 # Conversion factor from world units to parsecs
 HYPERJUMP_UNIT = 10.0
 # Opacity of the vignette overlay during jumps
-HYPERJUMP_VIGNETTE_ALPHA = 180
+HYPERJUMP_VIGNETTE_ALPHA = 220
+
+# Minimum and maximum duration of hyperjump animations in seconds
+HYPERJUMP_MIN_TIME = 1.0
+HYPERJUMP_MAX_TIME = 60.0
