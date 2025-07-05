@@ -226,6 +226,7 @@ class Enemy:
         sectors: list,
         blackholes: list | None = None,
         player_fraction: Fraction | None = None,
+        structures: list | None = None,
     ) -> None:
         """Update ship movement after behaviour tree tick."""
 
@@ -233,7 +234,14 @@ class Enemy:
         if player_fraction is not None and player_fraction == self.fraction:
             self.state = "ally"
             self.ship.update(
-                _NullKeys(), dt, world_width, world_height, sectors, blackholes, None
+                _NullKeys(),
+                dt,
+                world_width,
+                world_height,
+                sectors,
+                blackholes,
+                None,
+                structures,
             )
             if self.ship.autopilot_target is None:
                 self._wander_target = None
@@ -258,6 +266,7 @@ class Enemy:
             sectors,
             blackholes,
             [player_target],
+            structures,
         )
 
         # Break orbit if the player is boosting so the enemy can't keep up

@@ -105,3 +105,7 @@ class SpaceStation:
             (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom)),
             scaled_radius,
         )
+
+    def collides_with_point(self, x: float, y: float, radius: float) -> bool:
+        """Return ``True`` if ``(x, y)`` is inside the station plus ``radius``."""
+        return math.hypot(self.x - x, self.y - y) < self.radius + radius

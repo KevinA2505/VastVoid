@@ -47,6 +47,9 @@ class StarSystem:
         for planet in self.planets:
             if math.hypot(planet.x - x, planet.y - y) < planet.radius + radius:
                 return True
+        for station in self.stations:
+            if station.collides_with_point(x, y, radius):
+                return True
         return False
 
     def get_object_at_point(self, x: float, y: float, radius: float):
