@@ -20,6 +20,7 @@ from ui import (
     AbilityBar,
     WeaponMenu,
     ArtifactMenu,
+    HyperJumpMap,
 )
 from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
 from planet_surface import PlanetSurface
