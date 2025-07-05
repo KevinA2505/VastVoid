@@ -6,6 +6,8 @@ from ship import Ship, choose_ship
 from combat import LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon, BasicWeapon
 from enemy_learning import create_learning_enemy
 from sector import create_sectors
+from fraction import FRACTIONS
+from faction_structures import spawn_capital_ships
 from wormhole import WormHole
 from star import Star
 from planet import Planet
@@ -102,6 +104,8 @@ def main():
         wormholes.extend(sector.wormholes)
     world_width = config.GRID_SIZE * config.SECTOR_WIDTH
     world_height = config.GRID_SIZE * config.SECTOR_HEIGHT
+
+    capital_ships = spawn_capital_ships(FRACTIONS, world_width, world_height)
 
     enemies = []
     num_enemies = random.randint(config.MIN_ENEMIES, config.MAX_ENEMIES)
@@ -565,6 +569,8 @@ def main():
         offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
         for sector in sectors:
             sector.draw(screen, offset_x, offset_y, zoom)
+        for cap in capital_ships:
+            cap.draw(screen, offset_x, offset_y, zoom)
         for enemy in enemies:
             enemy.ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         ship.draw_projectiles(screen, offset_x, offset_y, zoom)
