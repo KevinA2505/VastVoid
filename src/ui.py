@@ -439,3 +439,80 @@ class AbilityBar:
             key_rect = key_txt.get_rect(bottomright=(rect.right - 4, rect.bottom - 2))
             screen.blit(key_txt, key_rect)
 
+
+class HyperJumpMap:
+    """Interactive map for selecting hyperjump destinations."""
+
+    def __init__(self, ship, sectors, world_w: int, world_h: int) -> None:
+        self.ship = ship
+        self.sectors = sectors
+        self.world_w = world_w
+        self.world_h = world_h
+        self.zoom = 0.2
+        self.camera_x = ship.x
+        self.camera_y = ship.y
+        self.dragging = False
+        self.destination: tuple[float, float] | None = None
+        self.last_mouse = (0, 0)
+        self.confirm_rect = pygame.Rect(
+            config.WINDOW_WIDTH - 110, config.WINDOW_HEIGHT - 40, 100, 30
+        )
+        self.cancel_rect = pygame.Rect(10, config.WINDOW_HEIGHT - 40, 100, 30)
+
+    def handle_event(self, event) -> bool:
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            return True
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                if self.confirm_rect.collidepoint(event.pos) and self.destination:
+                    self.ship.start_hyperjump(*self.destination)
+                    return True
+                if self.cancel_rect.collidepoint(event.pos):
+                    return True
+                off_x = self.camera_x - config.WINDOW_WIDTH / (2 * self.zoom)
+                off_y = self.camera_y - config.WINDOW_HEIGHT / (2 * self.zoom)
+                wx = event.pos[0] / self.zoom + off_x
+                wy = event.pos[1] / self.zoom + off_y
+                self.destination = (wx, wy)
+            elif event.button == 3:
+                self.dragging = True
+                self.last_mouse = event.pos
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 3:
+            self.dragging = False
+        elif event.type == pygame.MOUSEMOTION and self.dragging:
+            dx = event.pos[0] - self.last_mouse[0]
+            dy = event.pos[1] - self.last_mouse[1]
+            self.camera_x -= dx / self.zoom
+            self.camera_y -= dy / self.zoom
+            self.last_mouse = event.pos
+        return False
+
+    def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        screen.fill(config.BACKGROUND_COLOR)
+        off_x = self.camera_x - config.WINDOW_WIDTH / (2 * self.zoom)
+        off_y = self.camera_y - config.WINDOW_HEIGHT / (2 * self.zoom)
+        for sector in self.sectors:
+            sector.draw(screen, off_x, off_y, self.zoom)
+
+        ship_pos = (
+            int((self.ship.x - off_x) * self.zoom),
+            int((self.ship.y - off_y) * self.zoom),
+        )
+        pygame.draw.circle(screen, (0, 255, 0), ship_pos, 4)
+
+        if self.destination:
+            dest_pos = (
+                int((self.destination[0] - off_x) * self.zoom),
+                int((self.destination[1] - off_y) * self.zoom),
+            )
+            pygame.draw.circle(screen, (255, 0, 0), dest_pos, 6, 1)
+            pygame.draw.rect(screen, (60, 60, 90), self.confirm_rect)
+            pygame.draw.rect(screen, (200, 200, 200), self.confirm_rect, 1)
+            txt = font.render("Confirm", True, (255, 255, 255))
+            screen.blit(txt, txt.get_rect(center=self.confirm_rect.center))
+
+        pygame.draw.rect(screen, (60, 60, 90), self.cancel_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.cancel_rect, 1)
+        txt = font.render("Cancel", True, (255, 255, 255))
+        screen.blit(txt, txt.get_rect(center=self.cancel_rect.center))
+
