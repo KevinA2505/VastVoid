@@ -70,6 +70,9 @@ class Ship:
         self.orbit_fire_timer = 0.0
         self.orbit_cooldown = 0.0
         self.orbit_forced = False
+        self.hyperjump_target: tuple[float, float] | None = None
+        self.hyperjump_timer = 0.0
+        self.hyperjump_cooldown = 0.0
         self.boost_charge = 1.0
         self.boost_time = 0.0
         self.model = model
@@ -120,6 +123,10 @@ class Ship:
             self.invisible_timer = max(0.0, self.invisible_timer - dt)
         if self.orbit_cooldown > 0:
             self.orbit_cooldown = max(0.0, self.orbit_cooldown - dt)
+        if self.hyperjump_cooldown > 0:
+            self.hyperjump_cooldown = max(0.0, self.hyperjump_cooldown - dt)
+        if self._update_hyperjump(dt, world_width, world_height, enemies):
+            return
 
         # Always recharge shields and update weapon timers
         self.shield.recharge(dt)
@@ -192,6 +199,15 @@ class Ship:
     def cancel_autopilot(self) -> None:
         self.autopilot_target = None
 
+    def start_hyperjump(self, x: float, y: float) -> None:
+        """Initiate a hyperjump to the given coordinates."""
+        if self.hyperjump_cooldown > 0 or self.hyperjump_timer > 0:
+            return
+        self.hyperjump_target = (float(x), float(y))
+        self.hyperjump_timer = config.HYPERJUMP_DELAY
+        self.autopilot_target = None
+        self.cancel_orbit()
+
     def start_orbit(
         self,
         target,
@@ -220,6 +236,27 @@ class Ship:
         self.orbit_speed = config.SHIP_ORBIT_SPEED
         self.orbit_fire_timer = 0.0
         self.orbit_cooldown = config.ORBIT_COOLDOWN
+
+    def _update_hyperjump(
+        self,
+        dt: float,
+        world_width: int,
+        world_height: int,
+        enemies: list | None = None,
+    ) -> bool:
+        """Handle hyperjump countdown and teleportation."""
+        if self.hyperjump_timer > 0:
+            self.hyperjump_timer -= dt
+            if self.hyperjump_timer <= 0 and self.hyperjump_target:
+                self.x, self.y = self.hyperjump_target
+                self.vx = 0.0
+                self.vy = 0.0
+                self.hyperjump_target = None
+                self.hyperjump_cooldown = config.HYPERJUMP_COOLDOWN
+            self._update_projectiles(dt, world_width, world_height)
+            self._update_specials(dt, world_width, world_height, enemies)
+            return True
+        return False
 
     def _update_autopilot(
         self,
