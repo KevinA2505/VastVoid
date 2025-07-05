@@ -148,7 +148,6 @@ class LearningEnemy(Enemy):
 def create_learning_enemy(region):
     """Return a LearningEnemy with random species and ship model."""
     from ship import Ship, SHIP_MODELS
-    from sector import Sector
     from character import Alien, Human, Robot
 
     species_cls = random.choice([Human, Alien, Robot])
