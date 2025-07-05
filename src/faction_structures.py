@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from typing import Any
 
-from fraction import Fraction
+from fraction import Fraction, Color
 
 
 @dataclass
@@ -13,6 +13,9 @@ class FactionStructure:
     name: str
     fraction: Fraction | None = None
     modules: list[str] = field(default_factory=list)
+    color: Color | None = None
+    shape: str | None = None
+    aura: str | None = None
 
     def apply_fraction_traits(self, fraction: Fraction) -> None:
         """Configure this structure with properties for ``fraction``.
@@ -21,6 +24,9 @@ class FactionStructure:
         modifications like additional modules or stat bonuses.
         """
         self.fraction = fraction
+        self.color = fraction.color
+        self.shape = fraction.shape
+        self.aura = fraction.aura
 
 
 @dataclass
