@@ -10,6 +10,14 @@ You can select any planet and choose **Visit planet** to land on its surface
 and explore a procedurally generated map. Press `Escape` or use the *Take Off*
 button to return to space.
 
+## Features
+
+* Land on planets to explore procedurally generated surfaces.
+* Encounter enemy ships powered by basic AI and learning behaviours.
+* Travel instantly via wormholes linking distant sectors.
+* Engage hyper-speed travel to jump across the map
+  (one-second charge with an eight-second cooldown).
+
 ## Character creation
 
 When starting the game you can personalise the player by entering a name,
@@ -88,6 +96,12 @@ second slot triggers the **Orbit** skill using the **R** key or by clicking the
 slot. When used, your ship orbits the nearest enemy at a reduced speed for five
 seconds and automatically fires once every second. After the orbit ends there
 is a short cooldown before it can be triggered again.
+
+A round **Hyper** button sits to the right of the slots. Clicking it opens a
+large map of the surrounding sectors. Left-click anywhere on the map to place a
+destination marker, then press **Confirm** to initiate a jump. Right-click and
+drag to pan the view. Hyperjumps occur after a brief one-second delay and you
+must wait eight seconds before jumping again.
 
 Projectiles now vanish after travelling around 1200 pixels. Shots fired while
 orbiting curve sharply towards the target so they rarely miss. Normal shots
