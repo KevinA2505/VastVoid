@@ -60,6 +60,9 @@ class SpaceStation:
             price = int(price * 0.9)
         if player.credits < price:
             return False
+        capacity = getattr(getattr(player, "ship_model", None), "cargo_capacity", float("inf"))
+        if player.cargo_weight + item.peso * qty > capacity:
+            return False
         player.credits -= price
         player.add_item(item_name, qty)
         self.market[item_name] -= qty

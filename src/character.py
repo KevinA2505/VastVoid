@@ -39,6 +39,15 @@ class Player:
         # Inventory starts empty but contains an entry for each known item
         self.inventory: dict[str, int] = {name: 0 for name in ITEMS_BY_NAME}
 
+    @property
+    def cargo_weight(self) -> float:
+        """Total weight of all items carried."""
+        total = 0.0
+        for name, qty in self.inventory.items():
+            item = ITEMS_BY_NAME[name]
+            total += item.peso * qty
+        return total
+
     def add_item(self, item: str, quantity: int = 1) -> None:
         """Add `quantity` of `item` to the inventory."""
         if item not in self.inventory:

@@ -139,6 +139,11 @@ class InventoryWindow:
         screen.fill((20, 20, 40))
         title = font.render("Inventory", True, (255, 255, 255))
         screen.blit(title, (20, 20))
+        capacity = getattr(getattr(self.player, "ship_model", None), "cargo_capacity", 0)
+        weight_txt = font.render(
+            f"Cargo: {self.player.cargo_weight:.1f}/{capacity}", True, (255, 255, 255)
+        )
+        screen.blit(weight_txt, (20, 40))
         self.item_rects.clear()
         x0, y0 = 20, 60
         cell_w, cell_h = 120, 40
@@ -196,6 +201,11 @@ class MarketWindow:
         screen.fill((20, 20, 40))
         title = font.render(f"Market - {self.player.credits} cr", True, (255, 255, 255))
         screen.blit(title, (20, 20))
+        cap = getattr(getattr(self.player, "ship_model", None), "cargo_capacity", 0)
+        wt_txt = font.render(
+            f"Cargo: {self.player.cargo_weight:.1f}/{cap}", True, (255, 255, 255)
+        )
+        screen.blit(wt_txt, (20, 40))
 
         self.buy_rects.clear()
         self.sell_rects.clear()
