@@ -24,6 +24,7 @@ from artifact import (
     Decoy,
 )
 from blackhole import TemporaryBlackHole
+from pathfinding import find_safe_path
 
 
 @dataclass
@@ -60,6 +61,7 @@ class Ship:
         self.vx = 0.0
         self.vy = 0.0
         self.autopilot_target = None
+        self.autopilot_path: list[tuple[float, float]] | None = None
         self.orbit_target = None
         self.orbit_time = 0.0
         self.orbit_radius = 0.0
@@ -196,9 +198,11 @@ class Ship:
 
     def start_autopilot(self, target) -> None:
         self.autopilot_target = target
+        self.autopilot_path = None
 
     def cancel_autopilot(self) -> None:
         self.autopilot_target = None
+        self.autopilot_path = None
 
     def start_hyperjump(self, x: float, y: float) -> None:
         """Initiate a hyperjump to the given coordinates."""
@@ -300,19 +304,35 @@ class Ship:
         blackholes: list | None = None,
     ) -> None:
         dest_x, dest_y = self.autopilot_target.x, self.autopilot_target.y
-        dx = dest_x - self.x
-        dy = dest_y - self.y
+
+        if not self.autopilot_path:
+            self.autopilot_path = find_safe_path(
+                (self.x, self.y),
+                (dest_x, dest_y),
+                sectors,
+                blackholes,
+                world_width,
+                world_height,
+            )
+
+        target_x, target_y = self.autopilot_path[0]
+        dx = target_x - self.x
+        dy = target_y - self.y
         distance = math.hypot(dx, dy)
         step = config.AUTOPILOT_SPEED * dt
         if isinstance(self.autopilot_target, Planet):
             step = config.PLANET_LANDING_SPEED * dt
         if distance <= step:
-            self.x = dest_x
-            self.y = dest_y
-            self.autopilot_target = None
-            self.vx = 0
-            self.vy = 0
+            self.x = target_x
+            self.y = target_y
+            self.autopilot_path.pop(0)
+            if not self.autopilot_path:
+                self.autopilot_target = None
+                self.vx = 0
+                self.vy = 0
+                self.autopilot_path = None
             return
+
         old_x, old_y = self.x, self.y
         self.x += dx / distance * step
         self.y += dy / distance * step
@@ -328,6 +348,7 @@ class Ship:
         if self._check_collision(sectors):
             self.x, self.y = old_x, old_y
             self.autopilot_target = None
+            self.autopilot_path = None
 
         self._update_projectiles(dt, world_width, world_height)
 
