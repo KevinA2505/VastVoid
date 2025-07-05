@@ -142,3 +142,12 @@ Three additional artifacts expand your tactical options:
 Press **G** to open the artifact menu. All available artifacts are listed and
 clicking one lets you choose the ability slot by pressing **1**, **2** or **3**.
 The first two slots (Boost and Orbit) cannot be replaced.
+
+## Economía del juego
+
+En VastVoid los jugadores acumulan **créditos** que sirven como moneda principal para comprar naves, mejoras y suministros.
+
+En las **SpaceStation** encontrarás un mercado donde puedes vender los objetos recolectados durante la exploración y adquirir equipo nuevo. Los precios se ajustan de manera dinámica según la oferta disponible.
+
+Si perteneces a la fracción *Cosmic Guild* obtendrás un descuento del 10% en todas las compras dentro de estas estaciones, además de bonificaciones periódicas de créditos por completar misiones.
+
