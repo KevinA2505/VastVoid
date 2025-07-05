@@ -8,7 +8,17 @@ import py_trees
 
 from character import Alien, Human, Robot
 from ship import Ship, SHIP_MODELS
-from artifact import Decoy
+from artifact import (
+    Artifact,
+    Decoy,
+    EMPArtifact,
+    AreaShieldArtifact,
+    GravityTractorArtifact,
+    NanobotArtifact,
+    SolarGeneratorArtifact,
+    DecoyArtifact,
+    AVAILABLE_ARTIFACTS,
+)
 from combat import (
     LaserWeapon,
     MineWeapon,
@@ -246,9 +256,11 @@ class Enemy:
         init=False,
         repr=False,
     )
+    artifacts: list[Artifact] = field(default_factory=list, repr=False)
 
     def __post_init__(self) -> None:
         self.build_tree()
+        self.ship.artifacts = self.artifacts
         enemy_manager.register(self)
 
     def build_tree(self) -> None:
@@ -261,6 +273,33 @@ class Enemy:
         root = py_trees.composites.Selector("EnemyRoot", memory=False)
         root.add_children([flee, defend, attack, pursue, idle])
         self.tree = py_trees.trees.BehaviourTree(root)
+
+    def _maybe_use_artifacts(self, player_ship: Ship, dist_to_player: float) -> None:
+        """Randomly activate equipped artifacts based on the situation."""
+        for idx, art in enumerate(self.ship.artifacts):
+            if isinstance(art, EMPArtifact):
+                if dist_to_player <= art.radius and random.random() < 0.2:
+                    self.ship.use_artifact(idx, [player_ship])
+            elif isinstance(art, AreaShieldArtifact):
+                if self.ship.area_shield is None and random.random() < 0.05:
+                    self.ship.use_artifact(idx, [player_ship])
+            elif isinstance(art, NanobotArtifact):
+                if (
+                    self.ship.hull < self.ship.max_hull * 0.6
+                    and random.random() < 0.05
+                ):
+                    self.ship.use_artifact(idx, [player_ship])
+            elif isinstance(art, DecoyArtifact):
+                if self.state in {"flee", "defend"} and random.random() < 0.1:
+                    self.ship.use_artifact(idx, [player_ship])
+            elif isinstance(art, GravityTractorArtifact):
+                if random.random() < 0.05 and not art.awaiting_click:
+                    art.activate(self.ship, [player_ship])
+                    if art.awaiting_click:
+                        art.confirm(player_ship.x, player_ship.y)
+            elif isinstance(art, SolarGeneratorArtifact):
+                if random.random() < 0.05:
+                    self.ship.use_artifact(idx, [player_ship])
 
     def update(
         self,
@@ -305,6 +344,8 @@ class Enemy:
         if self.tree:
             self.tree.tick()
 
+        self._maybe_use_artifacts(player_ship, dist_to_player)
+
         self.ship.update(
             _NullKeys(), dt, world_width, world_height, sectors, blackholes, None
         )
@@ -335,6 +376,10 @@ def create_random_enemy(region: Sector) -> Enemy:
         region,
         fraction,
     )
+    num_artifacts = random.randint(1, 2)
+    art_classes = random.sample(AVAILABLE_ARTIFACTS, num_artifacts)
+    enemy.artifacts = [cls() for cls in art_classes]
+    enemy.ship.artifacts = enemy.artifacts
     # Replace the default weapon with a random one
     weapon_cls = random.choice(
         [LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon, BasicWeapon]
