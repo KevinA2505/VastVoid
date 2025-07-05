@@ -3,7 +3,8 @@ BACKGROUND_COLOR = (0, 0, 20)  # near black
 
 SHIP_COLOR = (255, 255, 255)
 SHIP_SIZE = 20
-SHIP_ACCELERATION = 300  # pixels per second squared
+# Ship acceleration is drastically increased for snappier movement
+SHIP_ACCELERATION = 1500  # pixels per second squared (5x default)
 SHIP_FRICTION = 0.92  # velocity retained each frame
 AUTOPILOT_SPEED = 120  # pixels per second when auto moving
 PLANET_LANDING_SPEED = 100  # slower speed when approaching a planet
