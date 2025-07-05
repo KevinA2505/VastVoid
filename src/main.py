@@ -12,6 +12,7 @@ from faction_structures import spawn_capital_ships
 from star import Star
 from planet import Planet
 from station import SpaceStation
+from savegame import load_station_markets, save_station_markets
 from ui import (
     DropdownMenu,
     RoutePlanner,
@@ -115,6 +116,8 @@ def main():
     sectors = create_sectors(
         config.GRID_SIZE, config.SECTOR_WIDTH, config.SECTOR_HEIGHT
     )
+    # Restore persistent market data if available
+    load_station_markets(sectors)
     blackholes = []
     wormholes = []
     for sector in sectors:
@@ -763,6 +766,8 @@ def main():
     # Save learning data so enemies retain behavior between sessions
     for enemy in enemies:
         enemy.save_q_table()
+    # Persist station markets for next session
+    save_station_markets(sectors)
 
     pygame.quit()
 

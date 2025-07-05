@@ -30,6 +30,8 @@ class SpaceStation:
         self.x = x
         self.y = y
         self.radius = radius
+        # Unique identifier used when saving/loading market data
+        self.id = f"{self.name}_{int(self.x)}_{int(self.y)}"
         self.hangars = [Hangar() for _ in range(num_hangars)]
         self.rooms = [Room(f"Room {i+1}") for i in range(num_rooms)]
         # Randomly populate the market with items for trade

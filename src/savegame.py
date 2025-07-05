@@ -1,6 +1,10 @@
 import json
 import os
-from typing import List
+from typing import List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sector import Sector
+    from station import SpaceStation
 
 from character import Player, Human, Alien, Robot
 from fraction import FRACTIONS
@@ -8,6 +12,7 @@ from items import ITEMS_BY_NAME
 from ship import SHIP_MODELS, ShipModel
 
 SAVE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "saves")
+MARKET_FILE = os.path.join(SAVE_DIR, "station_markets.json")
 
 
 def _model_to_dict(model: ShipModel | None):
@@ -47,6 +52,18 @@ def save_player(player: Player) -> None:
         json.dump(data, f, indent=2)
 
 
+def save_station_markets(sectors: List["Sector"]):
+    """Serialize market data for all stations in the world."""
+    os.makedirs(SAVE_DIR, exist_ok=True)
+    markets: dict[str, dict[str, int]] = {}
+    for sector in sectors:
+        for system in sector.systems:
+            for station in system.stations:
+                markets[station.id] = station.market
+    with open(MARKET_FILE, "w", encoding="utf-8") as f:
+        json.dump(markets, f, indent=2)
+
+
 def load_player(name: str) -> Player:
     """Read JSON data and reconstruct a Player instance."""
     path = os.path.join(SAVE_DIR, f"{name}.json")
@@ -68,6 +85,20 @@ def load_player(name: str) -> Player:
     inv.update(data.get("inventory", {}))
     player.inventory = inv
     return player
+
+
+def load_station_markets(sectors: List["Sector"]):
+    """Restore saved station market data if present."""
+    if not os.path.exists(MARKET_FILE):
+        return
+    with open(MARKET_FILE, "r", encoding="utf-8") as f:
+        markets = json.load(f)
+    for sector in sectors:
+        for system in sector.systems:
+            for station in system.stations:
+                market = markets.get(station.id)
+                if market is not None:
+                    station.market = {k: int(v) for k, v in market.items()}
 
 
 def list_players() -> List[str]:
