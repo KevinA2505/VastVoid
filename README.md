@@ -108,7 +108,7 @@ v(d) = v0 · (1 + k · log10(1 + d / d0))
 t(d) = d / v(d)
 ```
 
-where `v0` is 0.05 pc/s, `d0` is 1 pc and `k` is 2.
+where `v0` is 2.0 pc/s, `d0` is 0.5 pc and `k` is 3.
 
 Projectiles now vanish after travelling around 1200 pixels. Shots fired while
 orbiting curve sharply towards the target so they rarely miss. Normal shots
