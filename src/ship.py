@@ -36,14 +36,15 @@ class ShipModel:
     size: int
     color: tuple[int, int, int]
     accel_factor: float = 1.0
+    cargo_capacity: float = 0.0
 
 
 # Some predefined ship models used during character creation
 SHIP_MODELS = [
-    ShipModel("Fighter", "AeroTech", 18, (200, 200, 255), 1.2),
-    ShipModel("Explorer", "NovaCorp", 20, (255, 220, 150), 1.0),
-    ShipModel("Freighter", "Galactic Haul", 24, (180, 180, 180), 0.8),
-    ShipModel("Interceptor", "Starlight", 16, (255, 100, 100), 1.4),
+    ShipModel("Fighter", "AeroTech", 18, (200, 200, 255), 1.2, 50.0),
+    ShipModel("Explorer", "NovaCorp", 20, (255, 220, 150), 1.0, 80.0),
+    ShipModel("Freighter", "Galactic Haul", 24, (180, 180, 180), 0.8, 150.0),
+    ShipModel("Interceptor", "Starlight", 16, (255, 100, 100), 1.4, 40.0),
 ]
 
 class Ship:
