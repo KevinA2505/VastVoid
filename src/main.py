@@ -434,7 +434,7 @@ def main():
                         if d < min_dist:
                             min_dist = d
                             nearest = en
-                    if nearest and min_dist <= 350:
+                    if nearest and min_dist <= config.ORBIT_TRIGGER_RANGE:
                         ship.start_orbit(nearest.ship, speed=config.SHIP_ORBIT_SPEED * 0.5)
                 elif event.key == pygame.K_SPACE:
                     mx, my = pygame.mouse.get_pos()

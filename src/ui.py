@@ -438,7 +438,7 @@ class AbilityBar:
             if d < min_dist:
                 min_dist = d
                 nearest = en
-        if nearest:
+        if nearest and min_dist <= config.ORBIT_TRIGGER_RANGE:
             ship.start_orbit(nearest.ship, speed=config.SHIP_ORBIT_SPEED * 0.5)
 
     def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
