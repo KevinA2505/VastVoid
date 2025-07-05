@@ -18,6 +18,7 @@ import config
 
 
 Q_TABLE_PATH = "learning_enemy_q_table.pkl"
+Q_TABLE_VERSION = 2
 
 
 @dataclass
@@ -28,8 +29,10 @@ class LearningEnemy(Enemy):
     gamma: float = 0.9
     epsilon: float = 0.1
     q_table: dict = field(default_factory=dict, init=False, repr=False)
+    q_table_version: int = field(default=Q_TABLE_VERSION, init=False, repr=False)
     prev_hull: int = field(default=0, init=False, repr=False)
     player_prev_hull: int = field(default=0, init=False, repr=False)
+    _blackholes: list | None = field(default=None, init=False, repr=False)
 
     def build_tree(self) -> None:  # override without behaviour tree
         self.actions = {
@@ -42,21 +45,48 @@ class LearningEnemy(Enemy):
         self.tree = None
 
     def _state(self) -> tuple:
-        """Return a discrete state representation."""
+        """Return a discrete state representation.
+
+        The state now includes additional features describing shield strength
+        and proximity to hazards so the Q-table can learn richer behaviours.
+        """
         player = self.player_ship
         dx = player.x - self.ship.x
         dy = player.y - self.ship.y
         dist = math.hypot(dx, dy)
+
         if dist <= self.attack_range:
             dist_cat = 0
         elif dist <= self.detection_range:
             dist_cat = 1
         else:
             dist_cat = 2
+
         hull_low = self.ship.hull <= self.flee_threshold
-        return dist_cat, hull_low
+
+        def shield_cat(shield) -> int:
+            ratio = shield.strength / shield.max_strength
+            if ratio > 0.66:
+                return 2
+            if ratio > 0.33:
+                return 1
+            return 0
+
+        enemy_shield = shield_cat(self.ship.shield)
+        player_shield = shield_cat(player.shield)
+
+        near_blackhole = 0
+        if getattr(self, "_blackholes", None):
+            for hole in self._blackholes:
+                d = math.hypot(self.ship.x - hole.x, self.ship.y - hole.y)
+                if d <= hole.pull_range:
+                    near_blackhole = 1
+                    break
+
+        return dist_cat, hull_low, enemy_shield, player_shield, near_blackhole
 
     def choose_action(self, state: tuple) -> str:
+        """Return an action for ``state`` using an epsilon-greedy policy."""
         if random.random() < self.epsilon or state not in self.q_table:
             return random.choice(list(self.actions))
         return max(self.q_table[state], key=self.q_table[state].get)
@@ -64,15 +94,37 @@ class LearningEnemy(Enemy):
     def save_q_table(self, path: str = Q_TABLE_PATH) -> None:
         """Persist the Q-table to disk."""
         with open(path, "wb") as f:
-            pickle.dump(self.q_table, f)
+            data = {"version": self.q_table_version, "q_table": self.q_table}
+            pickle.dump(data, f)
 
     def load_q_table(self, path: str = Q_TABLE_PATH) -> None:
         """Load Q-table values if a saved table exists."""
         if os.path.exists(path):
             with open(path, "rb") as f:
-                self.q_table = pickle.load(f)
+                data = pickle.load(f)
+            if isinstance(data, dict) and "version" in data:
+                version = data.get("version", 1)
+                table = data.get("q_table", {})
+            else:
+                version = 1
+                table = data
+
+            if version == 1:
+                new_table = {}
+                for state, actions in table.items():
+                    if isinstance(state, tuple) and len(state) == 2:
+                        new_state = state + (1, 1, 0)
+                    else:
+                        new_state = state
+                    new_table[new_state] = actions
+                self.q_table = new_table
+                self.q_table_version = Q_TABLE_VERSION
+            else:
+                self.q_table = table
+                self.q_table_version = version
 
     def learn(self, state: tuple, action: str, reward: float, next_state: tuple) -> None:
+        """Update Q-values based on the transition from ``state`` to ``next_state``."""
         q_state = self.q_table.setdefault(state, {a: 0.0 for a in self.actions})
         q_next = self.q_table.setdefault(next_state, {a: 0.0 for a in self.actions})
         q_state[action] += self.alpha * (
@@ -106,6 +158,7 @@ class LearningEnemy(Enemy):
         player_fraction=None,
     ) -> None:
         self.player_ship = player_ship
+        self._blackholes = blackholes
         if player_fraction is not None and player_fraction == self.fraction:
             self.state = "ally"
             self.ship.update(_NullKeys(), dt, world_width, world_height, sectors, blackholes, None)
