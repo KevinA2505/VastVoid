@@ -95,3 +95,13 @@ HYPERJUMP_VIGNETTE_ALPHA = 220
 # Minimum and maximum duration of hyperjump animations in seconds
 HYPERJUMP_MIN_TIME = 1.0
 HYPERJUMP_MAX_TIME = 60.0
+
+# --- Fuel settings -----------------------------------------------------------
+# Conversion factor from item weight to fuel units
+FUEL_PER_WEIGHT = 10
+# Fuel consumed per second of normal thruster use
+FUEL_BURN_RATE = 1.0
+# Fuel cost to initiate a hyperjump
+HYPERJUMP_FUEL_COST = 15
+# Maximum fuel capacity used for UI gauge
+FUEL_MAX = 100

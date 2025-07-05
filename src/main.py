@@ -50,7 +50,12 @@ def draw_station_ui(
     screen.blit(title, (20, 20))
     credits_txt = font.render(f"Credits: {player.credits}", True, (255, 255, 255))
     screen.blit(credits_txt, (20, 40))
-    y = 80
+    if getattr(player, "ship", None):
+        fuel_txt = font.render(f"Fuel: {int(player.ship.fuel)}", True, (255, 255, 255))
+        screen.blit(fuel_txt, (20, 60))
+        y = 100
+    else:
+        y = 80
     for i, hangar in enumerate(station.hangars):
         status = "Occupied" if hangar.occupied else "Free"
         text = font.render(f"Hangar {i+1}: {status}", True, (255, 255, 255))
@@ -133,7 +138,9 @@ def main():
         world_height // 2,
         chosen_model,
         hull=config.PLAYER_MAX_HULL,
+        player=player,
     )
+    player.ship = ship
     ship.weapons.extend([
         LaserWeapon(),
         MineWeapon(),
@@ -716,6 +723,15 @@ def main():
         hull_fill = int(bar_width * ship.hull / config.PLAYER_MAX_HULL)
         if hull_fill > 0:
             pygame.draw.rect(screen, (150, 0, 0), (bar_x, hull_y, hull_fill, bar_height))
+
+        fuel_y = hull_y - 15
+        pygame.draw.rect(screen, (60, 60, 90), (bar_x, fuel_y, bar_width, bar_height))
+        pygame.draw.rect(screen, (200, 200, 200), (bar_x, fuel_y, bar_width, bar_height), 1)
+        fuel_fill = int(bar_width * min(ship.fuel, config.FUEL_MAX) / config.FUEL_MAX)
+        if fuel_fill > 0:
+            pygame.draw.rect(screen, (150, 150, 0), (bar_x, fuel_y, fuel_fill, bar_height))
+        fuel_txt = info_font.render(f"{int(ship.fuel)}", True, (255, 255, 255))
+        screen.blit(fuel_txt, (bar_x + bar_width + 5, fuel_y - 2))
         ability_bar.draw(screen, info_font)
         menu.draw(screen, info_font)
 
