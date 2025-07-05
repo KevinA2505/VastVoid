@@ -8,7 +8,6 @@ from enemy_learning import create_learning_enemy
 from sector import create_sectors
 from fraction import FRACTIONS
 from faction_structures import spawn_capital_ships
-from wormhole import WormHole
 from star import Star
 from planet import Planet
 from station import SpaceStation
