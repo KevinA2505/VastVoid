@@ -6,7 +6,16 @@ from dataclasses import dataclass, field
 
 from enemy import Enemy, Flee, Defend, Attack, Pursue, Idle, _NullKeys, enemy_manager
 from fraction import FRACTIONS
-from artifact import Decoy
+from artifact import (
+    Decoy,
+    EMPArtifact,
+    AreaShieldArtifact,
+    GravityTractorArtifact,
+    NanobotArtifact,
+    SolarGeneratorArtifact,
+    DecoyArtifact,
+    AVAILABLE_ARTIFACTS,
+)
 from combat import (
     LaserWeapon,
     MineWeapon,
@@ -192,6 +201,7 @@ class LearningEnemy(Enemy):
         state = self._state()
         action = self.choose_action(state)
         self.perform_action(action)
+        self._maybe_use_artifacts(player_ship, dist_to_player)
         self.ship.update(_NullKeys(), dt, world_width, world_height, sectors, blackholes, None)
 
         if (
@@ -226,6 +236,10 @@ def create_learning_enemy(region):
         region,
         fraction,
     )
+    num_artifacts = random.randint(1, 2)
+    art_classes = random.sample(AVAILABLE_ARTIFACTS, num_artifacts)
+    enemy.artifacts = [cls() for cls in art_classes]
+    enemy.ship.artifacts = enemy.artifacts
     enemy.load_q_table()
     # Replace the default weapon with a random one
     weapon_cls = random.choice(
