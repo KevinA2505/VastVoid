@@ -161,7 +161,16 @@ class LearningEnemy(Enemy):
         self._blackholes = blackholes
         if player_fraction is not None and player_fraction == self.fraction:
             self.state = "ally"
-            self.ship.update(_NullKeys(), dt, world_width, world_height, sectors, blackholes, None)
+            player_target = type("_PlayerTarget", (), {"ship": player_ship})()
+            self.ship.update(
+                _NullKeys(),
+                dt,
+                world_width,
+                world_height,
+                sectors,
+                blackholes,
+                [player_target],
+            )
             if self.ship.autopilot_target is None:
                 self._wander_target = None
             self.prev_hull = self.ship.hull
@@ -181,7 +190,16 @@ class LearningEnemy(Enemy):
         state = self._state()
         action = self.choose_action(state)
         self.perform_action(action)
-        self.ship.update(_NullKeys(), dt, world_width, world_height, sectors, blackholes, None)
+        player_target = type("_PlayerTarget", (), {"ship": player_ship})()
+        self.ship.update(
+            _NullKeys(),
+            dt,
+            world_width,
+            world_height,
+            sectors,
+            blackholes,
+            [player_target],
+        )
 
         if (
             player_ship.boost_time > 0
