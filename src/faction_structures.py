@@ -6,7 +6,6 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import pygame
-import config
 
 from fraction import Fraction, Color
 
