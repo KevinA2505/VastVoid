@@ -494,17 +494,19 @@ class HyperJumpMap:
                 wx = event.pos[0] / self.zoom + off_x
                 wy = event.pos[1] / self.zoom + off_y
                 self.destination = (wx, wy)
+                self.last_mouse = event.pos
             elif event.button == 3:
                 self.dragging = True
                 self.last_mouse = event.pos
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 3:
             self.dragging = False
-        elif event.type == pygame.MOUSEMOTION and self.dragging:
-            dx = event.pos[0] - self.last_mouse[0]
-            dy = event.pos[1] - self.last_mouse[1]
-            self.camera_x -= dx / self.zoom
-            self.camera_y -= dy / self.zoom
-            self.last_mouse = event.pos
+        elif event.type == pygame.MOUSEMOTION:
+            if self.dragging or event.buttons[0]:
+                dx = event.pos[0] - self.last_mouse[0]
+                dy = event.pos[1] - self.last_mouse[1]
+                self.camera_x -= dx / self.zoom
+                self.camera_y -= dy / self.zoom
+                self.last_mouse = event.pos
         return False
 
     def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:

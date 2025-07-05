@@ -100,7 +100,7 @@ is a short cooldown before it can be triggered again.
 A round **Hyper** button sits to the right of the slots. Clicking it opens a
 large map of the surrounding sectors. Left-click anywhere on the map to place a
 destination marker, then press **Confirm** to initiate a jump. Right-click and
-drag to pan the view. Hyperjumps occur after a brief one-second delay and you
+drag to pan the view, or hold the left button to drag while pressed. Hyperjumps occur after a brief one-second delay and you
 must wait eight seconds before jumping again.
 
 Projectiles now vanish after travelling around 1200 pixels. Shots fired while
