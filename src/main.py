@@ -153,6 +153,7 @@ def main():
     blackhole_flash_timer = 0.0
     swallowed = False
     pending_tractor = None
+    hyper_map = None
     camera_x = ship.x
     camera_y = ship.y
 
@@ -258,6 +259,19 @@ def main():
                 pygame.display.flip()
                 continue
 
+        if hyper_map:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+                if hyper_map.handle_event(event):
+                    hyper_map = None
+                    break
+            if hyper_map:
+                hyper_map.draw(screen, info_font)
+                pygame.display.flip()
+                continue
+
         if market_window:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -351,7 +365,8 @@ def main():
                 artifact_menu = ArtifactMenu(ship, ability_bar)
 
             route_planner.handle_event(event, sectors, (camera_x, camera_y), zoom)
-            ability_bar.handle_event(event, ship, enemies)
+            if ability_bar.handle_event(event, ship, enemies):
+                hyper_map = HyperJumpMap(ship, sectors, world_width, world_height)
 
             if pending_tractor is None:
                 for art in ship.artifacts:
