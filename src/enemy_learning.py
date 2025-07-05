@@ -4,7 +4,7 @@ import pickle
 import os
 from dataclasses import dataclass, field
 
-from enemy import Enemy, Flee, Defend, Attack, Pursue, Idle, _NullKeys
+from enemy import Enemy, Flee, Defend, Attack, Pursue, Idle, _NullKeys, enemy_manager
 from fraction import FRACTIONS
 from artifact import Decoy
 from combat import (
@@ -159,6 +159,14 @@ class LearningEnemy(Enemy):
     ) -> None:
         self.player_ship = player_ship
         self._blackholes = blackholes
+        dist_to_player = math.hypot(
+            player_ship.x - self.ship.x, player_ship.y - self.ship.y
+        )
+        if (
+            dist_to_player <= self.detection_range
+            or self.ship.hull <= self.flee_threshold
+        ):
+            enemy_manager.request_help(self, player_ship)
         if player_fraction is not None and player_fraction == self.fraction:
             self.state = "ally"
             self.ship.update(_NullKeys(), dt, world_width, world_height, sectors, blackholes, None)
@@ -167,11 +175,14 @@ class LearningEnemy(Enemy):
             self.prev_hull = self.ship.hull
             self.player_prev_hull = player_ship.hull
             return
-        self.target = player_ship
-        for obj in getattr(player_ship, "specials", []):
-            if isinstance(obj, Decoy) and not obj.expired():
-                self.target = obj
-                break
+        if self.assist_target is not None:
+            self.target = self.assist_target
+        else:
+            self.target = player_ship
+            for obj in getattr(player_ship, "specials", []):
+                if isinstance(obj, Decoy) and not obj.expired():
+                    self.target = obj
+                    break
         if isinstance(self.ship.orbit_target, Decoy) and self.ship.orbit_target.expired():
             self.ship.cancel_orbit()
         if not self.prev_hull:
@@ -225,4 +236,5 @@ def create_learning_enemy(region):
         w.owner = enemy.ship
         # Set the weapon cooldown using the configured value
         w.cooldown = config.ENEMY_WEAPON_COOLDOWN
+    enemy_manager.register(enemy)
     return enemy

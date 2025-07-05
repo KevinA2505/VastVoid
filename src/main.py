@@ -5,6 +5,7 @@ import config
 from ship import Ship, choose_ship
 from combat import LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon, BasicWeapon
 from enemy_learning import create_learning_enemy
+from enemy import enemy_manager
 from sector import create_sectors
 from fraction import FRACTIONS
 from faction_structures import spawn_capital_ships
@@ -534,6 +535,7 @@ def main():
 
             if enemy.ship.hull <= 0:
                 enemies.remove(enemy)
+                enemy_manager.unregister(enemy)
         if approaching_planet and not ship.autopilot_target:
             dist = math.hypot(
                 approaching_planet.x - ship.x,
