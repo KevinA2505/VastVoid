@@ -314,7 +314,7 @@ def main():
             config.WINDOW_WIDTH // 2 - 70, config.WINDOW_HEIGHT - 40, 20, 20
         )
         auto_rect = pygame.Rect(
-            cancel_rect.right + 10, config.WINDOW_HEIGHT d- 40, 100, 25
+            cancel_rect.right + 10, config.WINDOW_HEIGHT - 40, 100, 25
         )
         enter_rect = pygame.Rect(
             config.WINDOW_WIDTH // 2 - 50, config.WINDOW_HEIGHT - 80, 100, 30

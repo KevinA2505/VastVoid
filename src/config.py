@@ -81,7 +81,7 @@ HYPERJUMP_COOLDOWN = 8.0
 HYPERJUMP_DELAY = 1.0
 # Base hyperjump velocity in parsecs per second
 # Further increased base hyperjump velocity (pc/s)
-HYPERJUMP_BASE_SPEED = 4.0
+HYPERJUMP_BASE_SPEED = 6.0
 # Shorter reference distance for noticeable scaling
 HYPERJUMP_D0 = 0.5
 # Stronger scaling so far targets only take a bit longer
