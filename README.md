@@ -94,8 +94,9 @@ Five ability slots now appear at the bottom of the screen. The first slot shows
 the **Boost** ability which is still activated with the left **Shift** key. The
 second slot triggers the **Orbit** skill using the **R** key or by clicking the
 slot. When used, your ship orbits the nearest enemy at a reduced speed for five
-seconds and automatically fires once every second. After the orbit ends there
-is a short cooldown before it can be triggered again.
+seconds and automatically fires once every second. The ability only activates
+if an enemy is within 350 pixels. After the orbit ends there is a short
+cooldown before it can be triggered again.
 
 A round **Hyper** button sits to the right of the slots. Clicking it opens a
 large map of the surrounding sectors. Left-click anywhere on the map to place a

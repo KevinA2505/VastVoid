@@ -24,6 +24,7 @@ SHIP_ORBIT_SPEED = 1.5      # angular speed for attack orbits (radians per secon
 ORBIT_COOLDOWN = 5.0        # delay before a new orbit can be triggered
 ORBIT_PROJECTILE_SPEED_MULTIPLIER = 2.0  # bullet speed boost while orbiting
 ORBIT_PROJECTILE_CURVATURE = 4.0        # radians per second of bullet curve
+ORBIT_TRIGGER_RANGE = 350   # max distance from an enemy to start an orbit
 PROJECTILE_MAX_DISTANCE = 1200          # maximum distance a projectile can travel
 HOMING_PROJECTILE_TURN_RATE = 6.0       # rad/s a guided projectile can turn
 
