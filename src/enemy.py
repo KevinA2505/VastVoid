@@ -1,6 +1,7 @@
 import math
 import random
 from dataclasses import dataclass, field
+from typing import List
 from fraction import Fraction, FRACTIONS
 
 import py_trees
@@ -32,6 +33,44 @@ class _Point:
     def __init__(self, x: float, y: float) -> None:
         self.x = x
         self.y = y
+
+
+class EnemyManager:
+    """Global manager keeping track of active enemies and coordination requests."""
+
+    def __init__(self) -> None:
+        self.enemies: List["Enemy"] = []
+
+    def register(self, enemy: "Enemy") -> None:
+        if enemy not in self.enemies:
+            self.enemies.append(enemy)
+
+    def unregister(self, enemy: "Enemy") -> None:
+        if enemy in self.enemies:
+            self.enemies.remove(enemy)
+
+    def request_help(self, caller: "Enemy", target: object) -> None:
+        """Notify allies to assist ``caller`` against ``target``."""
+        for ally in self.enemies:
+            if ally is caller:
+                continue
+            if ally.fraction == caller.fraction:
+                ally.assist_target = target
+        self.assign_orbit_sides(caller.fraction, target)
+
+    def assign_orbit_sides(self, fraction: Fraction, target: object) -> None:
+        allies = [
+            e
+            for e in self.enemies
+            if (e.target is target or e.assist_target is target)
+            and e.fraction == fraction
+            and e.ship.hull > 0
+        ]
+        for i, ally in enumerate(sorted(allies, key=id)):
+            ally.orbit_side = 1 if i % 2 == 0 else -1
+
+
+enemy_manager = EnemyManager()
 
 
 class _EnemyBehaviour(py_trees.behaviour.Behaviour):
@@ -91,7 +130,10 @@ class Attack(_EnemyBehaviour):
             if enemy.orbit_timer <= 0:
                 enemy.orbit_timer = config.ENEMY_ORBIT_INTERVAL
                 if random.random() < config.ENEMY_ORBIT_PROBABILITY:
-                    ship.start_orbit(target, speed=config.SHIP_ORBIT_SPEED * 0.5)
+                    ship.start_orbit(
+                        target,
+                        speed=config.SHIP_ORBIT_SPEED * 0.5 * enemy.orbit_side,
+                    )
         if ship.orbit_time <= 0:
             angle = math.atan2(dy, dx)
             dest_x = target.x - math.cos(angle) * 120
@@ -196,6 +238,8 @@ class Enemy:
     _wander_target: _Point | None = field(default=None, init=False, repr=False)
     player_ship: Ship | None = field(default=None, init=False, repr=False)
     target: object | None = field(default=None, init=False, repr=False)
+    assist_target: object | None = field(default=None, init=False, repr=False)
+    orbit_side: int = field(default=1, init=False)
     tree: py_trees.trees.BehaviourTree | None = field(default=None, init=False, repr=False)
     orbit_timer: float = field(
         default=config.ENEMY_ORBIT_INTERVAL,
@@ -205,6 +249,7 @@ class Enemy:
 
     def __post_init__(self) -> None:
         self.build_tree()
+        enemy_manager.register(self)
 
     def build_tree(self) -> None:
         """Create the behaviour tree controlling this enemy."""
@@ -230,6 +275,14 @@ class Enemy:
         """Update ship movement after behaviour tree tick."""
 
         self.player_ship = player_ship
+        dist_to_player = math.hypot(
+            player_ship.x - self.ship.x, player_ship.y - self.ship.y
+        )
+        if (
+            dist_to_player <= self.detection_range
+            or self.ship.hull <= self.flee_threshold
+        ):
+            enemy_manager.request_help(self, player_ship)
         if player_fraction is not None and player_fraction == self.fraction:
             self.state = "ally"
             self.ship.update(
@@ -238,11 +291,14 @@ class Enemy:
             if self.ship.autopilot_target is None:
                 self._wander_target = None
             return
-        self.target = player_ship
-        for obj in getattr(player_ship, "specials", []):
-            if isinstance(obj, Decoy) and not obj.expired():
-                self.target = obj
-                break
+        if self.assist_target is not None:
+            self.target = self.assist_target
+        else:
+            self.target = player_ship
+            for obj in getattr(player_ship, "specials", []):
+                if isinstance(obj, Decoy) and not obj.expired():
+                    self.target = obj
+                    break
         if isinstance(self.ship.orbit_target, Decoy) and self.ship.orbit_target.expired():
             self.ship.cancel_orbit()
         self.orbit_timer = max(0.0, self.orbit_timer - dt)
@@ -288,4 +344,5 @@ def create_random_enemy(region: Sector) -> Enemy:
         w.owner = enemy.ship
         # Use a configurable cooldown so enemies don't spam shots
         w.cooldown = config.ENEMY_WEAPON_COOLDOWN
+    enemy_manager.register(enemy)
     return enemy
