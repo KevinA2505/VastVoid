@@ -367,6 +367,7 @@ class AbilityBar:
     SLOT_W = 80
     SLOT_H = 40
     MARGIN = 5
+    HYPER_W = 60
 
     def __init__(self) -> None:
         self.slots: list[tuple[str, str]] = [
@@ -378,7 +379,12 @@ class AbilityBar:
         ]
         self.ship = None
         self.rects: list[pygame.Rect] = []
-        total_w = self.SLOT_COUNT * (self.SLOT_W + self.MARGIN) - self.MARGIN
+        total_w = (
+            self.SLOT_COUNT * (self.SLOT_W + self.MARGIN)
+            - self.MARGIN
+            + self.MARGIN
+            + self.HYPER_W
+        )
         start_x = (config.WINDOW_WIDTH - total_w) // 2
         y = config.WINDOW_HEIGHT - self.SLOT_H - 80
         for i in range(self.SLOT_COUNT):
@@ -386,6 +392,12 @@ class AbilityBar:
                 start_x + i * (self.SLOT_W + self.MARGIN), y, self.SLOT_W, self.SLOT_H
             )
             self.rects.append(rect)
+        self.hyper_rect = pygame.Rect(
+            start_x + self.SLOT_COUNT * (self.SLOT_W + self.MARGIN),
+            y,
+            self.HYPER_W,
+            self.SLOT_H,
+        )
 
     def set_ship(self, ship) -> None:
         self.ship = ship
@@ -398,8 +410,10 @@ class AbilityBar:
                 name = self.ship.artifacts[i].name
             self.slots[2 + i] = (name, str(i + 1))
 
-    def handle_event(self, event, ship, enemies: list) -> None:
+    def handle_event(self, event, ship, enemies: list) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.hyper_rect.collidepoint(event.pos):
+                return True
             for idx, rect in enumerate(self.rects):
                 if rect.collidepoint(event.pos):
                     if idx == 0:
@@ -414,6 +428,7 @@ class AbilityBar:
             if event.key in (pygame.K_1, pygame.K_2, pygame.K_3):
                 idx = event.key - pygame.K_1
                 ship.use_artifact(idx, enemies)
+        return False
 
     def _trigger_orbit(self, ship, enemies: list) -> None:
         nearest = None
@@ -438,6 +453,11 @@ class AbilityBar:
             key_txt = font.render(key, True, (255, 255, 255))
             key_rect = key_txt.get_rect(bottomright=(rect.right - 4, rect.bottom - 2))
             screen.blit(key_txt, key_rect)
+        pygame.draw.ellipse(screen, (60, 60, 90), self.hyper_rect)
+        pygame.draw.ellipse(screen, (200, 200, 200), self.hyper_rect, 1)
+        hyper_txt = font.render("Hyper", True, (255, 255, 255))
+        hyper_rect = hyper_txt.get_rect(center=self.hyper_rect.center)
+        screen.blit(hyper_txt, hyper_rect)
 
 
 class HyperJumpMap:
