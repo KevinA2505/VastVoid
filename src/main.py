@@ -27,6 +27,17 @@ from planet_surface import PlanetSurface
 from character import choose_player_table
 
 
+def _create_vignette(width: int, height: int) -> pygame.Surface:
+    """Return a large radial vignette surface."""
+    surf = pygame.Surface((width, height), pygame.SRCALPHA)
+    cx, cy = width // 2, height // 2
+    max_r = math.hypot(cx, cy)
+    step = 4
+    for r in range(int(max_r), 0, -step):
+        alpha = int(config.HYPERJUMP_VIGNETTE_ALPHA * (r / max_r))
+        pygame.draw.circle(surf, (0, 0, 0, alpha), (cx, cy), r)
+    return surf
+
 def draw_station_ui(
     screen: pygame.Surface,
     station: SpaceStation,
@@ -92,6 +103,7 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((config.WINDOW_WIDTH, config.WINDOW_HEIGHT))
     pygame.display.set_caption("VastVoid")
+    vignette = _create_vignette(config.WINDOW_WIDTH, config.WINDOW_HEIGHT)
 
     player = choose_player_table(screen)
 
@@ -581,6 +593,9 @@ def main():
         else:
             camera_x = ship.x
             camera_y = ship.y
+            if ship.hyperjump_active:
+                camera_x += random.uniform(-5, 5)
+                camera_y += random.uniform(-5, 5)
         offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
         offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
         for sector in sectors:
@@ -713,6 +728,8 @@ def main():
                 txt = info_font.render(line, True, (255, 255, 255))
                 screen.blit(txt, (rect.x + 5, rect.y + 5 + i * 20))
 
+        if ship.hyperjump_active:
+            screen.blit(vignette, (0, 0))
         if teleport_flash_timer > 0:
             alpha = int(255 * (teleport_flash_timer / config.WORMHOLE_FLASH_TIME))
             flash = pygame.Surface((config.WINDOW_WIDTH, config.WINDOW_HEIGHT), pygame.SRCALPHA)
