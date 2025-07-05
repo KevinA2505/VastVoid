@@ -5,7 +5,6 @@ from star import Star
 from planet import Planet
 from station import SpaceStation
 from names import get_system_name
-import config
 
 class StarSystem:
     """Collection of a star with orbiting planets."""
