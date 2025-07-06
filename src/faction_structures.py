@@ -1,5 +1,6 @@
 # New faction-aware generic structures
 
+import os
 import random
 import math
 from dataclasses import dataclass, field
@@ -55,6 +56,7 @@ class CapitalShip(FactionStructure):
     radius: int = 50
     aura_radius: int = 80
     arms: list[ChannelArm] = field(default_factory=list)
+    sprite: pygame.Surface | None = None
 
     def apply_fraction_traits(self, fraction: Fraction) -> None:
         super().apply_fraction_traits(fraction)
@@ -67,6 +69,9 @@ class CapitalShip(FactionStructure):
                 ChannelArm(i * 2 * math.pi / 5, self.radius)
                 for i in range(5)
             ]
+            img_path = os.path.join(os.path.dirname(__file__), "..", "img", "CapitalShipSolarDominion.png")
+            if os.path.exists(img_path):
+                self.sprite = pygame.image.load(img_path).convert_alpha()
         elif fraction.name == "Cosmic Guild":
             self.hull = 1200
             self.modules.extend(["Trade Hub", "Drone Bays"])
@@ -129,32 +134,37 @@ class CapitalShip(FactionStructure):
         y = int((self.y - offset_y) * zoom)
         scaled = int(size * zoom)
         if self.fraction and self.fraction.name == "Solar Dominion":
-            body = [
-                (x, y - scaled // 2),
-                (x + scaled // 2, y + scaled // 2),
-                (x - scaled // 2, y + scaled // 2),
-            ]
-            pygame.draw.polygon(screen, color, body)
-            pygame.draw.polygon(screen, outline, body, max(1, int(2 * zoom)))
-            spike = scaled // 5
-            left_spike = [
-                (x - scaled // 2, y + scaled // 2),
-                (x - scaled // 2 - spike, y + scaled // 2),
-                (x - scaled // 2, y + scaled // 2 - spike),
-            ]
-            right_spike = [
-                (x + scaled // 2, y + scaled // 2),
-                (x + scaled // 2 + spike, y + scaled // 2),
-                (x + scaled // 2, y + scaled // 2 - spike),
-            ]
-            pygame.draw.polygon(screen, color, left_spike)
-            pygame.draw.polygon(screen, color, right_spike)
-            pygame.draw.polygon(screen, outline, left_spike, max(1, int(2 * zoom)))
-            pygame.draw.polygon(screen, outline, right_spike, max(1, int(2 * zoom)))
-            thr = scaled // 4
-            thr_rect = pygame.Rect(x - thr // 2, y + scaled // 2 - thr // 2, thr, thr)
-            pygame.draw.rect(screen, color, thr_rect)
-            pygame.draw.rect(screen, outline, thr_rect, max(1, int(2 * zoom)))
+            if self.sprite:
+                sprite_scaled = pygame.transform.smoothscale(self.sprite, (scaled, scaled))
+                rect = sprite_scaled.get_rect(center=(x, y))
+                screen.blit(sprite_scaled, rect)
+            else:
+                body = [
+                    (x, y - scaled // 2),
+                    (x + scaled // 2, y + scaled // 2),
+                    (x - scaled // 2, y + scaled // 2),
+                ]
+                pygame.draw.polygon(screen, color, body)
+                pygame.draw.polygon(screen, outline, body, max(1, int(2 * zoom)))
+                spike = scaled // 5
+                left_spike = [
+                    (x - scaled // 2, y + scaled // 2),
+                    (x - scaled // 2 - spike, y + scaled // 2),
+                    (x - scaled // 2, y + scaled // 2 - spike),
+                ]
+                right_spike = [
+                    (x + scaled // 2, y + scaled // 2),
+                    (x + scaled // 2 + spike, y + scaled // 2),
+                    (x + scaled // 2, y + scaled // 2 - spike),
+                ]
+                pygame.draw.polygon(screen, color, left_spike)
+                pygame.draw.polygon(screen, color, right_spike)
+                pygame.draw.polygon(screen, outline, left_spike, max(1, int(2 * zoom)))
+                pygame.draw.polygon(screen, outline, right_spike, max(1, int(2 * zoom)))
+                thr = scaled // 4
+                thr_rect = pygame.Rect(x - thr // 2, y + scaled // 2 - thr // 2, thr, thr)
+                pygame.draw.rect(screen, color, thr_rect)
+                pygame.draw.rect(screen, outline, thr_rect, max(1, int(2 * zoom)))
             aura_r = int(self.aura_radius * zoom)
             if aura_r > 0:
                 aura = pygame.Surface((aura_r * 2, aura_r * 2), pygame.SRCALPHA)
