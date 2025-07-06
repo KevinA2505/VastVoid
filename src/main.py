@@ -589,7 +589,7 @@ def main():
             sector.update(dt)
         # Update roaming capital ships so their arms can track nearby stars
         for cap in capital_ships:
-            cap.update(dt, sectors, enemies)
+            cap.update(dt, sectors, enemies, ship)
 
         screen.fill(config.BACKGROUND_COLOR)
         if route_planner.active:
