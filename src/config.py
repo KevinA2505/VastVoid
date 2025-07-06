@@ -95,3 +95,9 @@ HYPERJUMP_VIGNETTE_ALPHA = 220
 # Minimum and maximum duration of hyperjump animations in seconds
 HYPERJUMP_MIN_TIME = 1.0
 HYPERJUMP_MAX_TIME = 60.0
+# --- Learning defensive drone settings ---------------------------------------
+DEF_DRONE_DETECTION_RANGE = 250  # radius to look for enemies/projectiles
+DEF_DRONE_PATROL_RADIUS = 120    # how far drones wander from their owner
+DEF_DRONE_ALPHA = 0.5            # Q-learning rate
+DEF_DRONE_GAMMA = 0.9            # discount factor
+DEF_DRONE_EPSILON = 0.1          # exploration probability
