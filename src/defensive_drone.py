@@ -53,14 +53,17 @@ class DefensiveDrone:
             if isinstance(self.target, object):
                 tx = getattr(self.target, "x", self.owner.x)
                 ty = getattr(self.target, "y", self.owner.y)
+                target_size = getattr(self.target, "size", 0)
             else:
                 tx, ty = self.owner.x, self.owner.y
+                target_size = 0
             dx = tx - self.x
             dy = ty - self.y
             dist = math.hypot(dx, dy) or 1.0
             self.x += (dx / dist * self.intercept_speed) * dt
             self.y += (dy / dist * self.intercept_speed) * dt
-            if dist <= self.size * 1.2:
+            safe = (self.size + target_size) * 0.5
+            if dist <= safe:
                 self.state = "idle"
                 self.target = None
         max_dist = self.orbit_radius * config.DEF_DRONE_MAX_ROAM_FACTOR
