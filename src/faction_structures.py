@@ -61,7 +61,7 @@ class CapitalShip(FactionStructure):
         if fraction.name == "Solar Dominion":
             self.hull = 1500
             self.modules.extend(["Heavy Cannons", "Fighter Bays"])
-            self.aura_radius = 120
+            self.aura_radius = 240
             self.radius = max(self.radius, self.aura_radius)
             self.arms = [
                 ChannelArm(i * 2 * math.pi / 5, self.radius)
@@ -177,7 +177,7 @@ class CapitalShip(FactionStructure):
                 (x, y + scaled // 2 + thr // 2),
             ]
             for lx, ly in lights:
-                pygame.draw.circle(screen, flash, (lx, ly), max(2, int(3 * zoom)))
+                pygame.draw.circle(screen, flash, (lx, ly), max(2, int(3 * zoom))
         elif self.fraction and self.fraction.name == "Nebula Order":
             outer = tuple(int(c * 0.6) for c in color)
             middle = color
@@ -195,7 +195,7 @@ class CapitalShip(FactionStructure):
                 (x - mid_r, y),
             ]
             for dx, dy in dots:
-                pygame.draw.circle(screen, (0, 0, 0), (dx, dy), max(2, int(3 * zoom)))
+                pygame.draw.circle(screen, (0, 0, 0), (dx, dy), max(2, int(3 * zoom)) main
         elif self.shape == "angular":
             # square hull with triangular wings
             hull = pygame.Rect(x - scaled // 2, y - scaled // 2, scaled, scaled)
