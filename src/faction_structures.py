@@ -45,6 +45,33 @@ class ChannelArm:
 
 
 @dataclass
+class EngagementRing:
+    """Visual helper drawing a ring around a ship."""
+
+    radius: float
+    color: Color = (255, 215, 0)
+
+    def draw(
+        self,
+        screen: pygame.Surface,
+        x: float,
+        y: float,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        cx = int((x - offset_x) * zoom)
+        cy = int((y - offset_y) * zoom)
+        pygame.draw.circle(
+            screen,
+            self.color,
+            (cx, cy),
+            int(self.radius * zoom),
+            max(1, int(2 * zoom)),
+        )
+
+
+@dataclass
 class CapitalShip(FactionStructure):
     """Large mobile base acting as the heart of a faction."""
 
@@ -59,6 +86,7 @@ class CapitalShip(FactionStructure):
     aura_radius: int = 80
     arms: list[ChannelArm] = field(default_factory=list)
     drones: list[Drone] = field(default_factory=list)
+    engagement_ring: EngagementRing | None = None
 
     def apply_fraction_traits(self, fraction: Fraction) -> None:
         super().apply_fraction_traits(fraction)
@@ -84,6 +112,7 @@ class CapitalShip(FactionStructure):
             self.modules.extend(["Research Labs", "Sensor Array"])
             self.size = self.radius
             self.drones = [Drone(self) for _ in range(3)]
+            self.engagement_ring = EngagementRing(self.size * 4)
         elif fraction.name == "Pirate Clans":
             self.hull = 1000
             self.modules.extend(["Cloaking Device", "Raider Hangars"])
@@ -149,6 +178,10 @@ class CapitalShip(FactionStructure):
         x = int((self.x - offset_x) * zoom)
         y = int((self.y - offset_y) * zoom)
         scaled = int(size * zoom)
+        if self.engagement_ring:
+            self.engagement_ring.draw(
+                screen, self.x, self.y, offset_x, offset_y, zoom
+            )
         if self.fraction and self.fraction.name == "Solar Dominion":
             body = [
                 (x, y - scaled // 2),
