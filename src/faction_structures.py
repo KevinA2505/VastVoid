@@ -144,7 +144,11 @@ class CapitalShip(FactionStructure):
             self.drones = []
             ring_radius = self.engagement_ring.radius * 1.15
             for i in range(10):
-                drone = AggressiveDefensiveDrone(self, ring_radius, orbit_speed=1.0)
+                drone = AggressiveDefensiveDrone(
+                    self,
+                    ring_radius,
+                    orbit_speed=-0.75,
+                )
                 drone.angle = i * 2 * math.pi / 10
                 self.drones.append(drone)
         elif fraction.name == "Pirate Clans":
