@@ -188,28 +188,34 @@ class CapitalShip(FactionStructure):
                         arm.angle += rotate if diff > 0 else -rotate
                     arm.angle %= 2 * math.pi
         elif self.fraction.name == "Nebula Order":
+            # Update each defensive drone and check for collisions
             for drone in list(self.drones):
                 drone.update(dt, enemies)
+
                 rect = pygame.Rect(
                     drone.x - drone.size / 2,
                     drone.y - drone.size / 2,
                     drone.size,
                     drone.size,
                 )
+
                 for en in enemies:
                     for proj in list(en.ship.projectiles):
                         if rect.collidepoint(proj.x, proj.y):
                             drone.hp -= proj.damage
                             en.ship.projectiles.remove(proj)
+
                     enemy_rect = pygame.Rect(
                         en.ship.x - en.ship.size / 2,
                         en.ship.y - en.ship.size / 2,
                         en.ship.size,
                         en.ship.size,
                     )
+
                     if rect.colliderect(enemy_rect):
                         en.ship.take_damage(5)
                         drone.hp -= 5
+
                 if drone.expired():
                     self.drones.remove(drone)
 

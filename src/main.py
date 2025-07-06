@@ -757,6 +757,10 @@ def main():
     # Save learning data so enemies retain behavior between sessions
     for enemy in enemies:
         enemy.save_q_table()
+    for cap in capital_ships:
+        for drone in getattr(cap, "drones", []):
+            if hasattr(drone, "save_q_table"):
+                drone.save_q_table()
 
     pygame.quit()
 
