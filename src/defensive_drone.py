@@ -1,5 +1,6 @@
 import math
 import pygame
+import config
 
 
 class DefensiveDrone:
@@ -10,14 +11,16 @@ class DefensiveDrone:
         owner,
         angle: float = 0.0,
         orbit_radius: float | None = None,
-        orbit_speed: float = 0.8,
+        orbit_speed: float = config.DEF_DRONE_ORBIT_SPEED,
         hp: float = 20.0,
     ) -> None:
         self.owner = owner
         self.angle = angle
         self.orbit_speed = orbit_speed
-        self.orbit_radius = orbit_radius or owner.size * 3
-        self.intercept_speed = 180.0
+        self.orbit_radius = (
+            orbit_radius or owner.size * config.DEF_DRONE_ORBIT_RADIUS_FACTOR
+        )
+        self.intercept_speed = config.DEF_DRONE_INTERCEPT_SPEED
         self.hp = hp
         self.size = 12
         self.x = owner.x + math.cos(angle) * self.orbit_radius
@@ -26,7 +29,7 @@ class DefensiveDrone:
         self.target = None
 
     def _find_threat(self, enemies: list) -> object | None:
-        detection = self.owner.size * 6
+        detection = config.DEF_DRONE_DETECTION_RANGE
         for en in enemies:
             dist = math.hypot(en.ship.x - self.owner.x, en.ship.y - self.owner.y)
             if dist <= detection:
@@ -60,7 +63,7 @@ class DefensiveDrone:
             if dist <= self.size * 1.2:
                 self.state = "idle"
                 self.target = None
-        max_dist = self.orbit_radius * 3
+        max_dist = self.orbit_radius * config.DEF_DRONE_MAX_ROAM_FACTOR
         d_from_owner = math.hypot(self.x - self.owner.x, self.y - self.owner.y)
         if d_from_owner > max_dist:
             angle = math.atan2(self.y - self.owner.y, self.x - self.owner.x)
