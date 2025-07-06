@@ -69,7 +69,9 @@ class CapitalShip(FactionStructure):
                 ChannelArm(i * 2 * math.pi / 5, self.radius)
                 for i in range(5)
             ]
-            img_path = os.path.join(os.path.dirname(__file__), "..", "img", "CapitalShipSolarDominion.png")
+            img_path = os.path.join(
+                os.path.dirname(__file__), "img", "CapitalShipSolarDominion.png"
+            )
             if os.path.exists(img_path):
                 self.sprite = pygame.image.load(img_path).convert_alpha()
         elif fraction.name == "Cosmic Guild":
