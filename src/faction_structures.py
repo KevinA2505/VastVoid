@@ -4,6 +4,7 @@ import random
 import math
 from dataclasses import dataclass, field
 from typing import Any
+from star import Star
 
 import pygame
 
@@ -34,6 +35,15 @@ class FactionStructure:
 
 
 @dataclass
+class ChannelArm:
+    """Simple helper representing an energy channel arm."""
+
+    angle: float
+    length: float
+    target: Star | None = None
+
+
+@dataclass
 class CapitalShip(FactionStructure):
     """Large mobile base acting as the heart of a faction."""
 
@@ -43,12 +53,20 @@ class CapitalShip(FactionStructure):
     hangar_capacity: int = 4
     energy_sources: list[Any] = field(default_factory=list)
     radius: int = 50
+    aura_radius: int = 80
+    arms: list[ChannelArm] = field(default_factory=list)
 
     def apply_fraction_traits(self, fraction: Fraction) -> None:
         super().apply_fraction_traits(fraction)
         if fraction.name == "Solar Dominion":
             self.hull = 1500
             self.modules.extend(["Heavy Cannons", "Fighter Bays"])
+            self.aura_radius = 120
+            self.radius = max(self.radius, self.aura_radius)
+            self.arms = [
+                ChannelArm(i * 2 * math.pi / 5, self.radius)
+                for i in range(5)
+            ]
         elif fraction.name == "Cosmic Guild":
             self.hull = 1200
             self.modules.extend(["Trade Hub", "Drone Bays"])
@@ -62,6 +80,39 @@ class CapitalShip(FactionStructure):
             self.hull = 1300
             self.modules.extend(["Survey Deck", "Jump Drives"])
 
+    def update(self, dt: float, sectors: list) -> None:
+        if not (self.fraction and self.fraction.name == "Solar Dominion"):
+            return
+        stars: list[Star] = []
+        for sec in sectors:
+            for system in sec.systems:
+                stars.append(system.star)
+        used = set()
+        for arm in self.arms:
+            nearest = None
+            min_d = float("inf")
+            for star in stars:
+                if star in used and star is not arm.target:
+                    continue
+                d = math.hypot(star.x - self.x, star.y - self.y)
+                if d < min_d:
+                    min_d = d
+                    nearest = star
+            if nearest:
+                arm.target = nearest
+                used.add(nearest)
+            if arm.target:
+                tx = arm.target.x
+                ty = arm.target.y
+                targ_angle = math.atan2(ty - self.y, tx - self.x)
+                diff = (targ_angle - arm.angle + math.pi) % (2 * math.pi) - math.pi
+                rotate = 1.5 * dt
+                if abs(diff) < rotate:
+                    arm.angle = targ_angle
+                else:
+                    arm.angle += rotate if diff > 0 else -rotate
+                arm.angle %= 2 * math.pi
+
     def draw(
         self,
         screen: pygame.Surface,
@@ -74,7 +125,47 @@ class CapitalShip(FactionStructure):
         x = int((self.x - offset_x) * zoom)
         y = int((self.y - offset_y) * zoom)
         scaled = int(size * zoom)
-        if self.shape == "angular":
+        if self.fraction and self.fraction.name == "Solar Dominion":
+            body = [
+                (x, y - scaled // 2),
+                (x + scaled // 2, y + scaled // 2),
+                (x - scaled // 2, y + scaled // 2),
+            ]
+            pygame.draw.polygon(screen, color, body)
+            spike = scaled // 5
+            left_spike = [
+                (x - scaled // 2, y + scaled // 2),
+                (x - scaled // 2 - spike, y + scaled // 2),
+                (x - scaled // 2, y + scaled // 2 - spike),
+            ]
+            right_spike = [
+                (x + scaled // 2, y + scaled // 2),
+                (x + scaled // 2 + spike, y + scaled // 2),
+                (x + scaled // 2, y + scaled // 2 - spike),
+            ]
+            pygame.draw.polygon(screen, color, left_spike)
+            pygame.draw.polygon(screen, color, right_spike)
+            thr = scaled // 4
+            thr_rect = pygame.Rect(x - thr // 2, y + scaled // 2 - thr // 2, thr, thr)
+            pygame.draw.rect(screen, color, thr_rect)
+            aura_r = int(self.aura_radius * zoom)
+            if aura_r > 0:
+                aura = pygame.Surface((aura_r * 2, aura_r * 2), pygame.SRCALPHA)
+                pygame.draw.circle(aura, (255, 255, 255, 40), (aura_r, aura_r), aura_r)
+                screen.blit(aura, (x - aura_r, y - aura_r))
+            for arm in self.arms:
+                arm_x = x + int(math.cos(arm.angle) * arm.length * zoom)
+                arm_y = y + int(math.sin(arm.angle) * arm.length * zoom)
+                pygame.draw.rect(screen, color, (arm_x - 2, arm_y - 2, 4, 4))
+                if arm.target:
+                    end = (
+                        int((arm.target.x - offset_x) * zoom),
+                        int((arm.target.y - offset_y) * zoom),
+                    )
+                    pygame.draw.line(
+                        screen, (255, 255, 100), (arm_x, arm_y), end, max(1, int(2 * zoom))
+                    )
+        elif self.shape == "angular":
             # square hull with triangular wings
             hull = pygame.Rect(x - scaled // 2, y - scaled // 2, scaled, scaled)
             pygame.draw.rect(screen, color, hull)
@@ -133,7 +224,8 @@ class CapitalShip(FactionStructure):
 
     def collides_with_point(self, x: float, y: float, radius: float) -> bool:
         """Return ``True`` if ``(x, y)`` overlaps this capital ship."""
-        return math.hypot(self.x - x, self.y - y) < self.radius + radius
+        r = max(self.radius, self.aura_radius)
+        return math.hypot(self.x - x, self.y - y) < r + radius
 
 
 @dataclass
