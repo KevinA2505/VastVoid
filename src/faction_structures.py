@@ -5,6 +5,7 @@ import math
 from dataclasses import dataclass, field
 from typing import Any
 from star import Star
+from combat import Drone
 
 import pygame
 
@@ -55,6 +56,7 @@ class CapitalShip(FactionStructure):
     radius: int = 50
     aura_radius: int = 80
     arms: list[ChannelArm] = field(default_factory=list)
+    drones: list[Drone] = field(default_factory=list)
 
     def apply_fraction_traits(self, fraction: Fraction) -> None:
         super().apply_fraction_traits(fraction)
@@ -73,6 +75,7 @@ class CapitalShip(FactionStructure):
         elif fraction.name == "Nebula Order":
             self.hull = 1100
             self.modules.extend(["Research Labs", "Sensor Array"])
+            self.drones = [Drone(self) for _ in range(3)]
         elif fraction.name == "Pirate Clans":
             self.hull = 1000
             self.modules.extend(["Cloaking Device", "Raider Hangars"])
@@ -80,38 +83,46 @@ class CapitalShip(FactionStructure):
             self.hull = 1300
             self.modules.extend(["Survey Deck", "Jump Drives"])
 
-    def update(self, dt: float, sectors: list) -> None:
-        if not (self.fraction and self.fraction.name == "Solar Dominion"):
+    def update(self, dt: float, sectors: list, enemies: list | None = None) -> None:
+        if not self.fraction:
             return
-        stars: list[Star] = []
-        for sec in sectors:
-            for system in sec.systems:
-                stars.append(system.star)
-        used = set()
-        for arm in self.arms:
-            nearest = None
-            min_d = float("inf")
-            for star in stars:
-                if star in used and star is not arm.target:
-                    continue
-                d = math.hypot(star.x - self.x, star.y - self.y)
-                if d < min_d:
-                    min_d = d
-                    nearest = star
-            if nearest:
-                arm.target = nearest
-                used.add(nearest)
-            if arm.target:
-                tx = arm.target.x
-                ty = arm.target.y
-                targ_angle = math.atan2(ty - self.y, tx - self.x)
-                diff = (targ_angle - arm.angle + math.pi) % (2 * math.pi) - math.pi
-                rotate = 1.5 * dt
-                if abs(diff) < rotate:
-                    arm.angle = targ_angle
-                else:
-                    arm.angle += rotate if diff > 0 else -rotate
-                arm.angle %= 2 * math.pi
+        if self.fraction.name == "Solar Dominion":
+            stars: list[Star] = []
+            for sec in sectors:
+                for system in sec.systems:
+                    stars.append(system.star)
+            used = set()
+            for arm in self.arms:
+                nearest = None
+                min_d = float("inf")
+                for star in stars:
+                    if star in used and star is not arm.target:
+                        continue
+                    d = math.hypot(star.x - self.x, star.y - self.y)
+                    if d < min_d:
+                        min_d = d
+                        nearest = star
+                if nearest:
+                    arm.target = nearest
+                    used.add(nearest)
+                if arm.target:
+                    tx = arm.target.x
+                    ty = arm.target.y
+                    targ_angle = math.atan2(ty - self.y, tx - self.x)
+                    diff = (targ_angle - arm.angle + math.pi) % (2 * math.pi) - math.pi
+                    rotate = 1.5 * dt
+                    if abs(diff) < rotate:
+                        arm.angle = targ_angle
+                    else:
+                        arm.angle += rotate if diff > 0 else -rotate
+                    arm.angle %= 2 * math.pi
+        elif self.fraction.name == "Nebula Order":
+            if enemies is None:
+                enemies = []
+            for dr in list(self.drones):
+                dr.update(dt, enemies)
+                if dr.expired():
+                    self.drones.remove(dr)
 
     def draw(
         self,
@@ -200,28 +211,18 @@ class CapitalShip(FactionStructure):
                 pygame.draw.circle(aura, (0, 0, 0, int(255 * 0.8)), (aura_r, aura_r), aura_r)
                 screen.blit(aura, (x - aura_r, y - aura_r))
         elif self.fraction and self.fraction.name == "Nebula Order":
-            outer = tuple(int(c * 0.6) for c in color)
-            middle = color
-            inner = tuple(min(255, int(c * 1.3)) for c in color)
-            outer_r = scaled
-            mid_r = int(scaled * 0.7)
-            inner_r = int(scaled * 0.3)
-            pygame.draw.circle(screen, outer, (x, y), outer_r)
-            pygame.draw.circle(screen, middle, (x, y), mid_r)
-            pygame.draw.circle(screen, inner, (x, y), inner_r)
-            dots = [
-                (x, y - mid_r),
-                (x + mid_r, y),
-                (x, y + mid_r),
-                (x - mid_r, y),
-            ]
-            for dx, dy in dots:
-                pygame.draw.circle(
-                    screen,
-                    (0, 0, 0),
-                    (dx, dy),
-                    max(2, int(3 * zoom))
-                )
+            ring_r = scaled
+            pygame.draw.circle(screen, color, (x, y), ring_r, max(1, int(3 * zoom)))
+            base_size = max(4, int(scaled * 0.3))
+            base_rect = pygame.Rect(
+                x - base_size // 2,
+                y - base_size // 2,
+                base_size,
+                base_size,
+            )
+            pygame.draw.rect(screen, color, base_rect)
+            for dr in self.drones:
+                dr.draw(screen, offset_x, offset_y, zoom)
         elif self.shape == "angular":
             # square hull with triangular wings
             hull = pygame.Rect(x - scaled // 2, y - scaled // 2, scaled, scaled)
