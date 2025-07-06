@@ -183,6 +183,22 @@ class CapitalShip(FactionStructure):
                     (lx, ly),
                     max(2, int(3 * zoom))
                 )
+        elif self.fraction and self.fraction.name == "Cosmic Guild":
+            dark_blue = (10, 10, 80)
+            gold = (255, 215, 0)
+            square = pygame.Rect(x - scaled // 2, y - scaled // 2, scaled, scaled)
+            pygame.draw.rect(screen, dark_blue, square)
+            pygame.draw.rect(screen, gold, square, max(1, int(4 * zoom)))
+            font_size = max(10, int(scaled * 0.7))
+            font = pygame.font.Font(None, font_size)
+            letter = font.render("C", True, (0, 0, 0))
+            letter_rect = letter.get_rect(center=(x, y))
+            screen.blit(letter, letter_rect)
+            aura_r = int(self.aura_radius * zoom)
+            if aura_r > 0:
+                aura = pygame.Surface((aura_r * 2, aura_r * 2), pygame.SRCALPHA)
+                pygame.draw.circle(aura, (0, 0, 0, int(255 * 0.8)), (aura_r, aura_r), aura_r)
+                screen.blit(aura, (x - aura_r, y - aura_r))
         elif self.fraction and self.fraction.name == "Nebula Order":
             outer = tuple(int(c * 0.6) for c in color)
             middle = color
