@@ -286,6 +286,6 @@ def create_random_enemy(region: Sector) -> Enemy:
     enemy.ship.weapons = [weapon_cls()]
     for w in enemy.ship.weapons:
         w.owner = enemy.ship
-        # Use a configurable cooldown so enemies don't spam shots
-        w.cooldown = config.ENEMY_WEAPON_COOLDOWN
+        # Only adjust cooldown if the weapon fires too quickly
+        w.cooldown = max(w.cooldown, config.ENEMY_WEAPON_COOLDOWN)
     return enemy

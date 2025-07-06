@@ -225,6 +225,6 @@ def create_learning_enemy(region):
     enemy.ship.weapons = [weapon_cls()]
     for w in enemy.ship.weapons:
         w.owner = enemy.ship
-        # Set the weapon cooldown using the configured value
-        w.cooldown = config.ENEMY_WEAPON_COOLDOWN
+        # Ensure minimum cooldown so the enemy can't fire too rapidly
+        w.cooldown = max(w.cooldown, config.ENEMY_WEAPON_COOLDOWN)
     return enemy
