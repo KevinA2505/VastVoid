@@ -86,6 +86,8 @@ class CapitalShip(FactionStructure):
     def update(self, dt: float, sectors: list, enemies: list | None = None) -> None:
         if not self.fraction:
             return
+        if enemies is None:
+            enemies = []
         if self.fraction.name == "Solar Dominion":
             stars: list[Star] = []
             for sec in sectors:
