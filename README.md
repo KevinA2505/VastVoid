@@ -17,6 +17,9 @@ button to return to space.
 * Travel instantly via wormholes linking distant sectors.
 * Engage hyper-speed travel to jump across the map
   (one-second charge with an eight-second cooldown).
+* The Nebula Order flagship features a triple-circle layout wrapped in a
+  golden **Engagement Ring** that welcomes diplomats and other
+  non-scientists.
 
 ## Character creation
 
