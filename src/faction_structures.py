@@ -221,16 +221,25 @@ class CapitalShip(FactionStructure):
                 pygame.draw.circle(aura, (0, 0, 0, int(255 * 0.8)), (aura_r, aura_r), aura_r)
                 screen.blit(aura, (x - aura_r, y - aura_r))
         elif self.fraction and self.fraction.name == "Nebula Order":
-            ring_r = scaled
-            pygame.draw.circle(screen, color, (x, y), ring_r, max(1, int(3 * zoom)))
-            base_size = max(4, int(scaled * 0.3))
-            base_rect = pygame.Rect(
-                x - base_size // 2,
-                y - base_size // 2,
-                base_size,
-                base_size,
-            )
-            pygame.draw.rect(screen, color, base_rect)
+            outer_r = scaled
+            mid_r = int(scaled * 0.65)
+            inner_r = int(scaled * 0.3)
+            dark_purple = (60, 20, 90)
+            mid_purple = (110, 50, 150)
+            light_purple = (160, 100, 210)
+
+            pygame.draw.circle(screen, dark_purple, (x, y), outer_r)
+            pygame.draw.circle(screen, mid_purple, (x, y), mid_r)
+            dot_r = max(2, int(scaled * 0.08))
+            for dx, dy in [
+                (0, -mid_r),
+                (0, mid_r),
+                (-mid_r, 0),
+                (mid_r, 0),
+            ]:
+                pygame.draw.circle(screen, (0, 0, 0), (x + dx, y + dy), dot_r)
+            pygame.draw.circle(screen, light_purple, (x, y), inner_r)
+
             for dr in self.drones:
                 dr.draw(screen, offset_x, offset_y, zoom)
         elif self.shape == "angular":
