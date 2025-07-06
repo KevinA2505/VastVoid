@@ -46,29 +46,34 @@ class ChannelArm:
 
 @dataclass
 class EngagementRing:
-    """Visual helper drawing a ring around a ship."""
+    """Golden ring surrounding the Nebula Order flagship."""
 
+    owner: "CapitalShip"
     radius: float
+    thickness: float = 20.0
     color: Color = (255, 215, 0)
 
     def draw(
         self,
         screen: pygame.Surface,
-        x: float,
-        y: float,
         offset_x: float = 0.0,
         offset_y: float = 0.0,
         zoom: float = 1.0,
     ) -> None:
-        cx = int((x - offset_x) * zoom)
-        cy = int((y - offset_y) * zoom)
+        cx = int((self.owner.x - offset_x) * zoom)
+        cy = int((self.owner.y - offset_y) * zoom)
         pygame.draw.circle(
             screen,
             self.color,
             (cx, cy),
             int(self.radius * zoom),
-            max(1, int(2 * zoom)),
+            max(1, int(self.thickness * zoom)),
         )
+
+    def collides_with_point(self, x: float, y: float, radius: float) -> bool:
+        dist = math.hypot(self.owner.x - x, self.owner.y - y)
+        inner = max(0.0, self.radius - self.thickness)
+        return inner - radius < dist < self.radius + radius
 
 
 @dataclass
@@ -111,8 +116,8 @@ class CapitalShip(FactionStructure):
             self.hull = 1100
             self.modules.extend(["Research Labs", "Sensor Array"])
             self.size = self.radius
-            self.drones = [Drone(self) for _ in range(3)]
-            self.engagement_ring = EngagementRing(self.size * 4)
+            self.drones = []
+            self.engagement_ring = EngagementRing(self, self.size * 4, thickness=self.size * 0.6)
         elif fraction.name == "Pirate Clans":
             self.hull = 1000
             self.modules.extend(["Cloaking Device", "Raider Hangars"])
@@ -156,12 +161,7 @@ class CapitalShip(FactionStructure):
                         arm.angle += rotate if diff > 0 else -rotate
                     arm.angle %= 2 * math.pi
         elif self.fraction.name == "Nebula Order":
-            if enemies is None:
-                enemies = []
-            for dr in list(self.drones):
-                dr.update(dt, enemies)
-                if dr.expired():
-                    self.drones.remove(dr)
+            pass
 
     def draw(
         self,
@@ -179,9 +179,7 @@ class CapitalShip(FactionStructure):
         y = int((self.y - offset_y) * zoom)
         scaled = int(size * zoom)
         if self.engagement_ring:
-            self.engagement_ring.draw(
-                screen, self.x, self.y, offset_x, offset_y, zoom
-            )
+            self.engagement_ring.draw(screen, offset_x, offset_y, zoom)
         if self.fraction and self.fraction.name == "Solar Dominion":
             body = [
                 (x, y - scaled // 2),
@@ -272,9 +270,6 @@ class CapitalShip(FactionStructure):
             ]:
                 pygame.draw.circle(screen, (0, 0, 0), (x + dx, y + dy), dot_r)
             pygame.draw.circle(screen, light_purple, (x, y), inner_r)
-
-            for dr in self.drones:
-                dr.draw(screen, offset_x, offset_y, zoom)
         elif self.shape == "angular":
             # square hull with triangular wings
             hull = pygame.Rect(x - scaled // 2, y - scaled // 2, scaled, scaled)
@@ -353,9 +348,13 @@ class CapitalShip(FactionStructure):
             pygame.draw.circle(screen, flash, (x, y), max(2, int(3 * zoom)))
 
     def collides_with_point(self, x: float, y: float, radius: float) -> bool:
-        """Return ``True`` if ``(x, y)`` overlaps this capital ship."""
+        """Return ``True`` if ``(x, y)`` overlaps this capital ship or its ring."""
         r = max(self.radius, self.aura_radius)
-        return math.hypot(self.x - x, self.y - y) < r + radius
+        if math.hypot(self.x - x, self.y - y) < r + radius:
+            return True
+        if self.engagement_ring and self.engagement_ring.collides_with_point(x, y, radius):
+            return True
+        return False
 
 
 @dataclass
