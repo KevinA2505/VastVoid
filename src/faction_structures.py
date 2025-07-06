@@ -61,7 +61,7 @@ class CapitalShip(FactionStructure):
         if fraction.name == "Solar Dominion":
             self.hull = 1500
             self.modules.extend(["Heavy Cannons", "Fighter Bays"])
-            self.aura_radius = 120
+            self.aura_radius = 240
             self.radius = max(self.radius, self.aura_radius)
             self.arms = [
                 ChannelArm(i * 2 * math.pi / 5, self.radius)
