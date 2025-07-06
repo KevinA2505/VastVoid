@@ -225,27 +225,11 @@ class Enemy:
         world_height: int,
         sectors: list,
         blackholes: list | None = None,
-        player_fraction: Fraction | None = None,
         structures: list | None = None,
     ) -> None:
         """Update ship movement after behaviour tree tick."""
 
         self.player_ship = player_ship
-        if player_fraction is not None and player_fraction == self.fraction:
-            self.state = "ally"
-            self.ship.update(
-                _NullKeys(),
-                dt,
-                world_width,
-                world_height,
-                sectors,
-                blackholes,
-                None,
-                structures,
-            )
-            if self.ship.autopilot_target is None:
-                self._wander_target = None
-            return
         self.target = player_ship
         for obj in getattr(player_ship, "specials", []):
             if isinstance(obj, Decoy) and not obj.expired():

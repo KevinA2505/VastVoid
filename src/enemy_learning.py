@@ -155,29 +155,10 @@ class LearningEnemy(Enemy):
         world_height: int,
         sectors: list,
         blackholes: list | None = None,
-        player_fraction=None,
         structures: list | None = None,
     ) -> None:
         self.player_ship = player_ship
         self._blackholes = blackholes
-        if player_fraction is not None and player_fraction == self.fraction:
-            self.state = "ally"
-            player_target = type("_PlayerTarget", (), {"ship": player_ship})()
-            self.ship.update(
-                _NullKeys(),
-                dt,
-                world_width,
-                world_height,
-                sectors,
-                blackholes,
-                [player_target],
-                structures,
-            )
-            if self.ship.autopilot_target is None:
-                self._wander_target = None
-            self.prev_hull = self.ship.hull
-            self.player_prev_hull = player_ship.hull
-            return
         self.target = player_ship
         for obj in getattr(player_ship, "specials", []):
             if isinstance(obj, Decoy) and not obj.expired():
