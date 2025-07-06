@@ -7,6 +7,7 @@ from typing import Any
 from star import Star
 from combat import Drone
 from defensive_drone import DefensiveDrone
+from learning_defensive_drone import LearningDefensiveDrone
 
 import pygame
 
@@ -134,10 +135,11 @@ class CapitalShip(FactionStructure):
             self.hull = 1100
             self.modules.extend(["Research Labs", "Sensor Array"])
             self.size = self.radius
-            self.drones = [
-                DefensiveDrone(self, i * 2 * math.pi / 3)
-                for i in range(3)
-            ]
+            self.drones = []
+            for i in range(3):
+                drone = LearningDefensiveDrone(self, i * 2 * math.pi / 3)
+                drone.load_q_table()
+                self.drones.append(drone)
             self.engagement_ring = EngagementRing(
                 self,
                 self.size * 5,
