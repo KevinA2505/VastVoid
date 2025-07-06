@@ -137,7 +137,7 @@ class CapitalShip(FactionStructure):
             self.size = self.radius
             self.drones = []
             for i in range(3):
-                drone = LearningDefensiveDrone(self, i * 2 * math.pi / 3)
+                drone = LearningDefensiveDrone(self, angle=i * 2 * math.pi / 3)
                 drone.load_q_table()
                 self.drones.append(drone)
             self.engagement_ring = EngagementRing(
