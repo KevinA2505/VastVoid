@@ -8,6 +8,7 @@ from star import Star
 from combat import Drone
 from defensive_drone import DefensiveDrone
 from learning_defensive_drone import LearningDefensiveDrone
+from aggressive_defensive_drone import AggressiveDefensiveDrone
 
 import pygame
 
@@ -135,16 +136,17 @@ class CapitalShip(FactionStructure):
             self.hull = 1100
             self.modules.extend(["Research Labs", "Sensor Array"])
             self.size = self.radius
-            self.drones = []
-            for i in range(3):
-                drone = LearningDefensiveDrone(self, angle=i * 2 * math.pi / 3)
-                drone.load_q_table()
-                self.drones.append(drone)
             self.engagement_ring = EngagementRing(
                 self,
                 self.size * 5,
                 thickness=self.size * 0.6,
             )
+            self.drones = []
+            ring_radius = self.engagement_ring.radius * 0.95
+            for i in range(10):
+                drone = AggressiveDefensiveDrone(self, ring_radius)
+                drone.angle = i * 2 * math.pi / 10
+                self.drones.append(drone)
         elif fraction.name == "Pirate Clans":
             self.hull = 1000
             self.modules.extend(["Cloaking Device", "Raider Hangars"])
@@ -152,7 +154,13 @@ class CapitalShip(FactionStructure):
             self.hull = 1300
             self.modules.extend(["Survey Deck", "Jump Drives"])
 
-    def update(self, dt: float, sectors: list, enemies: list | None = None) -> None:
+    def update(
+        self,
+        dt: float,
+        sectors: list,
+        enemies: list | None = None,
+        player: object | None = None,
+    ) -> None:
         if not self.fraction:
             return
         if enemies is None:
@@ -188,9 +196,11 @@ class CapitalShip(FactionStructure):
                         arm.angle += rotate if diff > 0 else -rotate
                     arm.angle %= 2 * math.pi
         elif self.fraction.name == "Nebula Order":
-            # Update each defensive drone and check for collisions
+            hostiles = [e for e in enemies if e.fraction != self.fraction]
+            if player and getattr(player, "fraction", None) != self.fraction:
+                hostiles.append(type("_P", (), {"ship": player})())
             for drone in list(self.drones):
-                drone.update(dt, enemies)
+                drone.update(dt, hostiles)
 
                 rect = pygame.Rect(
                     drone.x - drone.size / 2,
@@ -199,22 +209,35 @@ class CapitalShip(FactionStructure):
                     drone.size,
                 )
 
-                for en in enemies:
+                for en in hostiles:
                     for proj in list(en.ship.projectiles):
                         if rect.collidepoint(proj.x, proj.y):
                             drone.hp -= proj.damage
                             en.ship.projectiles.remove(proj)
 
+                for proj in list(drone.projectiles):
+                    for en in hostiles:
+                        enemy_rect = pygame.Rect(
+                            en.ship.x - en.ship.size / 2,
+                            en.ship.y - en.ship.size / 2,
+                            en.ship.size,
+                            en.ship.size,
+                        )
+                        if enemy_rect.collidepoint(proj.x, proj.y):
+                            en.ship.take_damage(proj.damage)
+                            drone.projectiles.remove(proj)
+                            break
+
+                for en in hostiles:
                     enemy_rect = pygame.Rect(
                         en.ship.x - en.ship.size / 2,
                         en.ship.y - en.ship.size / 2,
                         en.ship.size,
                         en.ship.size,
                     )
-
                     if rect.colliderect(enemy_rect):
-                        en.ship.take_damage(5)
                         drone.hp -= 5
+                        en.ship.take_damage(5)
 
                 if drone.expired():
                     self.drones.remove(drone)
