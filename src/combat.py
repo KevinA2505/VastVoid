@@ -438,12 +438,19 @@ class Drone:
     projectiles can damage them.
     """
 
-    def __init__(self, owner, hp: float = 16.0, lifetime: float = float("inf")) -> None:
+    def __init__(
+        self,
+        owner,
+        hp: float = 16.0,
+        lifetime: float = float("inf"),
+        orbit_speed: float = 2.0,
+    ) -> None:
         self.owner = owner
         self.angle = 0.0
         # Increased orbit range so drones keep a bit more distance
         # and engage targets from farther away
         self.radius = owner.size * 4
+        self.orbit_speed = orbit_speed
         self.hp = hp
         self.lifetime = lifetime
         self.size = 10
@@ -456,7 +463,7 @@ class Drone:
 
     def update(self, dt: float, enemies: List) -> None:
         self.lifetime -= dt
-        self.angle += 2.0 * dt
+        self.angle += self.orbit_speed * dt
         self.x = self.owner.x + math.cos(self.angle) * self.radius
         self.y = self.owner.y + math.sin(self.angle) * self.radius
         if self._timer > 0:
