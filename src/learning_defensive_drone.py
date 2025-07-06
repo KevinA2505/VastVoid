@@ -20,6 +20,11 @@ def _dist(a_x: float, a_y: float, b_x: float, b_y: float) -> float:
 class LearningDefensiveDrone(DefensiveDrone):
     """Defensive drone with a very small Q-learning brain."""
 
+    owner: object
+    angle: float = 0.0
+    orbit_radius: float | None = None
+    orbit_speed: float = config.DEF_DRONE_ORBIT_SPEED
+    hp: float = 20.0
     alpha: float = config.DEF_DRONE_ALPHA
     gamma: float = config.DEF_DRONE_GAMMA
     epsilon: float = config.DEF_DRONE_EPSILON
@@ -29,6 +34,15 @@ class LearningDefensiveDrone(DefensiveDrone):
     q_table_version: int = field(default=Q_TABLE_VERSION, init=False, repr=False)
     prev_hp: float = field(default=0.0, init=False, repr=False)
     _wander_target: tuple | None = field(default=None, init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        super().__init__(
+            self.owner,
+            self.angle,
+            self.orbit_radius,
+            self.orbit_speed,
+            self.hp,
+        )
 
     def load_q_table(self, path: str = Q_TABLE_PATH) -> None:
         """Load the Q-table from disk if present."""
