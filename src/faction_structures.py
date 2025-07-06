@@ -121,7 +121,10 @@ class CapitalShip(FactionStructure):
         zoom: float = 1.0,
     ) -> None:
         color = self.color if self.color else (200, 200, 200)
-        size = 100  # draw capital ships 5x larger
+        outline = tuple(max(0, c - 60) for c in color)
+        blink = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() / 300.0)
+        flash = tuple(min(255, int(c + 100 * blink)) for c in color)
+        size = 150  # increased size for more imposing ships
         x = int((self.x - offset_x) * zoom)
         y = int((self.y - offset_y) * zoom)
         scaled = int(size * zoom)
@@ -132,6 +135,7 @@ class CapitalShip(FactionStructure):
                 (x - scaled // 2, y + scaled // 2),
             ]
             pygame.draw.polygon(screen, color, body)
+            pygame.draw.polygon(screen, outline, body, max(1, int(2 * zoom)))
             spike = scaled // 5
             left_spike = [
                 (x - scaled // 2, y + scaled // 2),
@@ -145,9 +149,12 @@ class CapitalShip(FactionStructure):
             ]
             pygame.draw.polygon(screen, color, left_spike)
             pygame.draw.polygon(screen, color, right_spike)
+            pygame.draw.polygon(screen, outline, left_spike, max(1, int(2 * zoom)))
+            pygame.draw.polygon(screen, outline, right_spike, max(1, int(2 * zoom)))
             thr = scaled // 4
             thr_rect = pygame.Rect(x - thr // 2, y + scaled // 2 - thr // 2, thr, thr)
             pygame.draw.rect(screen, color, thr_rect)
+            pygame.draw.rect(screen, outline, thr_rect, max(1, int(2 * zoom)))
             aura_r = int(self.aura_radius * zoom)
             if aura_r > 0:
                 aura = pygame.Surface((aura_r * 2, aura_r * 2), pygame.SRCALPHA)
@@ -165,10 +172,35 @@ class CapitalShip(FactionStructure):
                     pygame.draw.line(
                         screen, (255, 255, 100), (arm_x, arm_y), end, max(1, int(2 * zoom))
                     )
+            lights = [
+                (x, y - scaled // 3),
+                (x, y + scaled // 2 + thr // 2),
+            ]
+            for lx, ly in lights:
+                pygame.draw.circle(screen, flash, (lx, ly), max(2, int(3 * zoom)))
+        elif self.fraction and self.fraction.name == "Nebula Order":
+            outer = tuple(int(c * 0.6) for c in color)
+            middle = color
+            inner = tuple(min(255, int(c * 1.3)) for c in color)
+            outer_r = scaled
+            mid_r = int(scaled * 0.7)
+            inner_r = int(scaled * 0.3)
+            pygame.draw.circle(screen, outer, (x, y), outer_r)
+            pygame.draw.circle(screen, middle, (x, y), mid_r)
+            pygame.draw.circle(screen, inner, (x, y), inner_r)
+            dots = [
+                (x, y - mid_r),
+                (x + mid_r, y),
+                (x, y + mid_r),
+                (x - mid_r, y),
+            ]
+            for dx, dy in dots:
+                pygame.draw.circle(screen, (0, 0, 0), (dx, dy), max(2, int(3 * zoom)))
         elif self.shape == "angular":
             # square hull with triangular wings
             hull = pygame.Rect(x - scaled // 2, y - scaled // 2, scaled, scaled)
             pygame.draw.rect(screen, color, hull)
+            pygame.draw.rect(screen, outline, hull, max(1, int(2 * zoom)))
             left_wing = [
                 (x - scaled // 2, y),
                 (x - scaled, y - scaled // 2),
@@ -181,6 +213,13 @@ class CapitalShip(FactionStructure):
             ]
             pygame.draw.polygon(screen, color, left_wing)
             pygame.draw.polygon(screen, color, right_wing)
+            pygame.draw.polygon(screen, outline, left_wing, max(1, int(2 * zoom)))
+            pygame.draw.polygon(screen, outline, right_wing, max(1, int(2 * zoom)))
+            for lx, ly in [
+                (x - scaled // 2, y),
+                (x + scaled // 2, y),
+            ]:
+                pygame.draw.circle(screen, flash, (lx, ly), max(2, int(3 * zoom)))
         elif self.shape == "spiky":
             # star shape with a central core
             points = []
@@ -189,13 +228,17 @@ class CapitalShip(FactionStructure):
                 r = scaled if i % 2 == 0 else scaled // 2
                 points.append((x + r * math.cos(angle), y + r * math.sin(angle)))
             pygame.draw.polygon(screen, color, points)
+            pygame.draw.polygon(screen, outline, points, max(1, int(2 * zoom)))
             pygame.draw.circle(screen, color, (x, y), scaled // 2)
+            pygame.draw.circle(screen, outline, (x, y), scaled // 2, max(1, int(2 * zoom)))
+            pygame.draw.circle(screen, flash, (x, y), max(2, int(3 * zoom)))
         elif self.shape in {"sleek", "streamlined"}:
             # long ellipse with nose and small wings
             rect = pygame.Rect(
                 x - scaled, y - scaled // 3, scaled * 2, int(scaled / 1.5)
             )
             pygame.draw.ellipse(screen, color, rect)
+            pygame.draw.ellipse(screen, outline, rect, max(1, int(2 * zoom)))
             nose = [
                 (x + scaled, y),
                 (x + scaled + scaled // 2, y - scaled // 4),
@@ -214,13 +257,21 @@ class CapitalShip(FactionStructure):
             pygame.draw.polygon(screen, color, nose)
             pygame.draw.polygon(screen, color, wing_top)
             pygame.draw.polygon(screen, color, wing_bottom)
+            pygame.draw.polygon(screen, outline, nose, max(1, int(2 * zoom)))
+            pygame.draw.polygon(screen, outline, wing_top, max(1, int(2 * zoom)))
+            pygame.draw.polygon(screen, outline, wing_bottom, max(1, int(2 * zoom)))
+            pygame.draw.circle(screen, flash, (x + scaled, y), max(2, int(3 * zoom)))
         else:
             # round body with cross arms
             pygame.draw.circle(screen, color, (x, y), scaled)
+            pygame.draw.circle(screen, outline, (x, y), scaled, max(1, int(2 * zoom)))
             horiz = pygame.Rect(x - scaled // 2, y - scaled // 8, scaled, scaled // 4)
             vert = pygame.Rect(x - scaled // 8, y - scaled // 2, scaled // 4, scaled)
             pygame.draw.rect(screen, color, horiz)
             pygame.draw.rect(screen, color, vert)
+            pygame.draw.rect(screen, outline, horiz, max(1, int(2 * zoom)))
+            pygame.draw.rect(screen, outline, vert, max(1, int(2 * zoom)))
+            pygame.draw.circle(screen, flash, (x, y), max(2, int(3 * zoom)))
 
     def collides_with_point(self, x: float, y: float, radius: float) -> bool:
         """Return ``True`` if ``(x, y)`` overlaps this capital ship."""
