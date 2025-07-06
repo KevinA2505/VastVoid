@@ -24,6 +24,14 @@ button to return to space.
 * The flagship also fields defensive drones that orbit the vessel and intercept
   nearby threats.
 
+### Defensive drones
+The Nebula Order flagship deploys a trio of small drones that protect only this
+capital ship. They move in a slow patrol around the hull but react quickly to
+any hostile ships or projectiles. Each drone relies on a lightweight learning
+system provided by `drone_learning` to refine its response timing. They never
+venture far from the flagship and engage threats solely within its immediate
+vicinity.
+
 ## Character creation
 
 When starting the game you can personalise the player by entering a name,
