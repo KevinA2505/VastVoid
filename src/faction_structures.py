@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import Any
 from star import Star
 from combat import Drone
+from defensive_drone import DefensiveDrone
 
 import pygame
 
@@ -133,7 +134,10 @@ class CapitalShip(FactionStructure):
             self.hull = 1100
             self.modules.extend(["Research Labs", "Sensor Array"])
             self.size = self.radius
-            self.drones = []
+            self.drones = [
+                DefensiveDrone(self, i * 2 * math.pi / 3)
+                for i in range(3)
+            ]
             self.engagement_ring = EngagementRing(
                 self,
                 self.size * 5,
@@ -182,7 +186,30 @@ class CapitalShip(FactionStructure):
                         arm.angle += rotate if diff > 0 else -rotate
                     arm.angle %= 2 * math.pi
         elif self.fraction.name == "Nebula Order":
-            pass
+            for drone in list(self.drones):
+                drone.update(dt, enemies)
+                rect = pygame.Rect(
+                    drone.x - drone.size / 2,
+                    drone.y - drone.size / 2,
+                    drone.size,
+                    drone.size,
+                )
+                for en in enemies:
+                    for proj in list(en.ship.projectiles):
+                        if rect.collidepoint(proj.x, proj.y):
+                            drone.hp -= proj.damage
+                            en.ship.projectiles.remove(proj)
+                    enemy_rect = pygame.Rect(
+                        en.ship.x - en.ship.size / 2,
+                        en.ship.y - en.ship.size / 2,
+                        en.ship.size,
+                        en.ship.size,
+                    )
+                    if rect.colliderect(enemy_rect):
+                        en.ship.take_damage(5)
+                        drone.hp -= 5
+                if drone.expired():
+                    self.drones.remove(drone)
 
     def draw(
         self,
@@ -291,6 +318,8 @@ class CapitalShip(FactionStructure):
             ]:
                 pygame.draw.circle(screen, (0, 0, 0), (x + dx, y + dy), dot_r)
             pygame.draw.circle(screen, light_purple, (x, y), inner_r)
+            for drone in self.drones:
+                drone.draw(screen, offset_x, offset_y, zoom)
         elif self.shape == "angular":
             # square hull with triangular wings
             hull = pygame.Rect(x - scaled // 2, y - scaled // 2, scaled, scaled)

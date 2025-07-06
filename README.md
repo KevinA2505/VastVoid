@@ -21,6 +21,8 @@ button to return to space.
   purple outer hull, a mid purple ring with black markers at the cardinal
   points, and a light purple core. A thick golden **Engagement Ring** encircles
   the ship to host diplomats and other non-scientists.
+* The flagship also fields defensive drones that orbit the vessel and intercept
+  nearby threats.
 
 ## Character creation
 
