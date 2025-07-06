@@ -69,6 +69,23 @@ class EngagementRing:
             int(self.radius * zoom),
             max(1, int(self.thickness * zoom)),
         )
+        outline_w = max(1, int(2 * zoom))
+        pygame.draw.circle(
+            screen,
+            (0, 0, 0),
+            (cx, cy),
+            int(self.radius * zoom),
+            outline_w,
+        )
+        inner_r = int(max(0, (self.radius - self.thickness)) * zoom)
+        if inner_r > 0:
+            pygame.draw.circle(
+                screen,
+                (0, 0, 0),
+                (cx, cy),
+                inner_r,
+                outline_w,
+            )
 
     def collides_with_point(self, x: float, y: float, radius: float) -> bool:
         dist = math.hypot(self.owner.x - x, self.owner.y - y)
@@ -117,7 +134,11 @@ class CapitalShip(FactionStructure):
             self.modules.extend(["Research Labs", "Sensor Array"])
             self.size = self.radius
             self.drones = []
-            self.engagement_ring = EngagementRing(self, self.size * 4, thickness=self.size * 0.6)
+            self.engagement_ring = EngagementRing(
+                self,
+                self.size * 5,
+                thickness=self.size * 0.6,
+            )
         elif fraction.name == "Pirate Clans":
             self.hull = 1000
             self.modules.extend(["Cloaking Device", "Raider Hangars"])
