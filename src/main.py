@@ -587,6 +587,7 @@ def main():
                     break
         for sector in sectors:
             sector.update(dt)
+        # Update roaming capital ships so their arms can track nearby stars
         for cap in capital_ships:
             cap.update(dt, sectors)
 
