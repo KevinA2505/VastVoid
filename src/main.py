@@ -587,6 +587,8 @@ def main():
                     break
         for sector in sectors:
             sector.update(dt)
+        for cap in capital_ships:
+            cap.update(dt, sectors)
 
         screen.fill(config.BACKGROUND_COLOR)
         if route_planner.active:
