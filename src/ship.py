@@ -396,6 +396,9 @@ class Ship:
             if math.hypot(other.x - self.x, other.y - self.y) < half_size + other.size / 2:
                 return True
         for struct in self._structures:
+            # Skip small drones so they don't trap the player when colliding.
+            if isinstance(struct, Drone):
+                continue
             # Drones only provide ``size`` representing their collision radius,
             # while larger structures expose a ``radius`` attribute. Handle both
             # so ships properly avoid them.
