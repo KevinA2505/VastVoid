@@ -53,6 +53,8 @@ class CapitalShip(FactionStructure):
     hull: int = 1000
     hangar_capacity: int = 4
     energy_sources: list[Any] = field(default_factory=list)
+    # Basic collision/scale size used by drones and other systems
+    size: int = 50
     radius: int = 50
     aura_radius: int = 80
     arms: list[ChannelArm] = field(default_factory=list)
@@ -60,11 +62,16 @@ class CapitalShip(FactionStructure):
 
     def apply_fraction_traits(self, fraction: Fraction) -> None:
         super().apply_fraction_traits(fraction)
+        # Default size is tied to the collision radius so dependent systems
+        # like drones have a sensible orbit distance.
+        self.size = self.radius
         if fraction.name == "Solar Dominion":
             self.hull = 1500
             self.modules.extend(["Heavy Cannons", "Fighter Bays"])
             self.aura_radius = 240
             self.radius = max(self.radius, self.aura_radius)
+            # Update size after modifying the radius
+            self.size = self.radius
             self.arms = [
                 ChannelArm(i * 2 * math.pi / 5, self.radius)
                 for i in range(5)
@@ -75,6 +82,7 @@ class CapitalShip(FactionStructure):
         elif fraction.name == "Nebula Order":
             self.hull = 1100
             self.modules.extend(["Research Labs", "Sensor Array"])
+            self.size = self.radius
             self.drones = [Drone(self) for _ in range(3)]
         elif fraction.name == "Pirate Clans":
             self.hull = 1000
