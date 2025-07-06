@@ -95,9 +95,20 @@ HYPERJUMP_VIGNETTE_ALPHA = 220
 # Minimum and maximum duration of hyperjump animations in seconds
 HYPERJUMP_MIN_TIME = 1.0
 HYPERJUMP_MAX_TIME = 60.0
-# --- Learning defensive drone settings ---------------------------------------
-DEF_DRONE_DETECTION_RANGE = 250  # radius to look for enemies/projectiles
-DEF_DRONE_PATROL_RADIUS = 120    # how far drones wander from their owner
-DEF_DRONE_ALPHA = 0.5            # Q-learning rate
-DEF_DRONE_GAMMA = 0.9            # discount factor
-DEF_DRONE_EPSILON = 0.1          # exploration probability
+# --- Defensive drone settings -------------------------------------------------
+# Standard orbit radius is based on the owner's size
+DEF_DRONE_ORBIT_RADIUS_FACTOR = 3.0
+# Drones orbit slowly when idle
+DEF_DRONE_ORBIT_SPEED = 0.8
+# Aggressive speed when intercepting threats
+DEF_DRONE_INTERCEPT_SPEED = 180.0
+# How far a drone may wander from its patrol route
+DEF_DRONE_MAX_ROAM_FACTOR = 3.0  # multiplier of the orbit radius
+# Fixed radius to wander around the owner when patrolling
+DEF_DRONE_PATROL_RADIUS = 120
+# Detection radius for nearby enemies or projectiles
+DEF_DRONE_DETECTION_RANGE = 250
+# Learning parameters used by the intelligent drone variant
+DEF_DRONE_ALPHA = 0.5
+DEF_DRONE_GAMMA = 0.9
+DEF_DRONE_EPSILON = 0.1
