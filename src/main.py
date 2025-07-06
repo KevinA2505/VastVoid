@@ -514,7 +514,6 @@ def main():
                 world_height,
                 sectors,
                 blackholes,
-                player.fraction,
                 capital_ships,
             )
 
