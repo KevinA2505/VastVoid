@@ -121,7 +121,12 @@ class Ship:
         structures: list | None = None,
     ) -> None:
         self._enemy_list = enemies
-        self._structures = structures or []
+        self._structures = list(structures or [])
+        # Include any active drones launched from capital ships or other
+        # structures so they can participate in collision checks.
+        for struct in structures or []:
+            for dr in getattr(struct, "drones", []):
+                self._structures.append(dr)
         self._sectors = sectors
         if self.invisible_timer > 0:
             self.invisible_timer = max(0.0, self.invisible_timer - dt)
@@ -391,7 +396,13 @@ class Ship:
             if math.hypot(other.x - self.x, other.y - self.y) < half_size + other.size / 2:
                 return True
         for struct in self._structures:
-            radius = getattr(struct, "radius", getattr(struct, "size", 0) / 2)
+            # Drones only provide ``size`` representing their collision radius,
+            # while larger structures expose a ``radius`` attribute. Handle both
+            # so ships properly avoid them.
+            if hasattr(struct, "radius"):
+                radius = struct.radius
+            else:
+                radius = getattr(struct, "size", 0)
             if math.hypot(struct.x - self.x, struct.y - self.y) < half_size + radius:
                 return True
         return False
