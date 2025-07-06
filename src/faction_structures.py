@@ -177,7 +177,25 @@ class CapitalShip(FactionStructure):
                 (x, y + scaled // 2 + thr // 2),
             ]
             for lx, ly in lights:
-                pygame.draw.circle(screen, flash, (lx, ly), max(2, int(3 * zoom)))
+                pygame.draw.circle(screen, flash, (lx, ly), max(2, int(3 * zoom))
+        elif self.fraction and self.fraction.name == "Nebula Order":
+            outer = tuple(int(c * 0.6) for c in color)
+            middle = color
+            inner = tuple(min(255, int(c * 1.3)) for c in color)
+            outer_r = scaled
+            mid_r = int(scaled * 0.7)
+            inner_r = int(scaled * 0.3)
+            pygame.draw.circle(screen, outer, (x, y), outer_r)
+            pygame.draw.circle(screen, middle, (x, y), mid_r)
+            pygame.draw.circle(screen, inner, (x, y), inner_r)
+            dots = [
+                (x, y - mid_r),
+                (x + mid_r, y),
+                (x, y + mid_r),
+                (x - mid_r, y),
+            ]
+            for dx, dy in dots:
+                pygame.draw.circle(screen, (0, 0, 0), (dx, dy), max(2, int(3 * zoom)) main
         elif self.shape == "angular":
             # square hull with triangular wings
             hull = pygame.Rect(x - scaled // 2, y - scaled // 2, scaled, scaled)
