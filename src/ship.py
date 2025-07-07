@@ -45,6 +45,26 @@ SHIP_MODELS = [
     ShipModel("Interceptor", "Starlight", 16, (255, 100, 100), 1.4),
 ]
 
+
+class _ShipParticle:
+    """Simple exhaust particle emitted by a ship."""
+
+    def __init__(self, x: float, y: float, vx: float, vy: float) -> None:
+        self.x = x
+        self.y = y
+        self.vx = vx
+        self.vy = vy
+        self.color = config.SHIP_PARTICLE_COLOR
+        self.lifetime = config.SHIP_PARTICLE_DURATION
+
+    def update(self, dt: float) -> None:
+        self.x += self.vx * dt
+        self.y += self.vy * dt
+        self.lifetime -= dt
+
+    def expired(self) -> bool:
+        return self.lifetime <= 0
+
 class Ship:
     """Simple controllable ship with optional model attributes."""
 
@@ -84,6 +104,7 @@ class Ship:
             w.owner = self
         self.projectiles: list[Projectile] = []
         self.specials: list = []
+        self.particles: list[_ShipParticle] = []
         self._enemy_list: list | None = None
         self._structures: list | None = None
         self.shield = Shield()
@@ -133,6 +154,7 @@ class Ship:
             for dr in getattr(struct, "drones", []):
                 self._structures.append(dr)
         self._sectors = sectors
+        self._update_particles(dt)
         if self.invisible_timer > 0:
             self.invisible_timer = max(0.0, self.invisible_timer - dt)
         if self.orbit_cooldown > 0:
@@ -189,6 +211,8 @@ class Ship:
 
         if abs(self.vx) > 1e-3 or abs(self.vy) > 1e-3:
             self.angle = math.atan2(self.vy, self.vx)
+            if abs(self.vx) > 40 or abs(self.vy) > 40:
+                self._emit_particle()
 
         if blackholes:
             for hole in blackholes:
@@ -335,6 +359,7 @@ class Ship:
         self.y += dy / distance * step
         self.x = max(0, min(world_width, self.x))
         self.y = max(0, min(world_height, self.y))
+        self._emit_particle()
 
         if blackholes:
             for hole in blackholes:
@@ -356,6 +381,7 @@ class Ship:
         self.x = self.orbit_target.x + math.cos(self.orbit_angle) * self.orbit_radius
         self.y = self.orbit_target.y + math.sin(self.orbit_angle) * self.orbit_radius
         self.angle = self.orbit_angle + math.pi / 2
+        self._emit_particle()
         self.orbit_fire_timer -= dt
         if self.orbit_fire_timer <= 0:
             # Fire a homing projectile while orbiting
@@ -443,6 +469,9 @@ class Ship:
         """Draw the ship scaled by a non-linear factor of the zoom level."""
         cx = config.WINDOW_WIDTH // 2
         cy = config.WINDOW_HEIGHT // 2
+        offset_x = self.x - cx / zoom
+        offset_y = self.y - cy / zoom
+        self.draw_particles(screen, offset_x, offset_y, zoom)
         points = self._triangle_points(cx, cy, zoom)
         pygame.draw.polygon(screen, self.color, points)
 
@@ -517,6 +546,23 @@ class Ship:
             out_of_bounds = not (0 <= proj.x <= world_width and 0 <= proj.y <= world_height)
             if proj.expired() or out_of_bounds:
                 self.projectiles.remove(proj)
+
+    def _update_particles(self, dt: float) -> None:
+        for p in list(self.particles):
+            p.update(dt)
+            if p.expired():
+                self.particles.remove(p)
+
+    def _emit_particle(self) -> None:
+        if len(self.particles) >= config.SHIP_PARTICLE_MAX:
+            self.particles.pop(0)
+        hx = self.size * 1.5 / 2
+        px = self.x - math.cos(self.angle) * hx
+        py = self.y - math.sin(self.angle) * hx
+        speed = 60.0
+        vx = self.vx - math.cos(self.angle) * speed
+        vy = self.vy - math.sin(self.angle) * speed
+        self.particles.append(_ShipParticle(px, py, vx, vy))
 
     def _update_specials(self, dt: float, world_width: int, world_height: int, enemies: list | None = None) -> None:
         for obj in list(self.specials):
@@ -661,6 +707,12 @@ class Ship:
         if self.area_shield:
             self.area_shield.draw(screen, offset_x, offset_y, zoom)
 
+    def draw_particles(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
+        for p in self.particles:
+            px = int((p.x - offset_x) * zoom)
+            py = int((p.y - offset_y) * zoom)
+            pygame.draw.circle(screen, p.color, (px, py), max(1, int(2 * zoom)))
+
     def draw_at(
         self,
         screen: pygame.Surface,
@@ -671,6 +723,7 @@ class Ship:
         """Draw the ship on screen applying an offset and zoom."""
         if self.invisible_timer > 0:
             return
+        self.draw_particles(screen, offset_x, offset_y, zoom)
         cx = int((self.x - offset_x) * zoom)
         cy = int((self.y - offset_y) * zoom)
         points = self._triangle_points(cx, cy, zoom)
