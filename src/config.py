@@ -5,7 +5,9 @@ SHIP_COLOR = (255, 255, 255)
 SHIP_SIZE = 20
 # Ship acceleration is drastically increased for snappier movement
 SHIP_ACCELERATION = 300  # pixels per second squared (5x default)
-SHIP_FRICTION = 0.92  # velocity retained each frame
+# Increased friction value so ships retain more of their velocity each frame,
+# giving them a noticeably longer drift after moving.
+SHIP_FRICTION = 0.96  # velocity retained each frame
 AUTOPILOT_SPEED = 120  # pixels per second when auto moving
 PLANET_LANDING_SPEED = 100  # slower speed when approaching a planet
 

@@ -343,20 +343,21 @@ class Ship:
         dx = dest_x - self.x
         dy = dest_y - self.y
         distance = math.hypot(dx, dy)
-        step = config.AUTOPILOT_SPEED * dt
+        speed = config.AUTOPILOT_SPEED
         if isinstance(self.autopilot_target, Planet):
-            step = config.PLANET_LANDING_SPEED * dt
+            speed = config.PLANET_LANDING_SPEED
+        step = speed * dt
         if distance <= step:
             self.x = dest_x
             self.y = dest_y
             self.autopilot_target = None
-            self.vx = 0
-            self.vy = 0
             return
-        self.angle = math.atan2(dy, dx)
+        self.vx = dx / distance * speed
+        self.vy = dy / distance * speed
+        self.angle = math.atan2(self.vy, self.vx)
         old_x, old_y = self.x, self.y
-        self.x += dx / distance * step
-        self.y += dy / distance * step
+        self.x += self.vx * dt
+        self.y += self.vy * dt
         self.x = max(0, min(world_width, self.x))
         self.y = max(0, min(world_height, self.y))
         self._emit_particle()
