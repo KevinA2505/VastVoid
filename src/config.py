@@ -8,8 +8,11 @@ SHIP_ACCELERATION = 300  # pixels per second squared (5x default)
 # Increased friction value so ships retain more of their velocity each frame,
 # giving them a noticeably longer drift after moving.
 SHIP_FRICTION = 0.96  # velocity retained each frame
-AUTOPILOT_SPEED = 120  # pixels per second when auto moving
-PLANET_LANDING_SPEED = 100  # slower speed when approaching a planet
+# Maximum travel speed for manual control
+SHIP_MAX_SPEED = 100
+# Slightly slower autopilot speed to keep movement moderate
+AUTOPILOT_SPEED = 100  # pixels per second when auto moving
+PLANET_LANDING_SPEED = 80  # slower speed when approaching a planet
 
 # --- Hull settings -----------------------------------------------------------
 # Maximum hull values for player and enemy ships
@@ -84,7 +87,8 @@ ENEMY_ORBIT_INTERVAL = 12.0  # seconds between orbit attempts
 ENEMY_ORBIT_PROBABILITY = 0.35  # chance of starting an orbit each interval
 
 # Speed multiplier applied to all computer controlled ships and drones
-NPC_SPEED_FACTOR = 0.85
+# Use the same speed factor for all ships so they travel evenly
+NPC_SPEED_FACTOR = 1.0
 
 # --- Hyperjump settings ------------------------------------------------------
 # Delay before a hyperjump completes and cooldown between jumps

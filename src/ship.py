@@ -214,6 +214,16 @@ class Ship:
         self.vx *= config.SHIP_FRICTION
         self.vy *= config.SHIP_FRICTION
 
+        # Clamp velocity to a moderate maximum so all ships travel evenly
+        speed_limit = config.SHIP_MAX_SPEED * self.speed_factor
+        if self.boost_time > 0:
+            speed_limit *= config.BOOST_MULTIPLIER
+        vel = math.hypot(self.vx, self.vy)
+        if vel > speed_limit:
+            scale = speed_limit / vel
+            self.vx *= scale
+            self.vy *= scale
+
         if abs(self.vx) > 1e-3 or abs(self.vy) > 1e-3:
             self.angle = math.atan2(self.vy, self.vx)
             if abs(self.vx) > 40 or abs(self.vy) > 40:
