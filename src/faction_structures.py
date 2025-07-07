@@ -104,6 +104,8 @@ class CapitalShip(FactionStructure):
     y: float = 0.0
     hull: int = 1000
     hangar_capacity: int = 4
+    energy: float = 0.0
+    max_energy: float = 10000.0
     energy_sources: list[Any] = field(default_factory=list)
     # Basic collision/scale size used by drones and other systems
     size: int = 50
@@ -125,6 +127,8 @@ class CapitalShip(FactionStructure):
             self.radius = max(self.radius, self.aura_radius)
             # Update size after modifying the radius
             self.size = self.radius
+            # Solar Dominion ships start fully charged
+            self.energy = self.max_energy
             self.arms = [
                 ChannelArm(i * 2 * math.pi / 5, self.radius)
                 for i in range(5)
@@ -199,6 +203,14 @@ class CapitalShip(FactionStructure):
                     else:
                         arm.angle += rotate if diff > 0 else -rotate
                     arm.angle %= 2 * math.pi
+                    # Recharge energy from the linked star
+                    if self.energy < self.max_energy:
+                        transfer = 100.0 * dt
+                        available = min(transfer, arm.target.energy)
+                        needed = self.max_energy - self.energy
+                        amount = min(available, needed)
+                        self.energy += amount
+                        arm.target.energy -= amount
         elif self.fraction.name == "Nebula Order":
             hostiles = [e for e in enemies if e.fraction != self.fraction]
             if player and getattr(player, "fraction", None) != self.fraction:

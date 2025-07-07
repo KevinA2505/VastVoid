@@ -156,3 +156,14 @@ Three additional artifacts expand your tactical options:
 Press **G** to open the artifact menu. All available artifacts are listed and
 clicking one lets you choose the ability slot by pressing **1**, **2** or **3**.
 The first two slots (Boost and Orbit) cannot be replaced.
+
+### Energy and the Dyson Sphere
+
+Stars now carry a vast reserve of power through a new `energy` attribute.
+Capital ships include matching `energy` and `max_energy` values which default
+to 10&nbsp;000 units. Solar Dominion flagships start with their energy bar full
+thanks to the channel arms that surround them. Each arm links to a nearby star
+and transfers roughly 100 energy per second while the link is maintained,
+reducing the star's own supply. This mechanism lays the groundwork for
+constructing a Dyson Sphere that continuously harvests stellar energy for the
+faction's fleet.
