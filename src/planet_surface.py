@@ -372,14 +372,27 @@ class PlanetSurface:
                 and abs(self.explorer.y - pickup.y) < 40
             )
             pickup.draw(screen, offset_x, offset_y, font, show)
-        # draw landing ship
-        ship_rect = pygame.Rect(
-            int(self.ship_pos[0] - offset_x - 10),
-            int(self.ship_pos[1] - offset_y - 10),
-            20,
-            20,
+        # draw landing ship as a small triangle
+        cx = int(self.ship_pos[0] - offset_x)
+        cy = int(self.ship_pos[1] - offset_y)
+        size = 20
+        height = size * 1.5
+        hx = height / 2
+        half_base = size / 2
+        angle = -math.pi / 2
+        cos_a = math.cos(angle)
+        sin_a = math.sin(angle)
+        tip = (cx + cos_a * hx, cy + sin_a * hx)
+        left = (
+            cx - cos_a * hx - sin_a * half_base,
+            cy - sin_a * hx + cos_a * half_base,
         )
-        pygame.draw.rect(screen, (200, 200, 200), ship_rect)
+        right = (
+            cx - cos_a * hx + sin_a * half_base,
+            cy - sin_a * hx - cos_a * half_base,
+        )
+        points = [tip, left, right]
+        pygame.draw.polygon(screen, (200, 200, 200), points)
         if self.boat_active and self.boat:
             self.boat.draw(screen, offset_x, offset_y)
         self.explorer.draw(screen, offset_x, offset_y)
