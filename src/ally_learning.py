@@ -140,6 +140,33 @@ class LearningAlly(LearningEnemy):
         self.prev_hull = self.ship.hull
         self.player_prev_hull = self.player_ship.hull
 
+    def draw_at(
+        self,
+        screen,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+        player_fraction=None,
+        aura_color=None,
+    ) -> None:
+        """Draw the ally's ship at a given offset and zoom.
+
+        ``LearningAlly`` does not implement its own rendering logic, so this
+        simply delegates to the underlying :class:`Ship` instance.  The extra
+        parameters mirror :meth:`ship.Ship.draw_at` so callers can provide the
+        same values they would when drawing other ships.
+        """
+
+        if hasattr(self, "ship"):
+            self.ship.draw_at(
+                screen,
+                offset_x,
+                offset_y,
+                zoom,
+                player_fraction,
+                aura_color,
+            )
+
 
 class _Region:
     def __init__(self, x: int, y: int, width: int, height: int) -> None:
