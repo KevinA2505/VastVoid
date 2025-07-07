@@ -44,6 +44,7 @@ class Carrier(Ship):
         offset_x: float = 0.0,
         offset_y: float = 0.0,
         zoom: float = 1.0,
+        aura_color: tuple[int, int, int] | None = None,
     ) -> None:
         color = self.color if self.fraction is None else self.fraction.color
         outline = tuple(max(0, c - 50) for c in color)
@@ -58,7 +59,8 @@ class Carrier(Ship):
         if player_fraction and self.fraction and player_fraction == self.fraction:
             aura_r = int(max(width, height) * 0.8)
             aura = pygame.Surface((aura_r * 2, aura_r * 2), pygame.SRCALPHA)
-            pygame.draw.circle(aura, color + (80,), (aura_r, aura_r), aura_r)
+            aura_col = aura_color or color
+            pygame.draw.circle(aura, aura_col + (80,), (aura_r, aura_r), aura_r)
             screen.blit(aura, (cx - aura_r, cy - aura_r))
 
 __all__ = ["Carrier"]
