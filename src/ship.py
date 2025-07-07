@@ -166,8 +166,6 @@ class Ship:
             self.orbit_cooldown = max(0.0, self.orbit_cooldown - dt)
         if self.hyperjump_cooldown > 0:
             self.hyperjump_cooldown = max(0.0, self.hyperjump_cooldown - dt)
-        if self._update_hyperjump(dt, world_width, world_height, enemies):
-            return
 
         # Always recharge shields and update weapon timers
         self.shield.recharge(dt)
@@ -175,6 +173,9 @@ class Ship:
             weapon.update(dt)
         for art in self.artifacts:
             art.update(dt)
+
+        if self._update_hyperjump(dt, world_width, world_height, enemies):
+            return
 
         if self.orbit_time > 0 and self.orbit_target:
             self._update_orbit(dt)
