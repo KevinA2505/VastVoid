@@ -147,7 +147,7 @@ class Ship:
         world_height: int,
         sectors: list,
         blackholes: list | None = None,
-        enemies: list | None = None,
+        targets: list | None = None,
         structures: list | None = None,
     ) -> None:
         self._structures = list(structures or [])
@@ -172,13 +172,13 @@ class Ship:
         for art in self.artifacts:
             art.update(dt)
 
-        if self._update_hyperjump(dt, world_width, world_height, enemies):
+        if self._update_hyperjump(dt, world_width, world_height, targets):
             return
 
         if self.orbit_time > 0 and self.orbit_target:
             self._update_orbit(dt)
             self._update_projectiles(dt, world_width, world_height)
-            self._update_specials(dt, world_width, world_height, enemies)
+            self._update_specials(dt, world_width, world_height, targets)
             if self.boost_time > 0 and self.orbit_forced:
                 self.cancel_orbit()
             return
@@ -246,7 +246,7 @@ class Ship:
             self.vy = 0
 
         self._update_projectiles(dt, world_width, world_height)
-        self._update_specials(dt, world_width, world_height, enemies)
+        self._update_specials(dt, world_width, world_height, targets)
 
     def start_autopilot(self, target) -> None:
         self.autopilot_target = target
@@ -314,7 +314,7 @@ class Ship:
         dt: float,
         world_width: int,
         world_height: int,
-        enemies: list | None = None,
+        targets: list | None = None,
     ) -> bool:
         """Handle hyperjump countdown and teleportation."""
         if self.hyperjump_timer > 0:
@@ -322,7 +322,7 @@ class Ship:
             self.vx = 0.0
             self.vy = 0.0
             self._update_projectiles(dt, world_width, world_height)
-            self._update_specials(dt, world_width, world_height, enemies)
+            self._update_specials(dt, world_width, world_height, targets)
             return True
 
         if self.hyperjump_target is not None:
@@ -338,7 +338,7 @@ class Ship:
             self.vx = 0.0
             self.vy = 0.0
             self._update_projectiles(dt, world_width, world_height)
-            self._update_specials(dt, world_width, world_height, enemies)
+            self._update_specials(dt, world_width, world_height, targets)
             if t >= 1.0:
                 self.hyperjump_target = None
                 self.hyperjump_cooldown = config.HYPERJUMP_COOLDOWN
@@ -563,12 +563,12 @@ class Ship:
             else:
                 self.projectiles.append(proj)
 
-    def use_artifact(self, index: int, enemies: list) -> None:
+    def use_artifact(self, index: int, targets: list) -> None:
         """Activate an equipped artifact if possible."""
         if 0 <= index < len(self.artifacts):
             art = self.artifacts[index]
             if art.can_use():
-                art.activate(self, enemies)
+                art.activate(self, targets)
 
     def _update_projectiles(self, dt: float, world_width: int, world_height: int) -> None:
         for proj in list(self.projectiles):
@@ -594,29 +594,29 @@ class Ship:
         vy = self.vy - math.sin(self.angle) * speed
         self.particles.append(_ShipParticle(px, py, vx, vy))
 
-    def _update_specials(self, dt: float, world_width: int, world_height: int, enemies: list | None = None) -> None:
+    def _update_specials(self, dt: float, world_width: int, world_height: int, targets: list | None = None) -> None:
         for obj in list(self.specials):
             if isinstance(obj, LaserBeam):
-                obj.update(dt, enemies or [])
+                obj.update(dt, targets or [])
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, TimedMine):
                 obj.update(dt)
-                if obj.exploded and enemies:
-                    for en in enemies:
-                        if math.hypot(en.ship.x - obj.x, en.ship.y - obj.y) <= obj.radius:
-                            en.ship.take_damage(obj.damage)
+                if obj.exploded and targets:
+                    for tar in targets:
+                        if math.hypot(tar.ship.x - obj.x, tar.ship.y - obj.y) <= obj.radius:
+                            tar.ship.take_damage(obj.damage)
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, Drone):
-                obj.update(dt, enemies or [])
+                obj.update(dt, targets or [])
                 for proj in list(obj.projectiles):
-                    for en in enemies or []:
+                    for tar in targets or []:
                         if (
-                            math.hypot(proj.x - en.ship.x, proj.y - en.ship.y)
-                            <= en.ship.collision_radius
+                            math.hypot(proj.x - tar.ship.x, proj.y - tar.ship.y)
+                            <= tar.ship.collision_radius
                         ):
-                            en.ship.take_damage(proj.damage)
+                            tar.ship.take_damage(proj.damage)
                             obj.projectiles.remove(proj)
                             break
                 drone_rect = pygame.Rect(
@@ -625,17 +625,17 @@ class Ship:
                     obj.size,
                     obj.size,
                 )
-                for en in enemies or []:
-                    for proj in list(en.ship.projectiles):
+                for tar in targets or []:
+                    for proj in list(tar.ship.projectiles):
                         if drone_rect.collidepoint(proj.x, proj.y):
                             obj.hp -= proj.damage
-                            en.ship.projectiles.remove(proj)
+                            tar.ship.projectiles.remove(proj)
                             if obj.hp <= 0:
                                 break
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, BombDrone):
-                obj.update(dt, enemies or [])
+                obj.update(dt, targets or [])
                 bomb_rect = pygame.Rect(
                     obj.x - obj.size / 2,
                     obj.y - obj.size / 2,
@@ -643,28 +643,28 @@ class Ship:
                     obj.size,
                 )
                 hit = False
-                for en in enemies or []:
-                    for proj in list(en.ship.projectiles):
+                for tar in targets or []:
+                    for proj in list(tar.ship.projectiles):
                         if bomb_rect.collidepoint(proj.x, proj.y):
                             obj.hp -= proj.damage
-                            en.ship.projectiles.remove(proj)
+                            tar.ship.projectiles.remove(proj)
                             if obj.hp <= 0:
                                 hit = True
                                 break
                     if hit:
                         break
                     if (
-                        math.hypot(en.ship.x - obj.x, en.ship.y - obj.y)
-                        <= en.ship.collision_radius
+                        math.hypot(tar.ship.x - obj.x, tar.ship.y - obj.y)
+                        <= tar.ship.collision_radius
                     ):
                         hit = True
                         break
                 if hit:
                     obj._explode()
-                if obj.exploded and enemies:
-                    for en in enemies:
-                        if math.hypot(en.ship.x - obj.x, en.ship.y - obj.y) <= obj.radius:
-                            en.ship.take_damage(obj.damage)
+                if obj.exploded and targets:
+                    for tar in targets:
+                        if math.hypot(tar.ship.x - obj.x, tar.ship.y - obj.y) <= obj.radius:
+                            tar.ship.take_damage(obj.damage)
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, EMPWave):
@@ -678,17 +678,17 @@ class Ship:
             elif isinstance(obj, TemporaryBlackHole):
                 obj.update(dt)
                 obj.apply_pull(self, dt)
-                for en in enemies or []:
-                    obj.apply_pull(en.ship, dt)
+                for tar in targets or []:
+                    obj.apply_pull(tar.ship, dt)
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, AreaShieldAura):
                 # Intercept incoming projectiles while the aura holds
-                for en in enemies or []:
-                    for proj in list(en.ship.projectiles):
+                for tar in targets or []:
+                    for proj in list(tar.ship.projectiles):
                         if math.hypot(proj.x - self.x, proj.y - self.y) <= obj.radius:
                             obj.take_damage(proj.damage)
-                            en.ship.projectiles.remove(proj)
+                            tar.ship.projectiles.remove(proj)
                 if obj.expired():
                     self.area_shield = None
                     self.specials.remove(obj)
@@ -701,7 +701,7 @@ class Ship:
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, Decoy):
-                obj.update(dt, enemies or [])
+                obj.update(dt, targets or [])
                 if obj.expired():
                     self.specials.remove(obj)
 

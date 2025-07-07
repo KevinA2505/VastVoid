@@ -26,7 +26,7 @@ button to return to space.
 ### Defensive drones
 The Nebula Order flagship deploys a trio of small drones that protect only this
 capital ship. They move in a slow patrol around the hull but react quickly to
-any hostile ships or projectiles. Each drone relies on a lightweight learning
+incoming threats. Each drone relies on a lightweight learning
 system provided by `drone_learning` to refine its response timing. They never
 venture far from the flagship and engage threats solely within its immediate
 vicinity.

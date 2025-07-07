@@ -237,11 +237,11 @@ class LaserBeam:
         dist = math.hypot(px - cx, py - cy)
         return dist <= half
 
-    def update(self, dt: float, enemies: list) -> None:
+    def update(self, dt: float, targets: list) -> None:
         if self.state == "probe":
-            for en in enemies:
-                if self.hits(en.ship):
-                    self.target = en.ship
+            for obj in targets:
+                if self.hits(obj.ship):
+                    self.target = obj.ship
                     self.state = "channel"
                     self.timer = self.channel_time
                     break
@@ -380,13 +380,13 @@ class BombDrone:
         self.vx = math.cos(direction) * speed
         self.vy = math.sin(direction) * speed
 
-    def _find_target(self, enemies: List):
-        if not enemies:
+    def _find_target(self, targets: List):
+        if not targets:
             return None
         nearest = None
         min_d = float("inf")
-        for en in enemies:
-            d = math.hypot(en.ship.x - self.x, en.ship.y - self.y)
+        for obj in targets:
+            d = math.hypot(obj.ship.x - self.x, obj.ship.y - self.y)
             if d < min_d:
                 min_d = d
                 nearest = en
@@ -397,7 +397,7 @@ class BombDrone:
             self.exploded = True
             self.timer = 0.2
 
-    def update(self, dt: float, enemies: List) -> None:
+    def update(self, dt: float, targets: List) -> None:
         if self.exploded:
             self.timer -= dt
             return
@@ -405,7 +405,7 @@ class BombDrone:
         if self.lifetime <= 0 or self.hp <= 0:
             self._explode()
             return
-        target = self._find_target(enemies)
+        target = self._find_target(targets)
         if target:
             dx = target.ship.x - self.x
             dy = target.ship.y - self.y
@@ -462,7 +462,7 @@ class Drone:
         self.x = owner.x
         self.y = owner.y
 
-    def update(self, dt: float, enemies: List) -> None:
+    def update(self, dt: float, targets: List) -> None:
         self.lifetime -= dt
         self.angle += self.orbit_speed * dt
         self.x = self.owner.x + math.cos(self.angle) * self.radius
@@ -470,7 +470,7 @@ class Drone:
         if self._timer > 0:
             self._timer -= dt
         else:
-            target = self._find_target(enemies)
+            target = self._find_target(targets)
             if target:
                 proj = Projectile(
                     self.x,
@@ -487,12 +487,12 @@ class Drone:
             if proj.expired():
                 self.projectiles.remove(proj)
 
-    def _find_target(self, enemies: List):
+    def _find_target(self, targets: List):
         nearest = None
         # Increased engagement range
         min_d = 250.0
-        for en in enemies:
-            d = math.hypot(en.ship.x - self.x, en.ship.y - self.y)
+        for obj in targets:
+            d = math.hypot(obj.ship.x - self.x, obj.ship.y - self.y)
             if d < min_d:
                 min_d = d
                 nearest = en

@@ -138,7 +138,7 @@ def main():
     ability_bar = AbilityBar()
     ability_bar.set_ship(ship)
     carrier = Carrier(ship.x + 150, ship.y + 80, fraction=player.fraction)
-    friendly_ships = []
+    extra_ships = []
     inventory_window = None
     market_window = None
     weapon_menu = None
@@ -296,7 +296,7 @@ def main():
                 closed = carrier_window.handle_event(event)
                 if closed:
                     if carrier_window.request_move:
-                        move_objects = [ship] + friendly_ships + capital_ships
+                        move_objects = [ship] + extra_ships + capital_ships
                         carrier_move_map = CarrierMoveMap(
                             carrier,
                             sectors,
@@ -308,7 +308,7 @@ def main():
                     carrier_window = None
                     break
                 if carrier_window and carrier_window.deployed_ship:
-                    friendly_ships.append(carrier_window.deployed_ship)
+                    extra_ships.append(carrier_window.deployed_ship)
                     carrier_window.deployed_ship = None
             if carrier_window:
                 carrier_window.draw(screen, info_font)
@@ -363,13 +363,13 @@ def main():
                     wx = event.pos[0] / zoom + offset_x
                     wy = event.pos[1] / zoom + offset_y
                     target = None
-                    for ally in friendly_ships:
-                        ally_ship = getattr(ally, "ship", ally)
-                        if math.hypot(ally_ship.x - wx, ally_ship.y - wy) <= ally_ship.collision_radius:
-                            target = ally
+                    for extra in extra_ships:
+                        obj = getattr(extra, "ship", extra)
+                        if math.hypot(obj.x - wx, obj.y - wy) <= obj.collision_radius:
+                            target = extra
                             break
                     if target and carrier.load_ship(getattr(target, "ship", target)):
-                        friendly_ships.remove(target)
+                        extra_ships.remove(target)
                     load_mode = False
                 continue
 
@@ -428,7 +428,7 @@ def main():
 
             route_planner.handle_event(event, sectors, (camera_x, camera_y), zoom)
             if ability_bar.handle_event(event, ship):
-                map_objects = [carrier] + friendly_ships + capital_ships
+                map_objects = [carrier] + extra_ships + capital_ships
                 hyper_map = HyperJumpMap(
                     ship,
                     sectors,
@@ -575,8 +575,8 @@ def main():
             hostiles,
             structures,
         )
-        for ally in friendly_ships:
-            ally.update(
+        for extra in extra_ships:
+            extra.update(
                 _NullKeys(),
                 dt,
                 world_width,
@@ -666,14 +666,14 @@ def main():
             zoom,
             aura_color=player.fraction.color if player.fraction else None,
         )
-        for ally in friendly_ships:
-            ally_ship = getattr(ally, "ship", ally)
-            ally_ship.draw_projectiles(screen, offset_x, offset_y, zoom)
+        for extra in extra_ships:
+            extra_ship = getattr(extra, "ship", extra)
+            extra_ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         ship.draw_specials(screen, offset_x, offset_y, zoom)
-        for ally in friendly_ships:
-            ally_ship = getattr(ally, "ship", ally)
-            ally_ship.draw_at(
+        for extra in extra_ships:
+            extra_ship = getattr(extra, "ship", extra)
+            extra_ship.draw_at(
                 screen,
                 offset_x,
                 offset_y,
@@ -820,10 +820,10 @@ def main():
 
         pygame.display.flip()
 
-    # Save learning data so allies retain behavior between sessions
-    for ally in friendly_ships:
-        if hasattr(ally, "save_q_table"):
-            ally.save_q_table()
+    # Save learning data so drones retain behavior between sessions
+    for extra in extra_ships:
+        if hasattr(extra, "save_q_table"):
+            extra.save_q_table()
 
     pygame.quit()
 

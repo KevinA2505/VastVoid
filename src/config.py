@@ -107,7 +107,7 @@ DEF_DRONE_INTERCEPT_SPEED = 180.0
 DEF_DRONE_MAX_ROAM_FACTOR = 3.0  # multiplier of the orbit radius
 # Fixed radius to wander around the owner when patrolling
 DEF_DRONE_PATROL_RADIUS = 120
-# Detection radius for nearby enemies or projectiles
+# Detection radius for nearby threats or projectiles
 DEF_DRONE_DETECTION_RANGE = 250
 # Learning parameters used by the intelligent drone variant
 DEF_DRONE_ALPHA = 0.5

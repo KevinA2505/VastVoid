@@ -29,24 +29,24 @@ class DefensiveDrone:
         self.state = "idle"
         self.target = None
 
-    def _find_threat(self, enemies: list) -> object | None:
+    def _find_threat(self, objects: list) -> object | None:
         detection = config.DEF_DRONE_DETECTION_RANGE
-        for en in enemies:
-            dist = math.hypot(en.ship.x - self.owner.x, en.ship.y - self.owner.y)
+        for obj in objects:
+            dist = math.hypot(obj.ship.x - self.owner.x, obj.ship.y - self.owner.y)
             if dist <= detection:
-                return en.ship
-            for proj in en.ship.projectiles:
+                return obj.ship
+            for proj in obj.ship.projectiles:
                 d = math.hypot(proj.x - self.owner.x, proj.y - self.owner.y)
                 if d <= detection:
                     return proj
         return None
 
-    def update(self, dt: float, enemies: list) -> None:
+    def update(self, dt: float, objects: list) -> None:
         if self.state == "idle":
             self.angle += self.orbit_speed * dt
             self.x = self.owner.x + math.cos(self.angle) * self.orbit_radius
             self.y = self.owner.y + math.sin(self.angle) * self.orbit_radius
-            threat = self._find_threat(enemies)
+            threat = self._find_threat(objects)
             if threat:
                 self.target = threat
                 self.state = "intercept"

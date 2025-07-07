@@ -194,7 +194,7 @@ ARMAS: List[Item] = [
     Item("granada", "arma", 0.5, 15, "Explosivo portátil de un solo uso."),
     Item("arco de energia", "arma", 1.5, 45, "Arco que dispara flechas de energía."),
     Item("lanzallamas", "arma", 4.0, 55, "Arroja un chorro de fuego."),
-    Item("mina de proximidad", "arma", 0.8, 20, "Explosivo que detona al acercarse un enemigo."),
+    Item("mina de proximidad", "arma", 0.8, 20, "Explosivo que detona al acercarse al objetivo."),
     Item("cuchillo de combate", "arma", 0.7, 10, "Arma blanca básica."),
     Item("lanzamisiles", "arma", 8.0, 150, "Arma pesada que dispara misiles explosivos."),
     Item("blaster sónico", "arma", 1.0, 40, "Arma que aturde con ondas de sonido."),
