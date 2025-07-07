@@ -746,7 +746,8 @@ def main():
         ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         ship.draw_specials(screen, offset_x, offset_y, zoom)
         for ally in friendly_ships:
-            ally.draw_at(
+            ally_ship = getattr(ally, "ship", ally)
+            ally_ship.draw_at(
                 screen,
                 offset_x,
                 offset_y,
