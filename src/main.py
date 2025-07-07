@@ -168,6 +168,8 @@ def main():
         )
         for _ in range(2)
     ]
+    for ally in friendly_ships:
+        ally.start_autopilot(ship)
     inventory_window = None
     market_window = None
     weapon_menu = None
@@ -615,6 +617,8 @@ def main():
             structures,
         )
         for ally in friendly_ships:
+            if ally.autopilot_target is None:
+                ally.start_autopilot(ship)
             ally.update(
                 _NullKeys(),
                 dt,
