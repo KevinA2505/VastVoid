@@ -464,11 +464,19 @@ class AbilityBar:
 class HyperJumpMap:
     """Interactive map for selecting hyperjump destinations."""
 
-    def __init__(self, ship, sectors, world_w: int, world_h: int) -> None:
+    def __init__(
+        self,
+        ship,
+        sectors,
+        world_w: int,
+        world_h: int,
+        objects: list | None = None,
+    ) -> None:
         self.ship = ship
         self.sectors = sectors
         self.world_w = world_w
         self.world_h = world_h
+        self.objects = objects or []
         self.zoom = 0.2
         self.camera_x = ship.x
         self.camera_y = ship.y
@@ -517,6 +525,20 @@ class HyperJumpMap:
         for sector in self.sectors:
             sector.draw(screen, off_x, off_y, self.zoom)
 
+        for obj in self.objects:
+            if hasattr(obj, "draw_at"):
+                obj.draw_at(screen, off_x, off_y, self.zoom)
+            elif hasattr(obj, "ship") and hasattr(obj.ship, "draw_at"):
+                obj.ship.draw_at(screen, off_x, off_y, self.zoom)
+            elif hasattr(obj, "draw"):
+                try:
+                    obj.draw(screen, off_x, off_y, self.zoom)
+                except TypeError:
+                    try:
+                        obj.draw(screen, None, off_x, off_y, self.zoom)
+                    except Exception:
+                        pass
+
         ship_pos = (
             int((self.ship.x - off_x) * self.zoom),
             int((self.ship.y - off_y) * self.zoom),
@@ -543,11 +565,19 @@ class HyperJumpMap:
 class CarrierMoveMap:
     """Interactive map for moving a carrier via autopilot."""
 
-    def __init__(self, carrier, sectors, world_w: int, world_h: int) -> None:
+    def __init__(
+        self,
+        carrier,
+        sectors,
+        world_w: int,
+        world_h: int,
+        objects: list | None = None,
+    ) -> None:
         self.carrier = carrier
         self.sectors = sectors
         self.world_w = world_w
         self.world_h = world_h
+        self.objects = objects or []
         self.zoom = 0.2
         self.camera_x = carrier.x
         self.camera_y = carrier.y
@@ -596,6 +626,20 @@ class CarrierMoveMap:
         off_y = self.camera_y - config.WINDOW_HEIGHT / (2 * self.zoom)
         for sector in self.sectors:
             sector.draw(screen, off_x, off_y, self.zoom)
+
+        for obj in self.objects:
+            if hasattr(obj, "draw_at"):
+                obj.draw_at(screen, off_x, off_y, self.zoom)
+            elif hasattr(obj, "ship") and hasattr(obj.ship, "draw_at"):
+                obj.ship.draw_at(screen, off_x, off_y, self.zoom)
+            elif hasattr(obj, "draw"):
+                try:
+                    obj.draw(screen, off_x, off_y, self.zoom)
+                except TypeError:
+                    try:
+                        obj.draw(screen, None, off_x, off_y, self.zoom)
+                    except Exception:
+                        pass
 
         carrier_pos = (
             int((self.carrier.x - off_x) * self.zoom),
