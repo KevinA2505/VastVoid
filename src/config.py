@@ -99,6 +99,10 @@ HYPERJUMP_VIGNETTE_ALPHA = 220
 # Minimum and maximum duration of hyperjump animations in seconds
 HYPERJUMP_MIN_TIME = 1.0
 HYPERJUMP_MAX_TIME = 60.0
+# Appearance of the trail shown during a hyperjump
+HYPERJUMP_TRAIL_WIDTH = 12
+HYPERJUMP_TRAIL_COLOR = (80, 150, 255)
+HYPERJUMP_TRAIL_INNER_COLOR = (255, 255, 255)
 # --- Defensive drone settings -------------------------------------------------
 # Standard orbit radius is based on the owner's size
 DEF_DRONE_ORBIT_RADIUS_FACTOR = 3.0

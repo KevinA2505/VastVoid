@@ -269,6 +269,8 @@ class Ship:
             return
         self.hyperjump_target = (float(x), float(y))
         self.hyperjump_timer = config.HYPERJUMP_DELAY
+        # Face the ship toward its destination
+        self.angle = math.atan2(y - self.y, x - self.x)
         dist = math.hypot(x - self.x, y - self.y)
         d_pc = dist / config.HYPERJUMP_UNIT
         v = config.HYPERJUMP_BASE_SPEED * (
@@ -500,6 +502,37 @@ class Ship:
         )
         return [(int(tip[0]), int(tip[1])), (int(left[0]), int(left[1])), (int(right[0]), int(right[1]))]
 
+    def _draw_hyperjump_trail(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        """Render the bright trail from the jump origin to the ship."""
+        if not self.hyperjump_active:
+            return
+        sx, sy = self._hyperjump_start
+        start = (int((sx - offset_x) * zoom), int((sy - offset_y) * zoom))
+        end = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
+        width = max(1, int(config.HYPERJUMP_TRAIL_WIDTH * zoom))
+        surf = pygame.Surface((config.WINDOW_WIDTH, config.WINDOW_HEIGHT), pygame.SRCALPHA)
+        pygame.draw.line(
+            surf,
+            config.HYPERJUMP_TRAIL_COLOR + (180,),
+            start,
+            end,
+            width,
+        )
+        pygame.draw.line(
+            surf,
+            config.HYPERJUMP_TRAIL_INNER_COLOR + (220,),
+            start,
+            end,
+            max(1, width // 2),
+        )
+        screen.blit(surf, (0, 0))
+
     def draw(
         self,
         screen: pygame.Surface,
@@ -512,6 +545,7 @@ class Ship:
         cy = config.WINDOW_HEIGHT // 2
         offset_x = self.x - cx / zoom
         offset_y = self.y - cy / zoom
+        self._draw_hyperjump_trail(screen, offset_x, offset_y, zoom)
         self.draw_particles(screen, offset_x, offset_y, zoom)
         points = self._triangle_points(cx, cy, zoom)
         pygame.draw.polygon(screen, self.color, points)
@@ -769,6 +803,7 @@ class Ship:
         """Draw the ship on screen applying an offset and zoom."""
         if self.invisible_timer > 0:
             return
+        self._draw_hyperjump_trail(screen, offset_x, offset_y, zoom)
         self.draw_particles(screen, offset_x, offset_y, zoom)
         cx = int((self.x - offset_x) * zoom)
         cy = int((self.y - offset_y) * zoom)
