@@ -326,8 +326,13 @@ def main():
                 closed = carrier_window.handle_event(event)
                 if closed:
                     if carrier_window.request_move:
+                        move_objects = [ship] + friendly_ships + [en.ship for en in enemies] + capital_ships
                         carrier_move_map = CarrierMoveMap(
-                            carrier, sectors, world_width, world_height
+                            carrier,
+                            sectors,
+                            world_width,
+                            world_height,
+                            move_objects,
                         )
                         carrier_window.request_move = False
                     carrier_window = None
@@ -452,7 +457,14 @@ def main():
 
             route_planner.handle_event(event, sectors, (camera_x, camera_y), zoom)
             if ability_bar.handle_event(event, ship, enemies):
-                hyper_map = HyperJumpMap(ship, sectors, world_width, world_height)
+                map_objects = [carrier] + friendly_ships + [en.ship for en in enemies] + capital_ships
+                hyper_map = HyperJumpMap(
+                    ship,
+                    sectors,
+                    world_width,
+                    world_height,
+                    map_objects,
+                )
 
             if pending_tractor is None:
                 for art in ship.artifacts:
