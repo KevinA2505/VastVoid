@@ -105,19 +105,55 @@ class LearningAlly(LearningEnemy):
             near_blackhole,
         )
 
-    def compute_reward(self, threat) -> float:
+    def compute_reward(self, threat, hostiles: list | None = None) -> float:
+        """Return a numeric reward based on the latest transition."""
+
         reward = 0.0
+
+        # Damage taken by the player or the ally is negative reinforcement
         if self.player_prev_hull:
             reward -= self.player_prev_hull - self.player_ship.hull
         if self.prev_hull:
             reward -= (self.prev_hull - self.ship.hull) * 0.5
-        dist = math.hypot(self.player_ship.x - self.ship.x, self.player_ship.y - self.ship.y)
+
+        # Staying close to the player is encouraged. Grant a bonus when within a
+        # small window around the desired distance.
+        dist = math.hypot(
+            self.player_ship.x - self.ship.x,
+            self.player_ship.y - self.ship.y,
+        )
+        desired = 150.0
+        if abs(dist - desired) <= 30.0:
+            reward += 0.1
+
         if dist <= self.attack_range:
             reward += 0.1
         else:
             reward -= 0.05
+
+        # Bonus for keeping a hostile in firing range
         if threat and math.hypot(threat.x - self.ship.x, threat.y - self.ship.y) <= self.attack_range:
             reward += 0.2
+
+        # Penalise getting too close to a black hole
+        if getattr(self, "_blackholes", None):
+            for hole in self._blackholes:
+                if math.hypot(self.ship.x - hole.x, self.ship.y - hole.y) <= hole.pull_range:
+                    reward -= 0.2
+                    break
+
+        # Reward successful hits and kills
+        if hostiles is not None:
+            if not hasattr(self, "_enemy_prev_hulls"):
+                self._enemy_prev_hulls = {}
+            for en in hostiles:
+                prev = self._enemy_prev_hulls.get(en, en.ship.hull)
+                if en.ship.hull < prev:
+                    reward += 0.3
+                if en.ship.hull <= 0 < prev:
+                    reward += 1.0
+                self._enemy_prev_hulls[en] = en.ship.hull
+
         return reward
 
     def save_q_table(self, path: str = Q_TABLE_PATH) -> None:
@@ -173,6 +209,8 @@ class LearningAlly(LearningEnemy):
             self.prev_hull = self.ship.hull
         if not self.player_prev_hull:
             self.player_prev_hull = self.player_ship.hull
+        if not hasattr(self, "_enemy_prev_hulls"):
+            self._enemy_prev_hulls = {}
         state = self._state(hostiles or [])
         action = self.choose_action(state)
         if action == "attack" and threat is None:
@@ -189,7 +227,7 @@ class LearningAlly(LearningEnemy):
             hostiles,
             structures,
         )
-        reward = self.compute_reward(threat)
+        reward = self.compute_reward(threat, hostiles)
         next_state = self._state(hostiles or [])
         self.learn(state, action, reward, next_state)
         if self.state == "idle" and self.ship.autopilot_target is None:
