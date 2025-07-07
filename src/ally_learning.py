@@ -3,6 +3,7 @@ import random
 import pickle
 import os
 from dataclasses import dataclass, field
+import pygame
 
 from enemy_learning import LearningEnemy
 from enemy import Flee, Defend, Attack, Pursue, Idle, _NullKeys
@@ -169,6 +170,22 @@ class LearningAlly(LearningEnemy):
                 player_fraction,
                 aura_color,
             )
+            if self.state:
+                font_size = max(12, int(12 * zoom))
+                font = pygame.font.Font(None, font_size)
+                text = font.render(self.state, True, (0, 0, 0))
+                pad = 2
+                bubble = pygame.Surface(
+                    (text.get_width() + pad * 2, text.get_height() + pad * 2),
+                    pygame.SRCALPHA,
+                )
+                bubble.fill((255, 255, 255, 77))
+                bubble.blit(text, (pad, pad))
+                cx = int((self.ship.x - offset_x) * zoom)
+                cy = int((self.ship.y - offset_y) * zoom)
+                x = cx - bubble.get_width() // 2
+                y = cy - int(self.ship.size * zoom) - bubble.get_height() - 4
+                screen.blit(bubble, (x, y))
 
 
 class _Region:
