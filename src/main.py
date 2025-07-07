@@ -393,10 +393,13 @@ def main():
                     wy = event.pos[1] / zoom + offset_y
                     target = None
                     for ally in friendly_ships:
-                        if math.hypot(ally.x - wx, ally.y - wy) <= ally.collision_radius:
+                        if (
+                            math.hypot(ally.ship.x - wx, ally.ship.y - wy)
+                            <= ally.ship.collision_radius
+                        ):
                             target = ally
                             break
-                    if target and carrier.load_ship(target):
+                    if target and carrier.load_ship(target.ship):
                         friendly_ships.remove(target)
                     load_mode = False
                 continue
