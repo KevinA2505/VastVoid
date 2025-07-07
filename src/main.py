@@ -738,7 +738,7 @@ def main():
             aura_color=player.fraction.color if player.fraction else None,
         )
         for ally in friendly_ships:
-            ally.draw_projectiles(screen, offset_x, offset_y, zoom)
+            ally.ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         for enemy in enemies:
             enemy.ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         ship.draw_projectiles(screen, offset_x, offset_y, zoom)
