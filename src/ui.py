@@ -1,6 +1,7 @@
 import pygame
 import config
 import math
+import types
 from artifact import Artifact
 
 class DropdownMenu:
@@ -539,20 +540,109 @@ class HyperJumpMap:
         screen.blit(txt, txt.get_rect(center=self.cancel_rect.center))
 
 
+class CarrierMoveMap:
+    """Interactive map for moving a carrier via autopilot."""
+
+    def __init__(self, carrier, sectors, world_w: int, world_h: int) -> None:
+        self.carrier = carrier
+        self.sectors = sectors
+        self.world_w = world_w
+        self.world_h = world_h
+        self.zoom = 0.2
+        self.camera_x = carrier.x
+        self.camera_y = carrier.y
+        self.dragging = False
+        self.destination: tuple[float, float] | None = None
+        self.last_mouse = (0, 0)
+        self.move_rect = pygame.Rect(
+            config.WINDOW_WIDTH - 110, config.WINDOW_HEIGHT - 40, 100, 30
+        )
+        self.cancel_rect = pygame.Rect(10, config.WINDOW_HEIGHT - 40, 100, 30)
+
+    def handle_event(self, event) -> bool:
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            return True
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                if self.move_rect.collidepoint(event.pos) and self.destination:
+                    dest = types.SimpleNamespace(x=self.destination[0], y=self.destination[1])
+                    self.carrier.start_autopilot(dest)
+                    return True
+                if self.cancel_rect.collidepoint(event.pos):
+                    return True
+                off_x = self.camera_x - config.WINDOW_WIDTH / (2 * self.zoom)
+                off_y = self.camera_y - config.WINDOW_HEIGHT / (2 * self.zoom)
+                wx = event.pos[0] / self.zoom + off_x
+                wy = event.pos[1] / self.zoom + off_y
+                self.destination = (wx, wy)
+                self.last_mouse = event.pos
+            elif event.button == 3:
+                self.dragging = True
+                self.last_mouse = event.pos
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 3:
+            self.dragging = False
+        elif event.type == pygame.MOUSEMOTION:
+            if self.dragging or event.buttons[0]:
+                dx = event.pos[0] - self.last_mouse[0]
+                dy = event.pos[1] - self.last_mouse[1]
+                self.camera_x -= dx / self.zoom
+                self.camera_y -= dy / self.zoom
+                self.last_mouse = event.pos
+        return False
+
+    def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        screen.fill(config.BACKGROUND_COLOR)
+        off_x = self.camera_x - config.WINDOW_WIDTH / (2 * self.zoom)
+        off_y = self.camera_y - config.WINDOW_HEIGHT / (2 * self.zoom)
+        for sector in self.sectors:
+            sector.draw(screen, off_x, off_y, self.zoom)
+
+        carrier_pos = (
+            int((self.carrier.x - off_x) * self.zoom),
+            int((self.carrier.y - off_y) * self.zoom),
+        )
+        pygame.draw.circle(screen, (0, 255, 0), carrier_pos, 4)
+
+        if self.destination:
+            dest_pos = (
+                int((self.destination[0] - off_x) * self.zoom),
+                int((self.destination[1] - off_y) * self.zoom),
+            )
+            pygame.draw.circle(screen, (255, 0, 0), dest_pos, 6, 1)
+            pygame.draw.rect(screen, (60, 60, 90), self.move_rect)
+            pygame.draw.rect(screen, (200, 200, 200), self.move_rect, 1)
+            txt = font.render("Move", True, (255, 255, 255))
+            screen.blit(txt, txt.get_rect(center=self.move_rect.center))
+
+        pygame.draw.rect(screen, (60, 60, 90), self.cancel_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.cancel_rect, 1)
+        txt = font.render("Cancel", True, (255, 255, 255))
+        screen.blit(txt, txt.get_rect(center=self.cancel_rect.center))
+
+
 class CarrierWindow:
     """Display carrier status and hangar slots."""
 
     def __init__(self, carrier) -> None:
         self.carrier = carrier
         self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
+        self.move_rect = pygame.Rect(20, config.WINDOW_HEIGHT - 40, 100, 30)
+        self.stop_rect = pygame.Rect(130, config.WINDOW_HEIGHT - 40, 100, 30)
         self.slot_rects: list[tuple[int, pygame.Rect]] = []
         self.deploy_rects: list[tuple[int, pygame.Rect]] = []
         self.deployed_ship = None
+        self.request_move = False
 
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.close_rect.collidepoint(event.pos):
                 return True
+            if self.move_rect.collidepoint(event.pos):
+                self.request_move = True
+                return True
+            if self.stop_rect.collidepoint(event.pos):
+                self.carrier.cancel_autopilot()
+                return False
             for idx, rect in self.deploy_rects:
                 if rect.collidepoint(event.pos):
                     ship = self.carrier.deploy_ship(idx)
@@ -600,4 +690,14 @@ class CarrierWindow:
         pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
         close_txt = font.render("Close", True, (255, 255, 255))
         screen.blit(close_txt, close_txt.get_rect(center=self.close_rect.center))
+
+        pygame.draw.rect(screen, (60, 60, 90), self.move_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.move_rect, 1)
+        move_txt = font.render("Move", True, (255, 255, 255))
+        screen.blit(move_txt, move_txt.get_rect(center=self.move_rect.center))
+
+        pygame.draw.rect(screen, (60, 60, 90), self.stop_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.stop_rect, 1)
+        stop_txt = font.render("Stop", True, (255, 255, 255))
+        screen.blit(stop_txt, stop_txt.get_rect(center=self.stop_rect.center))
 

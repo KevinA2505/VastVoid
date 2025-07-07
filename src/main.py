@@ -22,6 +22,7 @@ from ui import (
     WeaponMenu,
     ArtifactMenu,
     HyperJumpMap,
+    CarrierMoveMap,
     CarrierWindow,
 )
 from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
@@ -177,6 +178,7 @@ def main():
     swallowed = False
     pending_tractor = None
     hyper_map = None
+    carrier_move_map = None
     camera_x = ship.x
     camera_y = ship.y
     load_mode = False
@@ -296,12 +298,31 @@ def main():
                 pygame.display.flip()
                 continue
 
+        if carrier_move_map:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+                if carrier_move_map.handle_event(event):
+                    carrier_move_map = None
+                    break
+            if carrier_move_map:
+                carrier_move_map.draw(screen, info_font)
+                pygame.display.flip()
+                continue
+
         if carrier_window:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
                     break
-                if carrier_window.handle_event(event):
+                closed = carrier_window.handle_event(event)
+                if closed:
+                    if carrier_window.request_move:
+                        carrier_move_map = CarrierMoveMap(
+                            carrier, sectors, world_width, world_height
+                        )
+                        carrier_window.request_move = False
                     carrier_window = None
                     break
                 if carrier_window and carrier_window.deployed_ship:
