@@ -19,7 +19,7 @@ class Carrier(Ship):
         hull: int = 350,
         fraction: Fraction | None = None,
     ) -> None:
-        super().__init__(x, y, model, hull=hull, speed_factor=0.7)
+        super().__init__(x, y, model, hull=hull, speed_factor=0.7, fraction=fraction)
         self.fraction = fraction
         self.hangars = [None] * 5
 

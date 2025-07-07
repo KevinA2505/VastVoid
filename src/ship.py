@@ -2,6 +2,7 @@ import pygame
 import math
 from dataclasses import dataclass
 import config
+from fraction import Fraction
 from planet import Planet
 from names import get_ship_name
 from combat import (
@@ -75,6 +76,7 @@ class Ship:
         model: ShipModel | None = None,
         hull: int = 100,
         speed_factor: float = 1.0,
+        fraction: Fraction | None = None,
     ) -> None:
         self.x = float(x)
         self.y = float(y)
@@ -100,6 +102,7 @@ class Ship:
         self.boost_time = 0.0
         self.model = model
         self.name = get_ship_name()
+        self.fraction = fraction
         self.weapons: list[Weapon] = [Weapon("Laser", 8, 400)]
         self.active_weapon: int = 0
         for w in self.weapons:
@@ -483,7 +486,12 @@ class Ship:
         )
         return [(int(tip[0]), int(tip[1])), (int(left[0]), int(left[1])), (int(right[0]), int(right[1]))]
 
-    def draw(self, screen: pygame.Surface, zoom: float = 1.0) -> None:
+    def draw(
+        self,
+        screen: pygame.Surface,
+        zoom: float = 1.0,
+        player_fraction: Fraction | None = None,
+    ) -> None:
         """Draw the ship scaled by a non-linear factor of the zoom level."""
         cx = config.WINDOW_WIDTH // 2
         cy = config.WINDOW_HEIGHT // 2
@@ -492,6 +500,16 @@ class Ship:
         self.draw_particles(screen, offset_x, offset_y, zoom)
         points = self._triangle_points(cx, cy, zoom)
         pygame.draw.polygon(screen, self.color, points)
+        if (
+            player_fraction
+            and self.fraction
+            and self.fraction == player_fraction
+        ):
+            r = int(self.collision_radius * zoom * 1.4)
+            aura = pygame.Surface((r * 2, r * 2), pygame.SRCALPHA)
+            color = self.fraction.color if self.fraction else self.color
+            pygame.draw.circle(aura, color + (80,), (r, r), r)
+            screen.blit(aura, (cx - r, cy - r))
 
     @property
     def boost_ratio(self) -> float:
@@ -737,6 +755,7 @@ class Ship:
         offset_x: float = 0.0,
         offset_y: float = 0.0,
         zoom: float = 1.0,
+        player_fraction: Fraction | None = None,
     ) -> None:
         """Draw the ship on screen applying an offset and zoom."""
         if self.invisible_timer > 0:
@@ -746,6 +765,16 @@ class Ship:
         cy = int((self.y - offset_y) * zoom)
         points = self._triangle_points(cx, cy, zoom)
         pygame.draw.polygon(screen, self.color, points)
+        if (
+            player_fraction
+            and self.fraction
+            and self.fraction == player_fraction
+        ):
+            r = int(self.collision_radius * zoom * 1.4)
+            aura = pygame.Surface((r * 2, r * 2), pygame.SRCALPHA)
+            color = self.fraction.color if self.fraction else self.color
+            pygame.draw.circle(aura, color + (80,), (r, r), r)
+            screen.blit(aura, (cx - r, cy - r))
 
 
 def choose_ship(screen: pygame.Surface) -> ShipModel:

@@ -3,6 +3,8 @@ import math
 import random
 import config
 from ship import Ship, choose_ship
+from carrier import Carrier
+from enemy import _NullKeys
 from combat import LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon, BasicWeapon
 from enemy_learning import create_learning_enemy
 from sector import create_sectors
@@ -132,6 +134,7 @@ def main():
         world_height // 2,
         chosen_model,
         hull=config.PLAYER_MAX_HULL,
+        fraction=player.fraction,
     )
     ship.weapons.extend([
         LaserWeapon(),
@@ -151,6 +154,12 @@ def main():
     route_planner = RoutePlanner()
     ability_bar = AbilityBar()
     ability_bar.set_ship(ship)
+    carrier = Carrier(ship.x + 150, ship.y + 80, fraction=player.fraction)
+    friendly_ships = [
+        Ship(carrier.x + random.randint(-60, 60), carrier.y + random.randint(-60, 60),
+             chosen_model, hull=80, fraction=player.fraction)
+        for _ in range(2)
+    ]
     inventory_window = None
     market_window = None
     weapon_menu = None
@@ -168,6 +177,7 @@ def main():
     hyper_map = None
     camera_x = ship.x
     camera_y = ship.y
+    load_mode = False
 
     clock = pygame.time.Clock()
     running = True
@@ -323,6 +333,24 @@ def main():
                 running = False
                 continue
 
+            if load_mode:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    load_mode = False
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
+                    offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
+                    wx = event.pos[0] / zoom + offset_x
+                    wy = event.pos[1] / zoom + offset_y
+                    target = None
+                    for ally in friendly_ships:
+                        if math.hypot(ally.x - wx, ally.y - wy) <= ally.collision_radius:
+                            target = ally
+                            break
+                    if target and carrier.load_ship(target):
+                        friendly_ships.remove(target)
+                    load_mode = False
+                continue
+
             if current_station:
                 leave_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
                 inv_rect = pygame.Rect(10, 10, 100, 30)
@@ -425,6 +453,8 @@ def main():
                     weapon_menu = WeaponMenu(ship)
                 elif event.key == pygame.K_g:
                     artifact_menu = ArtifactMenu(ship, ability_bar)
+                elif event.key == pygame.K_l:
+                    load_mode = True
                 elif event.key == pygame.K_r:
                     nearest = None
                     min_dist = float("inf")
@@ -500,6 +530,7 @@ def main():
         for cap in capital_ships:
             structures.append(cap)
             structures.extend(cap.city_stations)
+        structures.append(carrier)
 
         ship.update(
             keys,
@@ -511,6 +542,27 @@ def main():
             hostiles,
             structures,
         )
+        carrier.update(
+            _NullKeys(),
+            dt,
+            world_width,
+            world_height,
+            sectors,
+            blackholes,
+            hostiles,
+            structures,
+        )
+        for ally in friendly_ships:
+            ally.update(
+                _NullKeys(),
+                dt,
+                world_width,
+                world_height,
+                sectors,
+                blackholes,
+                hostiles,
+                structures,
+            )
         for enemy in list(enemies):
             enemy.update(
                 ship,
@@ -616,14 +668,19 @@ def main():
             sector.draw(screen, offset_x, offset_y, zoom)
         for cap in capital_ships:
             cap.draw(screen, offset_x, offset_y, zoom)
+        carrier.draw(screen, player.fraction, offset_x, offset_y, zoom)
+        for ally in friendly_ships:
+            ally.draw_projectiles(screen, offset_x, offset_y, zoom)
         for enemy in enemies:
             enemy.ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         ship.draw_specials(screen, offset_x, offset_y, zoom)
+        for ally in friendly_ships:
+            ally.draw_at(screen, offset_x, offset_y, zoom, player.fraction)
         for enemy in enemies:
             enemy.ship.draw_at(screen, offset_x, offset_y, zoom)
             draw_enemy_health_bar(screen, enemy.ship, offset_x, offset_y, zoom)
-        ship.draw(screen, zoom)
+        ship.draw(screen, zoom, player.fraction)
         route_planner.draw(screen, info_font, ship, offset_x, offset_y, zoom)
 
         if selected_object:
@@ -731,6 +788,11 @@ def main():
             pygame.draw.rect(screen, (150, 0, 0), (bar_x, hull_y, hull_fill, bar_height))
         ability_bar.draw(screen, info_font)
         menu.draw(screen, info_font)
+
+        if load_mode:
+            txt = info_font.render("Select allied ship to load or ESC", True, (255, 255, 255))
+            rect = txt.get_rect(center=(config.WINDOW_WIDTH // 2, 30))
+            screen.blit(txt, rect)
 
         if pending_tractor:
             width, height = 220, 40

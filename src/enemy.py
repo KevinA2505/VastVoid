@@ -280,6 +280,7 @@ def create_random_enemy(region: Sector) -> Enemy:
             model,
             hull=config.ENEMY_MAX_HULL,
             speed_factor=config.NPC_SPEED_FACTOR,
+            fraction=fraction,
         ),
         species,
         region,

@@ -218,6 +218,7 @@ def create_learning_enemy(region):
             model,
             hull=config.ENEMY_MAX_HULL,
             speed_factor=config.NPC_SPEED_FACTOR,
+            fraction=fraction,
         ),
         species,
         region,
