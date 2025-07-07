@@ -711,7 +711,14 @@ def main():
             sector.draw(screen, offset_x, offset_y, zoom)
         for cap in capital_ships:
             cap.draw(screen, offset_x, offset_y, zoom)
-        carrier.draw(screen, player.fraction, offset_x, offset_y, zoom)
+        carrier.draw(
+            screen,
+            player.fraction,
+            offset_x,
+            offset_y,
+            zoom,
+            aura_color=player.fraction.color if player.fraction else None,
+        )
         for ally in friendly_ships:
             ally.draw_projectiles(screen, offset_x, offset_y, zoom)
         for enemy in enemies:
@@ -719,7 +726,14 @@ def main():
         ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         ship.draw_specials(screen, offset_x, offset_y, zoom)
         for ally in friendly_ships:
-            ally.draw_at(screen, offset_x, offset_y, zoom, player.fraction)
+            ally.draw_at(
+                screen,
+                offset_x,
+                offset_y,
+                zoom,
+                player.fraction,
+                player.fraction.color if player.fraction else None,
+            )
         for enemy in enemies:
             enemy.ship.draw_at(screen, offset_x, offset_y, zoom)
             draw_enemy_health_bar(screen, enemy.ship, offset_x, offset_y, zoom)

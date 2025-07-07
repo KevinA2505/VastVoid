@@ -491,6 +491,7 @@ class Ship:
         screen: pygame.Surface,
         zoom: float = 1.0,
         player_fraction: Fraction | None = None,
+        aura_color: tuple[int, int, int] | None = None,
     ) -> None:
         """Draw the ship scaled by a non-linear factor of the zoom level."""
         cx = config.WINDOW_WIDTH // 2
@@ -507,7 +508,9 @@ class Ship:
         ):
             r = int(self.collision_radius * zoom * 1.4)
             aura = pygame.Surface((r * 2, r * 2), pygame.SRCALPHA)
-            color = self.fraction.color if self.fraction else self.color
+            color = aura_color or (
+                self.fraction.color if self.fraction else self.color
+            )
             pygame.draw.circle(aura, color + (80,), (r, r), r)
             screen.blit(aura, (cx - r, cy - r))
 
@@ -756,6 +759,7 @@ class Ship:
         offset_y: float = 0.0,
         zoom: float = 1.0,
         player_fraction: Fraction | None = None,
+        aura_color: tuple[int, int, int] | None = None,
     ) -> None:
         """Draw the ship on screen applying an offset and zoom."""
         if self.invisible_timer > 0:
@@ -772,7 +776,9 @@ class Ship:
         ):
             r = int(self.collision_radius * zoom * 1.4)
             aura = pygame.Surface((r * 2, r * 2), pygame.SRCALPHA)
-            color = self.fraction.color if self.fraction else self.color
+            color = aura_color or (
+                self.fraction.color if self.fraction else self.color
+            )
             pygame.draw.circle(aura, color + (80,), (r, r), r)
             screen.blit(aura, (cx - r, cy - r))
 
