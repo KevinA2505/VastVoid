@@ -19,7 +19,7 @@ import config
 
 
 Q_TABLE_PATH = "learning_ally_q_table.pkl"
-Q_TABLE_VERSION = 1
+Q_TABLE_VERSION = 2
 
 
 @dataclass
@@ -61,10 +61,49 @@ class LearningAlly(LearningEnemy):
             dist_cat = 1
         else:
             dist_cat = 2
+
         hull_low = self.ship.hull <= self.flee_threshold
         threat = self._find_threat(hostiles)
         player_threat = 1 if threat else 0
-        return dist_cat, player_threat, hull_low
+
+        def shield_cat(shield) -> int:
+            ratio = shield.strength / shield.max_strength
+            if ratio > 0.66:
+                return 2
+            if ratio > 0.33:
+                return 1
+            return 0
+
+        ally_shield = shield_cat(self.ship.shield)
+        player_shield = shield_cat(self.player_ship.shield)
+
+        threat_dist_cat = 2
+        if threat:
+            dist_t = math.hypot(threat.x - self.ship.x, threat.y - self.ship.y)
+            if dist_t <= self.attack_range:
+                threat_dist_cat = 0
+            elif dist_t <= self.detection_range:
+                threat_dist_cat = 1
+            else:
+                threat_dist_cat = 2
+
+        near_blackhole = 0
+        if getattr(self, "_blackholes", None):
+            for hole in self._blackholes:
+                d = math.hypot(self.ship.x - hole.x, self.ship.y - hole.y)
+                if d <= hole.pull_range:
+                    near_blackhole = 1
+                    break
+
+        return (
+            dist_cat,
+            player_threat,
+            hull_low,
+            ally_shield,
+            player_shield,
+            threat_dist_cat,
+            near_blackhole,
+        )
 
     def compute_reward(self, threat) -> float:
         reward = 0.0
@@ -91,11 +130,25 @@ class LearningAlly(LearningEnemy):
             with open(path, "rb") as f:
                 data = pickle.load(f)
             if isinstance(data, dict) and "version" in data:
-                self.q_table_version = data.get("version", Q_TABLE_VERSION)
-                self.q_table = data.get("q_table", {})
+                version = data.get("version", 1)
+                table = data.get("q_table", {})
             else:
-                self.q_table = data
-                self.q_table_version = 1
+                version = 1
+                table = data
+
+            if version == 1:
+                new_table = {}
+                for state, actions in table.items():
+                    if isinstance(state, tuple) and len(state) == 3:
+                        new_state = state + (1, 1, 2, 0)
+                    else:
+                        new_state = state
+                    new_table[new_state] = actions
+                self.q_table = new_table
+                self.q_table_version = Q_TABLE_VERSION
+            else:
+                self.q_table = table
+                self.q_table_version = version
 
     # ------------------------------------------------------------------
     # Main update
