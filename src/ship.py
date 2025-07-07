@@ -343,17 +343,31 @@ class Ship:
         dx = dest_x - self.x
         dy = dest_y - self.y
         distance = math.hypot(dx, dy)
-        speed = config.AUTOPILOT_SPEED
+        speed_limit = config.AUTOPILOT_SPEED
         if isinstance(self.autopilot_target, Planet):
-            speed = config.PLANET_LANDING_SPEED
-        step = speed * dt
+            speed_limit = config.PLANET_LANDING_SPEED
+        step = speed_limit * dt
         if distance <= step:
             self.x = dest_x
             self.y = dest_y
             self.autopilot_target = None
+            self.vx = 0.0
+            self.vy = 0.0
             return
-        self.vx = dx / distance * speed
-        self.vy = dy / distance * speed
+
+        angle = math.atan2(dy, dx)
+        accel = config.SHIP_ACCELERATION * self.accel_factor
+        self.vx += math.cos(angle) * accel * dt
+        self.vy += math.sin(angle) * accel * dt
+        vel = math.hypot(self.vx, self.vy)
+        if vel > speed_limit:
+            scale = speed_limit / vel
+            self.vx *= scale
+            self.vy *= scale
+
+        self.vx *= config.SHIP_FRICTION
+        self.vy *= config.SHIP_FRICTION
+
         self.angle = math.atan2(self.vy, self.vx)
         old_x, old_y = self.x, self.y
         self.x += self.vx * dt
