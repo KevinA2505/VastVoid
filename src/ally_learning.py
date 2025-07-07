@@ -121,6 +121,9 @@ class LearningAlly(LearningEnemy):
             self.player_prev_hull = self.player_ship.hull
         state = self._state(hostiles or [])
         action = self.choose_action(state)
+        if action == "attack" and threat is None:
+            # Don't fire on the player when no hostile target is present
+            action = "pursue"
         self.perform_action(action)
         self.ship.update(
             _NullKeys(),
