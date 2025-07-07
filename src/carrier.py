@@ -1,4 +1,6 @@
 import pygame
+import random
+import math
 from dataclasses import dataclass, field
 from ship import Ship
 from fraction import Fraction
@@ -16,10 +18,10 @@ class Carrier(Ship):
         x: float,
         y: float,
         model=None,
-        hull: int = 350,
+        hull: int = 500,
         fraction: Fraction | None = None,
     ) -> None:
-        super().__init__(x, y, model, hull=hull, speed_factor=0.7, fraction=fraction)
+        super().__init__(x, y, model, hull=hull, speed_factor=0.49, fraction=fraction)
         self.fraction = fraction
         self.hangars = [None] * 5
 
@@ -27,6 +29,12 @@ class Carrier(Ship):
         for i, slot in enumerate(self.hangars):
             if slot is None:
                 self.hangars[i] = ship
+                ship.x = self.x
+                ship.y = self.y
+                ship.vx = 0.0
+                ship.vy = 0.0
+                ship.autopilot_target = None
+                ship.hyperjump_target = None
                 return True
         return False
 
@@ -34,6 +42,15 @@ class Carrier(Ship):
         if 0 <= index < len(self.hangars):
             ship = self.hangars[index]
             self.hangars[index] = None
+            if ship:
+                distance = self.collision_radius + ship.collision_radius + 10
+                angle = random.uniform(0, 2 * math.pi)
+                ship.x = self.x + distance * math.cos(angle)
+                ship.y = self.y + distance * math.sin(angle)
+                ship.vx = 0.0
+                ship.vy = 0.0
+                ship.autopilot_target = None
+                ship.hyperjump_target = None
             return ship
         return None
 
