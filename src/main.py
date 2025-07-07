@@ -7,6 +7,7 @@ from carrier import Carrier
 from enemy import _NullKeys
 from combat import LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon, BasicWeapon
 from enemy_learning import create_learning_enemy
+from ally_learning import create_learning_ally
 from sector import create_sectors
 from fraction import FRACTIONS
 from faction_structures import spawn_capital_ships
@@ -159,13 +160,11 @@ def main():
     ability_bar.set_ship(ship)
     carrier = Carrier(ship.x + 150, ship.y + 80, fraction=player.fraction)
     friendly_ships = [
-        Ship(
+        create_learning_ally(
+            ship,
             carrier.x + random.randint(-60, 60),
             carrier.y + random.randint(-60, 60),
             chosen_model,
-            hull=80,
-            fraction=player.fraction,
-            speed_factor=config.NPC_SPEED_FACTOR,
         )
         for _ in range(2)
     ]
@@ -895,7 +894,10 @@ def main():
 
         pygame.display.flip()
 
-    # Save learning data so enemies retain behavior between sessions
+    # Save learning data so enemies and allies retain behavior between sessions
+    for ally in friendly_ships:
+        if hasattr(ally, "save_q_table"):
+            ally.save_q_table()
     for enemy in enemies:
         enemy.save_q_table()
 
