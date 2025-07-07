@@ -244,8 +244,11 @@ class Ship:
 
         if self._check_collision(sectors):
             self.x, self.y = old_x, old_y
-            self.vx = 0
-            self.vy = 0
+            self.vx *= -config.BOUNCE_FACTOR
+            self.vy *= -config.BOUNCE_FACTOR
+            # Nudge slightly away from the obstacle
+            self.x += self.vx * dt
+            self.y += self.vy * dt
 
         self._update_projectiles(dt, world_width, world_height)
         self._update_specials(dt, world_width, world_height, targets)
@@ -401,6 +404,10 @@ class Ship:
 
         if self._check_collision(sectors):
             self.x, self.y = old_x, old_y
+            self.vx *= -config.BOUNCE_FACTOR
+            self.vy *= -config.BOUNCE_FACTOR
+            self.x += self.vx * dt
+            self.y += self.vy * dt
             self.autopilot_target = None
 
         self._update_projectiles(dt, world_width, world_height)
