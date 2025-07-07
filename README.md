@@ -163,7 +163,7 @@ Stars now carry a vast reserve of power through a new `energy` attribute.
 Capital ships include matching `energy` and `max_energy` values which default
 to 10&nbsp;000 units. Solar Dominion flagships start with their energy bar full
 thanks to the channel arms that surround them. Each arm links to a nearby star
-and transfers roughly 100 energy per second while the link is maintained,
+and transfers roughly 10 energy per second while the link is maintained,
 reducing the star's own supply. This mechanism lays the groundwork for
 constructing a Dyson Sphere that continuously harvests stellar energy for the
 faction's fleet.
