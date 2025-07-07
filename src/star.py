@@ -36,6 +36,8 @@ class Star:
         self.color = color
         self.spectral_type = spectral_type
         self.brightness = brightness if brightness is not None else radius * 10
+        # Available energy that can be channelled by other structures
+        self.energy = 1_000_000_000.0
 
     @staticmethod
     def random_star(x: float, y: float) -> "Star":
