@@ -22,6 +22,7 @@ from ui import (
     WeaponMenu,
     ArtifactMenu,
     HyperJumpMap,
+    CarrierWindow,
 )
 from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
 from planet_surface import PlanetSurface
@@ -164,6 +165,7 @@ def main():
     market_window = None
     weapon_menu = None
     artifact_menu = None
+    carrier_window = None
     current_station = None
     current_surface = None
     approaching_planet = None
@@ -291,6 +293,22 @@ def main():
                     break
             if hyper_map:
                 hyper_map.draw(screen, info_font)
+                pygame.display.flip()
+                continue
+
+        if carrier_window:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+                if carrier_window.handle_event(event):
+                    carrier_window = None
+                    break
+                if carrier_window and carrier_window.deployed_ship:
+                    friendly_ships.append(carrier_window.deployed_ship)
+                    carrier_window.deployed_ship = None
+            if carrier_window:
+                carrier_window.draw(screen, info_font)
                 pygame.display.flip()
                 continue
 
@@ -514,6 +532,10 @@ def main():
                         if obj:
                             selected_object = obj
                             break
+                    if selected_object is None:
+                        if math.hypot(carrier.x - world_x, carrier.y - world_y) <= carrier.collision_radius:
+                            carrier_window = CarrierWindow(carrier)
+                            continue
                 elif event.button == 3:
                     selected_object = None
 
