@@ -42,6 +42,7 @@ class LearningDefensiveDrone(DefensiveDrone):
             self.orbit_radius,
             self.orbit_speed,
             self.hp,
+            speed_factor=config.NPC_SPEED_FACTOR,
         )
 
     def load_q_table(self, path: str = Q_TABLE_PATH) -> None:

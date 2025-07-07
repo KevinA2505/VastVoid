@@ -74,6 +74,7 @@ class Ship:
         y: float,
         model: ShipModel | None = None,
         hull: int = 100,
+        speed_factor: float = 1.0,
     ) -> None:
         self.x = float(x)
         self.y = float(y)
@@ -84,7 +85,8 @@ class Ship:
         self.orbit_time = 0.0
         self.orbit_radius = 0.0
         self.orbit_angle = 0.0
-        self.orbit_speed = config.SHIP_ORBIT_SPEED
+        self.speed_factor = speed_factor
+        self.orbit_speed = config.SHIP_ORBIT_SPEED * self.speed_factor
         self.orbit_fire_timer = 0.0
         self.orbit_cooldown = 0.0
         self.orbit_forced = False
@@ -183,7 +185,7 @@ class Ship:
             self._update_autopilot(dt, world_width, world_height, sectors, blackholes)
             return
 
-        accel = config.SHIP_ACCELERATION * self.accel_factor
+        accel = config.SHIP_ACCELERATION * self.accel_factor * self.speed_factor
         if self.boost_time > 0:
             self.boost_time -= dt
             if self.boost_time <= 0:
@@ -282,7 +284,8 @@ class Ship:
         self.orbit_target = target
         self.orbit_time = duration
         self.orbit_forced = forced
-        self.orbit_speed = speed if speed is not None else config.SHIP_ORBIT_SPEED
+        base_speed = speed if speed is not None else config.SHIP_ORBIT_SPEED
+        self.orbit_speed = base_speed * self.speed_factor
         self.orbit_fire_timer = 0.0
         self.autopilot_target = None
 
@@ -290,7 +293,7 @@ class Ship:
         self.orbit_target = None
         self.orbit_time = 0.0
         self.orbit_forced = False
-        self.orbit_speed = config.SHIP_ORBIT_SPEED
+        self.orbit_speed = config.SHIP_ORBIT_SPEED * self.speed_factor
         self.orbit_fire_timer = 0.0
         self.orbit_cooldown = config.ORBIT_COOLDOWN
 
@@ -343,9 +346,9 @@ class Ship:
         dx = dest_x - self.x
         dy = dest_y - self.y
         distance = math.hypot(dx, dy)
-        speed_limit = config.AUTOPILOT_SPEED
+        speed_limit = config.AUTOPILOT_SPEED * self.speed_factor
         if isinstance(self.autopilot_target, Planet):
-            speed_limit = config.PLANET_LANDING_SPEED
+            speed_limit = config.PLANET_LANDING_SPEED * self.speed_factor
         step = speed_limit * dt
         if distance <= step:
             self.x = dest_x
@@ -356,7 +359,7 @@ class Ship:
             return
 
         angle = math.atan2(dy, dx)
-        accel = config.SHIP_ACCELERATION * self.accel_factor
+        accel = config.SHIP_ACCELERATION * self.accel_factor * self.speed_factor
         self.vx += math.cos(angle) * accel * dt
         self.vy += math.sin(angle) * accel * dt
         vel = math.hypot(self.vx, self.vy)

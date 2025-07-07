@@ -13,14 +13,15 @@ class DefensiveDrone:
         orbit_radius: float | None = None,
         orbit_speed: float = config.DEF_DRONE_ORBIT_SPEED,
         hp: float = 20.0,
+        speed_factor: float = 1.0,
     ) -> None:
         self.owner = owner
         self.angle = angle
-        self.orbit_speed = orbit_speed
+        self.orbit_speed = orbit_speed * speed_factor
         self.orbit_radius = (
             orbit_radius or owner.size * config.DEF_DRONE_ORBIT_RADIUS_FACTOR
         )
-        self.intercept_speed = config.DEF_DRONE_INTERCEPT_SPEED
+        self.intercept_speed = config.DEF_DRONE_INTERCEPT_SPEED * speed_factor
         self.hp = hp
         self.size = 12
         self.x = owner.x + math.cos(angle) * self.orbit_radius

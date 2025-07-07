@@ -11,6 +11,7 @@ from learning_defensive_drone import LearningDefensiveDrone
 from aggressive_defensive_drone import AggressiveDefensiveDrone
 from station import SpaceStation
 import pygame
+import config
 
 
 @dataclass
@@ -230,6 +231,7 @@ class CapitalShip(FactionStructure):
                     self,
                     ring_radius,
                     orbit_speed=-0.75,
+                    speed_factor=config.NPC_SPEED_FACTOR,
                 )
                 drone.angle = i * 2 * math.pi / 10
                 self.drones.append(drone)

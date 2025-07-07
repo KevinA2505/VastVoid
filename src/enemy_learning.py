@@ -212,7 +212,13 @@ def create_learning_enemy(region):
     y = random.randint(region.y, region.y + region.height)
     fraction = random.choice(FRACTIONS)
     enemy = LearningEnemy(
-        Ship(x, y, model, hull=config.ENEMY_MAX_HULL),
+        Ship(
+            x,
+            y,
+            model,
+            hull=config.ENEMY_MAX_HULL,
+            speed_factor=config.NPC_SPEED_FACTOR,
+        ),
         species,
         region,
         fraction,

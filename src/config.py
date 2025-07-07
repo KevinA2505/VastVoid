@@ -83,6 +83,9 @@ ENEMY_WEAPON_COOLDOWN = 0.3
 ENEMY_ORBIT_INTERVAL = 12.0  # seconds between orbit attempts
 ENEMY_ORBIT_PROBABILITY = 0.35  # chance of starting an orbit each interval
 
+# Speed multiplier applied to all computer controlled ships and drones
+NPC_SPEED_FACTOR = 0.85
+
 # --- Hyperjump settings ------------------------------------------------------
 # Delay before a hyperjump completes and cooldown between jumps
 HYPERJUMP_COOLDOWN = 8.0

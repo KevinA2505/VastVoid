@@ -444,13 +444,14 @@ class Drone:
         hp: float = 16.0,
         lifetime: float = float("inf"),
         orbit_speed: float = 2.0,
+        speed_factor: float = 1.0,
     ) -> None:
         self.owner = owner
         self.angle = 0.0
         # Increased orbit range so drones keep a bit more distance
         # and engage targets from farther away
         self.radius = owner.size * 4
-        self.orbit_speed = orbit_speed
+        self.orbit_speed = orbit_speed * speed_factor
         self.hp = hp
         self.lifetime = lifetime
         self.size = 10
@@ -556,7 +557,7 @@ class DroneWeapon(Weapon):
         if len(existing) >= 3:
             return None
         self._timer = 0.0
-        return Drone(self.owner)
+        return Drone(self.owner, speed_factor=config.NPC_SPEED_FACTOR)
 
 
 class MissileWeapon(Weapon):
