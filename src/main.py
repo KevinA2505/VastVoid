@@ -137,6 +137,7 @@ def main():
         chosen_model,
         hull=config.PLAYER_MAX_HULL,
         fraction=player.fraction,
+        speed_factor=config.NPC_SPEED_FACTOR,
     )
     ship.weapons.extend([
         LaserWeapon(),
@@ -158,8 +159,14 @@ def main():
     ability_bar.set_ship(ship)
     carrier = Carrier(ship.x + 150, ship.y + 80, fraction=player.fraction)
     friendly_ships = [
-        Ship(carrier.x + random.randint(-60, 60), carrier.y + random.randint(-60, 60),
-             chosen_model, hull=80, fraction=player.fraction)
+        Ship(
+            carrier.x + random.randint(-60, 60),
+            carrier.y + random.randint(-60, 60),
+            chosen_model,
+            hull=80,
+            fraction=player.fraction,
+            speed_factor=config.NPC_SPEED_FACTOR,
+        )
         for _ in range(2)
     ]
     inventory_window = None
