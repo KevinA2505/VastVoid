@@ -150,13 +150,21 @@ class LearningAlly(LearningEnemy):
         if hostiles is not None:
             if not hasattr(self, "_enemy_prev_hulls"):
                 self._enemy_prev_hulls = {}
+            active_keys = set()
             for en in hostiles:
-                prev = self._enemy_prev_hulls.get(en, en.ship.hull)
+                key = id(en)
+                active_keys.add(key)
+                prev = self._enemy_prev_hulls.get(key, en.ship.hull)
                 if en.ship.hull < prev:
                     reward += 0.3
                 if en.ship.hull <= 0 < prev:
                     reward += 1.0
-                self._enemy_prev_hulls[en] = en.ship.hull
+                self._enemy_prev_hulls[key] = en.ship.hull
+
+            # Remove data for enemies that are no longer present
+            obsolete = [k for k in self._enemy_prev_hulls.keys() if k not in active_keys]
+            for k in obsolete:
+                del self._enemy_prev_hulls[k]
 
         return reward
 
@@ -216,6 +224,11 @@ class LearningAlly(LearningEnemy):
             self.player_prev_hull = self.player_ship.hull
         if not hasattr(self, "_enemy_prev_hulls"):
             self._enemy_prev_hulls = {}
+        elif hostiles is not None:
+            active_ids = {id(en) for en in hostiles}
+            self._enemy_prev_hulls = {
+                k: v for k, v in self._enemy_prev_hulls.items() if k in active_ids
+            }
         state = self._state(hostiles or [])
         action = self.choose_action(state)
         if action == "attack" and threat is None:
