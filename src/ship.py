@@ -57,6 +57,8 @@ class _ShipParticle:
         self.vy = vy
         self.color = config.SHIP_PARTICLE_COLOR
         self.lifetime = config.SHIP_PARTICLE_DURATION
+        # Store starting lifetime so we can fade the particle out over time
+        self.max_life = config.SHIP_PARTICLE_DURATION
 
     def update(self, dt: float) -> None:
         self.x += self.vx * dt
@@ -741,7 +743,12 @@ class Ship:
         for p in self.particles:
             px = int((p.x - offset_x) * zoom)
             py = int((p.y - offset_y) * zoom)
-            pygame.draw.circle(screen, p.color, (px, py), max(1, int(2 * zoom)))
+            # Fade out by scaling alpha with remaining life
+            alpha = max(0.0, min(1.0, p.lifetime / p.max_life))
+            radius = max(1, int(2 * alpha * zoom))
+            surface = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
+            pygame.draw.circle(surface, p.color + (int(alpha * 255),), (radius, radius), radius)
+            screen.blit(surface, (px - radius, py - radius))
 
     def draw_at(
         self,
