@@ -205,7 +205,10 @@ class CapitalShip(FactionStructure):
                     arm.angle %= 2 * math.pi
                     # Recharge energy from the linked star
                     if self.energy < self.max_energy:
-                        transfer = 100.0 * dt
+                        # Each channel arm can move up to 10 energy units per
+                        # second from its linked star, limited by the star's
+                        # remaining energy and the ship's current deficit.
+                        transfer = 10.0 * dt
                         available = min(transfer, arm.target.energy)
                         needed = self.max_energy - self.energy
                         amount = min(available, needed)
