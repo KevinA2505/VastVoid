@@ -8,6 +8,8 @@ SHIP_ACCELERATION = 300  # pixels per second squared (5x default)
 # Increased friction value so ships retain more of their velocity each frame,
 # giving them a noticeably longer drift after moving.
 SHIP_FRICTION = 0.96  # velocity retained each frame
+# Bounce velocity multiplier when colliding with objects
+BOUNCE_FACTOR = 0.5
 # Maximum travel speed for manual control
 SHIP_MAX_SPEED = 100
 # Slightly slower autopilot speed to keep movement moderate
