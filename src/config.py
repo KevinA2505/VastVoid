@@ -15,9 +15,8 @@ AUTOPILOT_SPEED = 100  # pixels per second when auto moving
 PLANET_LANDING_SPEED = 80  # slower speed when approaching a planet
 
 # --- Hull settings -----------------------------------------------------------
-# Maximum hull values for player and enemy ships
+# Maximum hull value for the player's ship
 PLAYER_MAX_HULL = 120
-ENEMY_MAX_HULL = 80
 
 # --- Explorer/Boat movement -------------------------------------------------
 EXPLORER_SPEED = 150  # base walking speed on a planet surface
@@ -29,7 +28,7 @@ SHIP_ORBIT_SPEED = 1.5      # angular speed for attack orbits (radians per secon
 ORBIT_COOLDOWN = 5.0        # delay before a new orbit can be triggered
 ORBIT_PROJECTILE_SPEED_MULTIPLIER = 2.0  # bullet speed boost while orbiting
 ORBIT_PROJECTILE_CURVATURE = 4.0        # radians per second of bullet curve
-ORBIT_TRIGGER_RANGE = 350   # max distance from an enemy to start an orbit
+ORBIT_TRIGGER_RANGE = 350   # max distance to start an orbit
 PROJECTILE_MAX_DISTANCE = 1200          # maximum distance a projectile can travel
 HOMING_PROJECTILE_TURN_RATE = 6.0       # rad/s a guided projectile can turn
 
@@ -73,18 +72,6 @@ WORMHOLE_DELAY = 5.0         # seconds before teleport occurs
 WORMHOLE_COOLDOWN = 3.0      # delay after teleport before re-entry allowed
 WORMHOLE_FLASH_TIME = 0.75   # duration of post-teleport flash effect
 
-# Enemy spawn settings
-MIN_ENEMIES = 5
-MAX_ENEMIES = 12
-
-# Cooldown for enemy weapons in seconds. Default player weapons use
-# 0.5, so enemies fire slightly faster but still allow the player to
-# dodge incoming shots.
-ENEMY_WEAPON_COOLDOWN = 0.3
-
-# How often enemies attempt an orbit attack
-ENEMY_ORBIT_INTERVAL = 12.0  # seconds between orbit attempts
-ENEMY_ORBIT_PROBABILITY = 0.35  # chance of starting an orbit each interval
 
 # Speed multiplier applied to all computer controlled ships and drones
 # Use the same speed factor for all ships so they travel evenly

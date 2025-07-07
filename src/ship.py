@@ -110,7 +110,6 @@ class Ship:
         self.projectiles: list[Projectile] = []
         self.specials: list = []
         self.particles: list[_ShipParticle] = []
-        self._enemy_list: list | None = None
         self._structures: list | None = None
         self.shield = Shield()
         self.artifacts: list[Artifact] = []
@@ -151,7 +150,6 @@ class Ship:
         enemies: list | None = None,
         structures: list | None = None,
     ) -> None:
-        self._enemy_list = enemies
         self._structures = list(structures or [])
         # Include any active drones launched from capital ships or other
         # structures so they can participate in collision checks.
@@ -457,12 +455,6 @@ class Ship:
         for sector in sectors:
             if sector.collides_with_point(self.x, self.y, radius):
                 return True
-        for obj in self._enemy_list or []:
-            other = getattr(obj, "ship", obj)
-            if other is self:
-                continue
-            if math.hypot(other.x - self.x, other.y - self.y) < radius + other.collision_radius:
-                return True
         for struct in self._structures:
             # Skip small drones so they don't trap the player when colliding.
             if isinstance(struct, Drone):
@@ -552,21 +544,7 @@ class Ship:
                     proj.vx *= config.ORBIT_PROJECTILE_SPEED_MULTIPLIER
                     proj.vy *= config.ORBIT_PROJECTILE_SPEED_MULTIPLIER
         else:
-            if isinstance(weapon, MissileWeapon) and self._enemy_list:
-                nearest = None
-                min_d = float("inf")
-                for en in self._enemy_list:
-                    d = math.hypot(en.ship.x - self.x, en.ship.y - self.y)
-                    if d < min_d:
-                        min_d = d
-                        nearest = en.ship
-                if nearest:
-                    weapon.target = nearest
-                    proj = weapon.fire(self.x, self.y, nearest.x, nearest.y)
-                else:
-                    proj = weapon.fire(self.x, self.y, tx, ty)
-            else:
-                proj = weapon.fire(self.x, self.y, tx, ty)
+            proj = weapon.fire(self.x, self.y, tx, ty)
         if proj:
             if isinstance(proj, (LaserBeam, TimedMine, Drone, BombDrone)):
                 self.specials.append(proj)
