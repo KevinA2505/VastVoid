@@ -236,25 +236,16 @@ class CapitalShip(FactionStructure):
 
                 for proj in list(drone.projectiles):
                     for en in hostiles:
-                        enemy_rect = pygame.Rect(
-                            en.ship.x - en.ship.size / 2,
-                            en.ship.y - en.ship.size / 2,
-                            en.ship.size,
-                            en.ship.size,
-                        )
-                        if enemy_rect.collidepoint(proj.x, proj.y):
+                        if (
+                            math.hypot(proj.x - en.ship.x, proj.y - en.ship.y)
+                            <= en.ship.collision_radius
+                        ):
                             en.ship.take_damage(proj.damage)
                             drone.projectiles.remove(proj)
                             break
 
                 for en in hostiles:
-                    enemy_rect = pygame.Rect(
-                        en.ship.x - en.ship.size / 2,
-                        en.ship.y - en.ship.size / 2,
-                        en.ship.size,
-                        en.ship.size,
-                    )
-                    if rect.colliderect(enemy_rect):
+                    if math.hypot(en.ship.x - drone.x, en.ship.y - drone.y) <= en.ship.collision_radius + drone.size / 2:
                         drone.hp -= 5
                         en.ship.take_damage(5)
 

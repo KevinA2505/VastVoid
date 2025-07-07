@@ -517,27 +517,23 @@ def main():
                 capital_ships,
             )
 
-            enemy_rect = pygame.Rect(
-                enemy.ship.x - enemy.ship.size / 2,
-                enemy.ship.y - enemy.ship.size / 2,
-                enemy.ship.size,
-                enemy.ship.size,
-            )
-            ship_rect = pygame.Rect(
-                ship.x - ship.size / 2,
-                ship.y - ship.size / 2,
-                ship.size,
-                ship.size,
-            )
+            enemy_radius = enemy.ship.collision_radius
+            ship_radius = ship.collision_radius
 
             if enemy.fraction != player.fraction:
                 for proj in list(ship.projectiles):
-                    if enemy_rect.collidepoint(proj.x, proj.y):
+                    if (
+                        math.hypot(proj.x - enemy.ship.x, proj.y - enemy.ship.y)
+                        <= enemy_radius
+                    ):
                         enemy.ship.take_damage(proj.damage)
                         ship.projectiles.remove(proj)
 
                 for proj in list(enemy.ship.projectiles):
-                    if ship_rect.collidepoint(proj.x, proj.y):
+                    if (
+                        math.hypot(proj.x - ship.x, proj.y - ship.y)
+                        <= ship_radius
+                    ):
                         ship.take_damage(proj.damage)
                         enemy.ship.projectiles.remove(proj)
 

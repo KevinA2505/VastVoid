@@ -104,6 +104,11 @@ class Ship:
             self.size = config.SHIP_SIZE
             self.color = config.SHIP_COLOR
             self.accel_factor = 1.0
+        # Orientation angle in radians. 0 points to the right.
+        self.angle = -math.pi / 2
+        # Collision radius for the triangular hull
+        height = self.size * 1.5
+        self.collision_radius = math.hypot(height / 2, self.size / 2)
 
     def set_active_weapon(self, index: int) -> None:
         if 0 <= index < len(self.weapons):
@@ -181,6 +186,9 @@ class Ship:
 
         self.vx *= config.SHIP_FRICTION
         self.vy *= config.SHIP_FRICTION
+
+        if abs(self.vx) > 1e-3 or abs(self.vy) > 1e-3:
+            self.angle = math.atan2(self.vy, self.vx)
 
         if blackholes:
             for hole in blackholes:
@@ -321,6 +329,7 @@ class Ship:
             self.vx = 0
             self.vy = 0
             return
+        self.angle = math.atan2(dy, dx)
         old_x, old_y = self.x, self.y
         self.x += dx / distance * step
         self.y += dy / distance * step
@@ -346,6 +355,7 @@ class Ship:
         self.orbit_angle += self.orbit_speed * dt
         self.x = self.orbit_target.x + math.cos(self.orbit_angle) * self.orbit_radius
         self.y = self.orbit_target.y + math.sin(self.orbit_angle) * self.orbit_radius
+        self.angle = self.orbit_angle + math.pi / 2
         self.orbit_fire_timer -= dt
         if self.orbit_fire_timer <= 0:
             # Fire a homing projectile while orbiting
@@ -385,15 +395,15 @@ class Ship:
         return target.x + dvx * t, target.y + dvy * t
 
     def _check_collision(self, sectors: list) -> bool:
-        half_size = self.size / 2
+        radius = self.collision_radius
         for sector in sectors:
-            if sector.collides_with_point(self.x, self.y, half_size):
+            if sector.collides_with_point(self.x, self.y, radius):
                 return True
         for obj in self._enemy_list or []:
             other = getattr(obj, "ship", obj)
             if other is self:
                 continue
-            if math.hypot(other.x - self.x, other.y - self.y) < half_size + other.size / 2:
+            if math.hypot(other.x - self.x, other.y - self.y) < radius + other.collision_radius:
                 return True
         for struct in self._structures:
             # Skip small drones so they don't trap the player when colliding.
@@ -403,23 +413,38 @@ class Ship:
             # while larger structures expose a ``radius`` attribute. Handle both
             # so ships properly avoid them.
             if hasattr(struct, "radius"):
-                radius = struct.radius
+                struct_radius = struct.radius
             else:
-                radius = getattr(struct, "size", 0)
-            if math.hypot(struct.x - self.x, struct.y - self.y) < half_size + radius:
+                struct_radius = getattr(struct, "size", 0)
+            if math.hypot(struct.x - self.x, struct.y - self.y) < radius + struct_radius:
                 return True
         return False
 
+    def _triangle_points(self, cx: float, cy: float, zoom: float) -> list[tuple[int, int]]:
+        """Return the three rotated vertices of the ship."""
+        base = self.size * zoom
+        height = self.size * 1.5 * zoom
+        hx = height / 2
+        half_base = base / 2
+        cos_a = math.cos(self.angle)
+        sin_a = math.sin(self.angle)
+        tip = (cx + cos_a * hx, cy + sin_a * hx)
+        left = (
+            cx - cos_a * hx - sin_a * half_base,
+            cy - sin_a * hx + cos_a * half_base,
+        )
+        right = (
+            cx - cos_a * hx + sin_a * half_base,
+            cy - sin_a * hx - cos_a * half_base,
+        )
+        return [(int(tip[0]), int(tip[1])), (int(left[0]), int(left[1])), (int(right[0]), int(right[1]))]
+
     def draw(self, screen: pygame.Surface, zoom: float = 1.0) -> None:
         """Draw the ship scaled by a non-linear factor of the zoom level."""
-        size = max(1, int(self.size * zoom ** 0.5))
-        ship_rect = pygame.Rect(
-            config.WINDOW_WIDTH // 2 - size // 2,
-            config.WINDOW_HEIGHT // 2 - size // 2,
-            size,
-            size,
-        )
-        pygame.draw.rect(screen, self.color, ship_rect)
+        cx = config.WINDOW_WIDTH // 2
+        cy = config.WINDOW_HEIGHT // 2
+        points = self._triangle_points(cx, cy, zoom)
+        pygame.draw.polygon(screen, self.color, points)
 
     @property
     def boost_ratio(self) -> float:
@@ -511,13 +536,10 @@ class Ship:
                 obj.update(dt, enemies or [])
                 for proj in list(obj.projectiles):
                     for en in enemies or []:
-                        rect = pygame.Rect(
-                            en.ship.x - en.ship.size / 2,
-                            en.ship.y - en.ship.size / 2,
-                            en.ship.size,
-                            en.ship.size,
-                        )
-                        if rect.collidepoint(proj.x, proj.y):
+                        if (
+                            math.hypot(proj.x - en.ship.x, proj.y - en.ship.y)
+                            <= en.ship.collision_radius
+                        ):
                             en.ship.take_damage(proj.damage)
                             obj.projectiles.remove(proj)
                             break
@@ -555,13 +577,10 @@ class Ship:
                                 break
                     if hit:
                         break
-                    enemy_rect = pygame.Rect(
-                        en.ship.x - en.ship.size / 2,
-                        en.ship.y - en.ship.size / 2,
-                        en.ship.size,
-                        en.ship.size,
-                    )
-                    if enemy_rect.collidepoint(obj.x, obj.y):
+                    if (
+                        math.hypot(en.ship.x - obj.x, en.ship.y - obj.y)
+                        <= en.ship.collision_radius
+                    ):
                         hit = True
                         break
                 if hit:
@@ -652,14 +671,10 @@ class Ship:
         """Draw the ship on screen applying an offset and zoom."""
         if self.invisible_timer > 0:
             return
-        size = max(1, int(self.size * zoom ** 0.5))
-        ship_rect = pygame.Rect(
-            int((self.x - offset_x) * zoom) - size // 2,
-            int((self.y - offset_y) * zoom) - size // 2,
-            size,
-            size,
-        )
-        pygame.draw.rect(screen, self.color, ship_rect)
+        cx = int((self.x - offset_x) * zoom)
+        cy = int((self.y - offset_y) * zoom)
+        points = self._triangle_points(cx, cy, zoom)
+        pygame.draw.polygon(screen, self.color, points)
 
 
 def choose_ship(screen: pygame.Surface) -> ShipModel:
