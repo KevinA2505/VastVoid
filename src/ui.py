@@ -538,3 +538,66 @@ class HyperJumpMap:
         txt = font.render("Cancel", True, (255, 255, 255))
         screen.blit(txt, txt.get_rect(center=self.cancel_rect.center))
 
+
+class CarrierWindow:
+    """Display carrier status and hangar slots."""
+
+    def __init__(self, carrier) -> None:
+        self.carrier = carrier
+        self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
+        self.slot_rects: list[tuple[int, pygame.Rect]] = []
+        self.deploy_rects: list[tuple[int, pygame.Rect]] = []
+        self.deployed_ship = None
+
+    def handle_event(self, event) -> bool:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.close_rect.collidepoint(event.pos):
+                return True
+            for idx, rect in self.deploy_rects:
+                if rect.collidepoint(event.pos):
+                    ship = self.carrier.deploy_ship(idx)
+                    if ship:
+                        self.deployed_ship = ship
+                    return False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            return True
+        return False
+
+    def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        import math
+
+        screen.fill((20, 20, 40))
+        title = font.render("Carrier", True, (255, 255, 255))
+        screen.blit(title, (20, 20))
+
+        hull_txt = font.render(f"Hull: {self.carrier.hull}", True, (255, 255, 255))
+        screen.blit(hull_txt, (20, 50))
+        speed = math.hypot(self.carrier.vx, self.carrier.vy)
+        speed_txt = font.render(f"Speed: {speed:.1f}", True, (255, 255, 255))
+        screen.blit(speed_txt, (20, 70))
+
+        self.deploy_rects.clear()
+        x0, y0 = 20, 110
+        w, h = 200, 30
+        for i, ship in enumerate(self.carrier.hangars):
+            rect = pygame.Rect(x0, y0 + i * (h + 5), w, h)
+            pygame.draw.rect(screen, (60, 60, 90), rect)
+            pygame.draw.rect(screen, (200, 200, 200), rect, 1)
+            if ship:
+                name_txt = font.render(ship.name, True, (255, 255, 255))
+                screen.blit(name_txt, name_txt.get_rect(midleft=(rect.x + 5, rect.centery)))
+                d_rect = pygame.Rect(rect.right + 10, rect.y, 80, h)
+                pygame.draw.rect(screen, (60, 60, 90), d_rect)
+                pygame.draw.rect(screen, (200, 200, 200), d_rect, 1)
+                d_txt = font.render("Deploy", True, (255, 255, 255))
+                screen.blit(d_txt, d_txt.get_rect(center=d_rect.center))
+                self.deploy_rects.append((i, d_rect))
+            else:
+                empty_txt = font.render("Empty", True, (255, 255, 255))
+                screen.blit(empty_txt, empty_txt.get_rect(center=rect.center))
+
+        pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
+        close_txt = font.render("Close", True, (255, 255, 255))
+        screen.blit(close_txt, close_txt.get_rect(center=self.close_rect.center))
+
