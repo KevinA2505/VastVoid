@@ -40,6 +40,11 @@ BOOST_MULTIPLIER = 2.5  # speed multiplier when boost is active
 BOOST_DURATION = 4.0    # seconds of boost
 BOOST_RECHARGE = 10.0   # seconds to fully recharge boost
 
+# Particle effects for ship thrusters
+SHIP_PARTICLE_MAX = 80         # maximum number of exhaust particles
+SHIP_PARTICLE_DURATION = 0.6   # lifetime of each exhaust particle in seconds
+SHIP_PARTICLE_COLOR = (255, 160, 80)
+
 # Camera speed when planning a route
 CAMERA_PAN_SPEED = 500  # pixels per second
 
