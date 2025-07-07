@@ -54,6 +54,22 @@ class Carrier(Ship):
             return ship
         return None
 
+    def _rect_points(self, cx: float, cy: float, zoom: float) -> list[tuple[int, int]]:
+        """Return the four rotated vertices of the carrier."""
+        width = self.size * 2 * zoom
+        height = self.size * 1.2 * zoom
+        hx = width / 2
+        hy = height / 2
+        cos_a = math.cos(self.angle)
+        sin_a = math.sin(self.angle)
+        corners = [(-hx, -hy), (hx, -hy), (hx, hy), (-hx, hy)]
+        points = []
+        for dx, dy in corners:
+            x = cx + dx * cos_a - dy * sin_a
+            y = cy + dx * sin_a + dy * cos_a
+            points.append((int(x), int(y)))
+        return points
+
     def draw(
         self,
         screen: pygame.Surface,
@@ -65,15 +81,14 @@ class Carrier(Ship):
     ) -> None:
         color = self.color if self.fraction is None else self.fraction.color
         outline = tuple(max(0, c - 50) for c in color)
-        width = int(self.size * 2 * zoom)
-        height = int(self.size * 1.2 * zoom)
         cx = int((self.x - offset_x) * zoom)
         cy = int((self.y - offset_y) * zoom)
-        rect = pygame.Rect(0, 0, width, height)
-        rect.center = (cx, cy)
-        pygame.draw.rect(screen, color, rect)
-        pygame.draw.rect(screen, outline, rect, max(1, int(2 * zoom)))
+        points = self._rect_points(cx, cy, zoom)
+        pygame.draw.polygon(screen, color, points)
+        pygame.draw.polygon(screen, outline, points, max(1, int(2 * zoom)))
         if player_fraction and self.fraction and player_fraction == self.fraction:
+            width = self.size * 2 * zoom
+            height = self.size * 1.2 * zoom
             aura_r = int(max(width, height) * 0.8)
             aura = pygame.Surface((aura_r * 2, aura_r * 2), pygame.SRCALPHA)
             aura_col = aura_color or color
