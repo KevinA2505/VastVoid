@@ -103,6 +103,12 @@ The Q-table for these enemies is saved to `learning_enemy_q_table.pkl` in the
 project root when the game exits. Spawning enemies load this file if present so
 their behaviour persists between sessions.
 
+### Learning allies
+Friendly ships can also learn using the new `LearningAlly` class in
+`src/ally_learning.py`. These wingmen try to stay close to the player and
+intercept threats. Their behaviour table is stored in
+`learning_ally_q_table.pkl` so they gradually improve between sessions.
+
 ### Ability bar and attack orbit
 Five ability slots now appear at the bottom of the screen. The first slot shows
 the **Boost** ability which is still activated with the left **Shift** key. The
