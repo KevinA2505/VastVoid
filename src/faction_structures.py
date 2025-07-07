@@ -246,13 +246,13 @@ class CapitalShip(FactionStructure):
         self,
         dt: float,
         sectors: list,
-        enemies: list | None = None,
+        targets: list | None = None,
         player: object | None = None,
     ) -> None:
         if not self.fraction:
             return
-        if enemies is None:
-            enemies = []
+        if targets is None:
+            targets = []
         if self.fraction.name == "Solar Dominion":
             stars: list[Star] = []
             for sec in sectors:
@@ -295,7 +295,7 @@ class CapitalShip(FactionStructure):
                         self.energy += amount
                         arm.target.energy -= amount
         elif self.fraction.name == "Nebula Order":
-            hostiles = [e for e in enemies if e.fraction != self.fraction]
+            hostiles = [e for e in targets if e.fraction != self.fraction]
             if player and getattr(player, "fraction", None) != self.fraction:
                 hostiles.append(type("_P", (), {"ship": player})())
             for drone in list(self.drones):
@@ -561,7 +561,7 @@ class OrbitalPlatform(FactionStructure):
 
 @dataclass
 class InfluenceBeacon(FactionStructure):
-    """Beacon marking territory and granting bonuses to allies."""
+    """Beacon marking territory and granting nearby bonuses."""
 
     range: float = 500.0
     bonus: str | None = None

@@ -21,7 +21,7 @@ class Artifact:
     def can_use(self) -> bool:
         return self._timer >= self.cooldown
 
-    def activate(self, user, enemies: list) -> None:  # pragma: no cover - base
+    def activate(self, user, targets: list) -> None:  # pragma: no cover - base
         pass
 
 
@@ -83,17 +83,17 @@ class EMPArtifact(Artifact):
         super().__init__("EMP", cooldown=8.0)
         self.radius = radius
 
-    def activate(self, user, enemies: list) -> None:
+    def activate(self, user, targets: list) -> None:
         if not self.can_use():
             return
         self._timer = 0.0
         user.specials.append(EMPWave(user.x, user.y, self.radius))
-        for en in enemies:
-            dist = math.hypot(en.ship.x - user.x, en.ship.y - user.y)
+        for obj in targets:
+            dist = math.hypot(obj.ship.x - user.x, obj.ship.y - user.y)
             if dist <= self.radius:
-                en.ship.shield.strength = 0.0
-                if getattr(en.ship, "area_shield", None):
-                    en.ship.area_shield.strength = 0.0
+                obj.ship.shield.strength = 0.0
+                if getattr(obj.ship, "area_shield", None):
+                    obj.ship.area_shield.strength = 0.0
 
 
 class AreaShieldArtifact(Artifact):
@@ -102,7 +102,7 @@ class AreaShieldArtifact(Artifact):
     def __init__(self) -> None:
         super().__init__("Area Shield", cooldown=12.0)
 
-    def activate(self, user, enemies: list) -> None:
+    def activate(self, user, targets: list) -> None:
         if not self.can_use():
             return
         self._timer = 0.0
@@ -168,7 +168,7 @@ class GravityTractorArtifact(Artifact):
         self.awaiting_click: bool = False
         self._pending_user = None
 
-    def activate(self, user, enemies: list) -> None:
+    def activate(self, user, targets: list) -> None:
         if not self.can_use() or self.awaiting_click:
             return
         # Activation now waits for the player to choose a point.
@@ -219,7 +219,7 @@ class NanobotArtifact(Artifact):
     def __init__(self) -> None:
         super().__init__("Repair Bots", cooldown=15.0)
 
-    def activate(self, user, enemies: list) -> None:
+    def activate(self, user, targets: list) -> None:
         if not self.can_use():
             return
         self._timer = 0.0
@@ -266,7 +266,7 @@ class SolarGeneratorArtifact(Artifact):
         super().__init__("Solar Link", cooldown=20.0)
         self.range = range_
 
-    def activate(self, user, enemies: list) -> None:
+    def activate(self, user, targets: list) -> None:
         if not self.can_use() or not hasattr(user, "_sectors"):
             return
         nearest = None
@@ -295,7 +295,7 @@ class Decoy:
         self.lifetime = lifetime
         self.hp = hp
 
-    def update(self, dt: float, enemies: list) -> None:
+    def update(self, dt: float, targets: list) -> None:
         self.lifetime -= dt
         rect = pygame.Rect(
             self.x - self.size / 2,
@@ -303,11 +303,11 @@ class Decoy:
             self.size,
             self.size,
         )
-        for en in enemies:
-            for proj in list(en.ship.projectiles):
+        for obj in targets:
+            for proj in list(obj.ship.projectiles):
                 if rect.collidepoint(proj.x, proj.y):
                     self.hp -= proj.damage
-                    en.ship.projectiles.remove(proj)
+                    obj.ship.projectiles.remove(proj)
                     if self.hp <= 0:
                         break
 
@@ -330,7 +330,7 @@ class DecoyArtifact(Artifact):
     def __init__(self) -> None:
         super().__init__("Decoy", cooldown=18.0)
 
-    def activate(self, user, enemies: list) -> None:
+    def activate(self, user, targets: list) -> None:
         if not self.can_use():
             return
         self._timer = 0.0

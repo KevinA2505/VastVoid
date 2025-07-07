@@ -68,9 +68,9 @@ class LearningDefensiveDrone(DefensiveDrone):
     # ------------------------------------------------------------------
     # Q-learning helpers
     # ------------------------------------------------------------------
-    def _state(self, enemies: list) -> tuple:
+    def _state(self, objects: list) -> tuple:
         """Return a simple discrete state description."""
-        threat = self._find_threat(enemies)
+        threat = self._find_threat(objects)
         if threat:
             d_threat = _dist(self.x, self.y, getattr(threat, "x", 0), getattr(threat, "y", 0))
             if d_threat <= self.detection_range * 0.5:
@@ -127,9 +127,9 @@ class LearningDefensiveDrone(DefensiveDrone):
             )
         self._move_towards(self._wander_target[0], self._wander_target[1], self.orbit_speed * 60, dt)
 
-    def _intercept(self, dt: float, enemies: list) -> None:
+    def _intercept(self, dt: float, objects: list) -> None:
         if self.target is None or isinstance(self.target, object) and getattr(self.target, "expired", lambda: False)():
-            self.target = self._find_threat(enemies)
+            self.target = self._find_threat(objects)
         if self.target:
             tx = getattr(self.target, "x", self.owner.x)
             ty = getattr(self.target, "y", self.owner.y)
@@ -144,7 +144,7 @@ class LearningDefensiveDrone(DefensiveDrone):
         if _dist(self.x, self.y, self.owner.x, self.owner.y) <= self.owner.size * 1.5:
             self._wander_target = None
 
-    def compute_reward(self, enemies: list) -> float:
+    def compute_reward(self, objects: list) -> float:
         reward = 0.0
         if self.prev_hp:
             reward -= (self.prev_hp - self.hp)
@@ -153,7 +153,7 @@ class LearningDefensiveDrone(DefensiveDrone):
             reward += 0.05
         else:
             reward -= 0.05
-        threat = self._find_threat(enemies)
+        threat = self._find_threat(objects)
         if threat and _dist(self.x, self.y, getattr(threat, "x", 0), getattr(threat, "y", 0)) <= self.size * 1.5:
             reward += 0.2
         return reward
@@ -161,18 +161,18 @@ class LearningDefensiveDrone(DefensiveDrone):
     # ------------------------------------------------------------------
     # Main update
     # ------------------------------------------------------------------
-    def update(self, dt: float, enemies: list) -> None:
+    def update(self, dt: float, objects: list) -> None:
         if not self.prev_hp:
             self.prev_hp = self.hp
-        state = self._state(enemies)
+        state = self._state(objects)
         action = self.choose_action(state)
         if action == "patrol":
             self._patrol(dt)
         elif action == "intercept":
-            self._intercept(dt, enemies)
+            self._intercept(dt, objects)
         else:
             self._return(dt)
-        reward = self.compute_reward(enemies)
-        next_state = self._state(enemies)
+        reward = self.compute_reward(objects)
+        next_state = self._state(objects)
         self.learn(state, action, reward, next_state)
         self.prev_hp = self.hp
