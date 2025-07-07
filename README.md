@@ -13,7 +13,6 @@ button to return to space.
 ## Features
 
 * Land on planets to explore procedurally generated surfaces.
-* Encounter enemy ships powered by basic AI and learning behaviours.
 * Travel instantly via wormholes linking distant sectors.
 * Engage hyper-speed travel to jump across the map
   (one-second charge with an eight-second cooldown).
@@ -37,8 +36,6 @@ vicinity.
 When starting the game you can personalise the player by entering a name,
 age, species and a **fraction** (faction). Five fictional fractions are
 available, each with a short description and a small boost for its members.
-Enemies are also assigned one of these fractions when spawned, but they remain
-hostile regardless of your choice.
 After the character is created you can also choose a starting ship from a
 small catalogue of models, each with its own brand and classification.
 
@@ -73,50 +70,6 @@ holes now affect ships within a 25% larger radius and feature a swirling
 purple halo to emphasize their danger. Dark purple particles now orbit
 throughout the entire pull range, and the gravitational force is 20% stronger.
 
-### Enemy AI
-
-A new `Enemy` class lives in `src/enemy.py`. It creates autonomous pilots
-with their own ships and simple state-based behaviour. Enemies can pursue
-the player, fire at close range, or retreat when their hull integrity is
-low. When a new game starts, a random number of enemies is generated and
-scattered across space. The amount varies between `MIN_ENEMIES` and
-`MAX_ENEMIES` defined in `config.py`.
-Each enemy now spawns with a random weapon drawn from the same arsenal
-available to the player, so encounters can vary widely.
-
-#### Behavior trees
-
-Enemy logic now runs on a small behavior tree built with `py_trees`. Each
-enemy ticks its tree every frame to decide whether to idle, pursue, attack or
-flee. Actions inside the tree call the same ship methods as before so combat
-and navigation work exactly like the earlier state machine implementation.
-
-### Learning enemies
-Enemies now use the experimental `LearningEnemy` class from
-`src/enemy_learning.py`. It replaces the behaviour tree with a simple
-Q-learning algorithm so that each enemy chooses actions like pursue or attack
-based on a learned Q-table updated every frame. Enemies are spawned through the
-`create_learning_enemy()` helper by default and will adapt slightly to the
-player's tactics.
-
-The Q-table for these enemies is saved to `learning_enemy_q_table.pkl` in the
-project root when the game exits. Spawning enemies load this file if present so
-their behaviour persists between sessions.
-
-### Learning allies
-Friendly ships can also learn using the new `LearningAlly` class in
-`src/ally_learning.py`. These wingmen try to stay close to the player and
-intercept threats. Their behaviour table is stored in
-`learning_ally_q_table.pkl` so they gradually improve between sessions.
-
-### Ability bar and attack orbit
-Five ability slots now appear at the bottom of the screen. The first slot shows
-the **Boost** ability which is still activated with the left **Shift** key. The
-second slot triggers the **Orbit** skill using the **R** key or by clicking the
-slot. When used, your ship orbits the nearest enemy at a reduced speed for five
-seconds and automatically fires once every second. The ability only activates
-if an enemy is within 350 pixels. After the orbit ends there is a short
-cooldown before it can be triggered again.
 
 A round **Hyper** button sits to the right of the slots. Clicking it opens a
 large map of the surrounding sectors. Left-click anywhere on the map to place a
@@ -141,7 +94,7 @@ travel in a straight line.
 
 ### Artifacts
 Ships can equip artifacts that provide situational abilities. The EMP now only
-disables enemy shields and triggers a visible shockwave around the player.
+disables shields and triggers a visible shockwave around the player.
 Along with the Area Shield, the **Gravity Tractor** now launches a probe toward
 the selected point. After five seconds the probe deploys a miniature black hole
 that tugs nearby ships 25% harder, covers a 15% wider radius and lasts
@@ -161,7 +114,7 @@ Three additional artifacts expand your tactical options:
 
 Press **G** to open the artifact menu. All available artifacts are listed and
 clicking one lets you choose the ability slot by pressing **1**, **2** or **3**.
-The first two slots (Boost and Orbit) cannot be replaced.
+The first slot (Boost) cannot be replaced.
 
 ### Energy and the Dyson Sphere
 

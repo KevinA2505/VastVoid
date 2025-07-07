@@ -285,7 +285,7 @@ class SolarGeneratorArtifact(Artifact):
 
 
 class Decoy:
-    """Fragile copy of the ship that draws enemy fire."""
+    """Fragile copy of the ship that distracts incoming fire."""
 
     def __init__(self, owner, lifetime: float = 6.0, hp: float = 20.0) -> None:
         self.owner = owner

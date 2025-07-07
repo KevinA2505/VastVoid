@@ -4,10 +4,7 @@ import random
 import config
 from ship import Ship, choose_ship
 from carrier import Carrier
-from enemy import _NullKeys
 from combat import LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon, BasicWeapon
-from enemy_learning import create_learning_enemy
-from ally_learning import create_learning_ally
 from sector import create_sectors
 from fraction import FRACTIONS
 from faction_structures import spawn_capital_ships
@@ -29,6 +26,13 @@ from ui import (
 from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
 from planet_surface import PlanetSurface
 from character import choose_player_table
+
+
+class _NullKeys:
+    """Object that returns ``False`` for any key lookup."""
+
+    def __getitem__(self, key):
+        return False
 
 
 def _create_vignette(width: int, height: int) -> pygame.Surface:
@@ -82,26 +86,6 @@ def draw_station_ui(
     return exit_rect, inv_rect, market_rect
 
 
-def draw_enemy_health_bar(
-    screen: pygame.Surface,
-    ship: Ship,
-    offset_x: float,
-    offset_y: float,
-    zoom: float,
-) -> None:
-    """Render a small translucent health bar above an enemy ship."""
-    bar_w = max(20, int(ship.size * zoom))
-    bar_h = 4
-    x = int((ship.x - offset_x) * zoom) - bar_w // 2
-    y = int((ship.y - offset_y) * zoom) - int(ship.size * zoom ** 0.5) // 2 - 8
-    surf = pygame.Surface((bar_w, bar_h), pygame.SRCALPHA)
-    pygame.draw.rect(surf, (60, 60, 90, 100), (0, 0, bar_w, bar_h))
-    pygame.draw.rect(surf, (200, 200, 200, 150), (0, 0, bar_w, bar_h), 1)
-    fill = int(bar_w * ship.hull / config.ENEMY_MAX_HULL)
-    if fill > 0:
-        pygame.draw.rect(surf, (150, 0, 0, 180), (0, 0, fill, bar_h))
-    screen.blit(surf, (x, y))
-
 
 def main():
     pygame.init()
@@ -124,11 +108,6 @@ def main():
 
     capital_ships = spawn_capital_ships(FRACTIONS, world_width, world_height)
 
-    enemies = []
-    num_enemies = random.randint(config.MIN_ENEMIES, config.MAX_ENEMIES)
-    for _ in range(num_enemies):
-        region = random.choice(sectors)
-        enemies.append(create_learning_enemy(region))
 
     chosen_model = choose_ship(screen)
     player.ship_model = chosen_model
@@ -159,15 +138,7 @@ def main():
     ability_bar = AbilityBar()
     ability_bar.set_ship(ship)
     carrier = Carrier(ship.x + 150, ship.y + 80, fraction=player.fraction)
-    friendly_ships = [
-        create_learning_ally(
-            ship,
-            carrier.x + random.randint(-60, 60),
-            carrier.y + random.randint(-60, 60),
-            chosen_model,
-        )
-        for _ in range(2)
-    ]
+    friendly_ships = []
     inventory_window = None
     market_window = None
     weapon_menu = None
@@ -325,7 +296,7 @@ def main():
                 closed = carrier_window.handle_event(event)
                 if closed:
                     if carrier_window.request_move:
-                        move_objects = [ship] + friendly_ships + [en.ship for en in enemies] + capital_ships
+                        move_objects = [ship] + friendly_ships + capital_ships
                         carrier_move_map = CarrierMoveMap(
                             carrier,
                             sectors,
@@ -456,8 +427,8 @@ def main():
                 artifact_menu = ArtifactMenu(ship, ability_bar)
 
             route_planner.handle_event(event, sectors, (camera_x, camera_y), zoom)
-            if ability_bar.handle_event(event, ship, enemies):
-                map_objects = [carrier] + friendly_ships + [en.ship for en in enemies] + capital_ships
+            if ability_bar.handle_event(event, ship):
+                map_objects = [carrier] + friendly_ships + capital_ships
                 hyper_map = HyperJumpMap(
                     ship,
                     sectors,
@@ -513,16 +484,6 @@ def main():
                     artifact_menu = ArtifactMenu(ship, ability_bar)
                 elif event.key == pygame.K_l:
                     load_mode = True
-                elif event.key == pygame.K_r:
-                    nearest = None
-                    min_dist = float("inf")
-                    for en in enemies:
-                        d = math.hypot(en.ship.x - ship.x, en.ship.y - ship.y)
-                        if d < min_dist:
-                            min_dist = d
-                            nearest = en
-                    if nearest and min_dist <= config.ORBIT_TRIGGER_RANGE:
-                        ship.start_orbit(nearest.ship, speed=config.SHIP_ORBIT_SPEED * 0.5)
                 elif event.key == pygame.K_SPACE:
                     mx, my = pygame.mouse.get_pos()
                     offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
@@ -587,7 +548,7 @@ def main():
             continue
 
         keys = pygame.key.get_pressed()
-        hostiles = [en for en in enemies if en.fraction != player.fraction]
+        hostiles = []
         structures = []
         for cap in capital_ships:
             structures.append(cap)
@@ -625,39 +586,6 @@ def main():
                 hostiles,
                 structures,
             )
-        for enemy in list(enemies):
-            enemy.update(
-                ship,
-                dt,
-                world_width,
-                world_height,
-                sectors,
-                blackholes,
-                structures,
-            )
-
-            enemy_radius = enemy.ship.collision_radius
-            ship_radius = ship.collision_radius
-
-            if enemy.fraction != player.fraction:
-                for proj in list(ship.projectiles):
-                    if (
-                        math.hypot(proj.x - enemy.ship.x, proj.y - enemy.ship.y)
-                        <= enemy_radius
-                    ):
-                        enemy.ship.take_damage(proj.damage)
-                        ship.projectiles.remove(proj)
-
-                for proj in list(enemy.ship.projectiles):
-                    if (
-                        math.hypot(proj.x - ship.x, proj.y - ship.y)
-                        <= ship_radius
-                    ):
-                        ship.take_damage(proj.damage)
-                        enemy.ship.projectiles.remove(proj)
-
-            if enemy.ship.hull <= 0:
-                enemies.remove(enemy)
         if approaching_planet and not ship.autopilot_target:
             dist = math.hypot(
                 approaching_planet.x - ship.x,
@@ -706,7 +634,7 @@ def main():
         for cap in capital_ships:
             # Pass the player's ship so capital ships know the player's
             # faction when determining hostiles and can target it correctly
-            cap.update(dt, sectors, enemies, ship)
+            cap.update(dt, sectors, [], ship)
 
         screen.fill(config.BACKGROUND_COLOR)
         if route_planner.active:
@@ -741,8 +669,6 @@ def main():
         for ally in friendly_ships:
             ally_ship = getattr(ally, "ship", ally)
             ally_ship.draw_projectiles(screen, offset_x, offset_y, zoom)
-        for enemy in enemies:
-            enemy.ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         ship.draw_specials(screen, offset_x, offset_y, zoom)
         for ally in friendly_ships:
@@ -755,9 +681,6 @@ def main():
                 player.fraction,
                 player.fraction.color if player.fraction else None,
             )
-        for enemy in enemies:
-            enemy.ship.draw_at(screen, offset_x, offset_y, zoom)
-            draw_enemy_health_bar(screen, enemy.ship, offset_x, offset_y, zoom)
         ship.draw(screen, zoom, player.fraction)
         route_planner.draw(screen, info_font, ship, offset_x, offset_y, zoom)
 
@@ -897,12 +820,10 @@ def main():
 
         pygame.display.flip()
 
-    # Save learning data so enemies and allies retain behavior between sessions
+    # Save learning data so allies retain behavior between sessions
     for ally in friendly_ships:
         if hasattr(ally, "save_q_table"):
             ally.save_q_table()
-    for enemy in enemies:
-        enemy.save_q_table()
 
     pygame.quit()
 

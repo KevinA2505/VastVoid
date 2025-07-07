@@ -364,7 +364,7 @@ class ArtifactMenu:
 class AbilityBar:
     """Display up to five ability slots at the bottom of the screen."""
 
-    SLOT_COUNT = 5
+    SLOT_COUNT = 4
     SLOT_W = 80
     SLOT_H = 40
     MARGIN = 5
@@ -373,7 +373,6 @@ class AbilityBar:
     def __init__(self) -> None:
         self.slots: list[tuple[str, str]] = [
             ("Boost", "LShift"),
-            ("Orbit", "R"),
             ("", "1"),
             ("", "2"),
             ("", "3"),
@@ -409,9 +408,9 @@ class AbilityBar:
             name = ""
             if self.ship and i < len(self.ship.artifacts):
                 name = self.ship.artifacts[i].name
-            self.slots[2 + i] = (name, str(i + 1))
+            self.slots[1 + i] = (name, str(i + 1))
 
-    def handle_event(self, event, ship, enemies: list) -> bool:
+    def handle_event(self, event, ship) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.hyper_rect.collidepoint(event.pos):
                 return True
@@ -421,26 +420,13 @@ class AbilityBar:
                         if ship.boost_charge >= 1.0:
                             ship.boost_time = config.BOOST_DURATION
                             ship.boost_charge = 0.0
-                    elif idx == 1:
-                        self._trigger_orbit(ship, enemies)
-                    elif idx >= 2:
-                        ship.use_artifact(idx - 2, enemies)
+                    elif idx >= 1:
+                        ship.use_artifact(idx - 1, [])
         elif event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_1, pygame.K_2, pygame.K_3):
                 idx = event.key - pygame.K_1
-                ship.use_artifact(idx, enemies)
+                ship.use_artifact(idx, [])
         return False
-
-    def _trigger_orbit(self, ship, enemies: list) -> None:
-        nearest = None
-        min_dist = float("inf")
-        for en in enemies:
-            d = math.hypot(en.ship.x - ship.x, en.ship.y - ship.y)
-            if d < min_dist:
-                min_dist = d
-                nearest = en
-        if nearest and min_dist <= config.ORBIT_TRIGGER_RANGE:
-            ship.start_orbit(nearest.ship, speed=config.SHIP_ORBIT_SPEED * 0.5)
 
     def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
         for i, rect in enumerate(self.rects):

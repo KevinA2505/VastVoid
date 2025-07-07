@@ -431,11 +431,11 @@ class BombDrone:
             pygame.draw.circle(screen, (255, 100, 50), pos, int(self.radius * zoom), 1)
 
 class Drone:
-    """Autonomous drone that orbits the owner and fires at enemies.
+    """Autonomous drone that orbits the owner and fires at nearby targets.
 
     Drones persist until their hit points reach zero rather than expiring
-    after a timed duration. A small size value defines a hitbox so enemy
-    projectiles can damage them.
+    after a timed duration. A small size value defines a hitbox so projectiles
+    can damage them.
     """
 
     def __init__(
