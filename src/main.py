@@ -393,13 +393,11 @@ def main():
                     wy = event.pos[1] / zoom + offset_y
                     target = None
                     for ally in friendly_ships:
-                        if (
-                            math.hypot(ally.ship.x - wx, ally.ship.y - wy)
-                            <= ally.ship.collision_radius
-                        ):
+                        a_ship = ally.ship if hasattr(ally, "ship") else ally
+                        if math.hypot(a_ship.x - wx, a_ship.y - wy) <= a_ship.collision_radius:
                             target = ally
                             break
-                    if target and carrier.load_ship(target.ship):
+                    if target and carrier.load_ship(getattr(target, "ship", target)):
                         friendly_ships.remove(target)
                     load_mode = False
                 continue
@@ -741,7 +739,8 @@ def main():
             aura_color=player.fraction.color if player.fraction else None,
         )
         for ally in friendly_ships:
-            ally.ship.draw_projectiles(screen, offset_x, offset_y, zoom)
+            a_ship = ally.ship if hasattr(ally, "ship") else ally
+            a_ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         for enemy in enemies:
             enemy.ship.draw_projectiles(screen, offset_x, offset_y, zoom)
         ship.draw_projectiles(screen, offset_x, offset_y, zoom)
