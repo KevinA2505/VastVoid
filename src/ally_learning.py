@@ -16,6 +16,7 @@ from combat import (
     BasicWeapon,
 )
 import config
+from ally_metrics import save_reward_history
 
 
 Q_TABLE_PATH = "learning_ally_q_table.pkl"
@@ -27,6 +28,9 @@ class LearningAlly(LearningEnemy):
     """Friendly ship learning to assist the player."""
 
     q_table_version: int = field(default=Q_TABLE_VERSION, init=False, repr=False)
+    reward_history: list = field(default_factory=list, init=False, repr=False)
+    cumulative_reward: float = field(default=0.0, init=False, repr=False)
+    elapsed_time: float = field(default=0.0, init=False, repr=False)
 
     def build_tree(self) -> None:
         self.actions = {
@@ -160,6 +164,7 @@ class LearningAlly(LearningEnemy):
         with open(path, "wb") as f:
             data = {"version": self.q_table_version, "q_table": self.q_table}
             pickle.dump(data, f)
+        save_reward_history(self.reward_history)
 
     def load_q_table(self, path: str = Q_TABLE_PATH) -> None:
         if os.path.exists(path):
@@ -228,6 +233,9 @@ class LearningAlly(LearningEnemy):
             structures,
         )
         reward = self.compute_reward(threat, hostiles)
+        self.cumulative_reward += reward
+        self.elapsed_time += dt
+        self.reward_history.append((self.elapsed_time, self.cumulative_reward))
         next_state = self._state(hostiles or [])
         self.learn(state, action, reward, next_state)
         if self.state == "idle" and self.ship.autopilot_target is None:
