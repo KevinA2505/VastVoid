@@ -10,8 +10,57 @@ from defensive_drone import DefensiveDrone
 from learning_defensive_drone import LearningDefensiveDrone
 from aggressive_defensive_drone import AggressiveDefensiveDrone
 from station import SpaceStation
-
 import pygame
+
+
+@dataclass
+class CityBuilding:
+    """Simple decorative building used for Cosmic Guild cities."""
+
+    x: float
+    y: float
+    shape: str
+    size: int = 20
+
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        cx = int((self.x - offset_x) * zoom)
+        cy = int((self.y - offset_y) * zoom)
+        scaled = int(self.size * zoom)
+        fill = (0, 0, 0)
+        outline = (255, 215, 0)
+        if self.shape == "circle":
+            pygame.draw.circle(screen, fill, (cx, cy), scaled)
+            pygame.draw.circle(screen, outline, (cx, cy), scaled, max(1, int(2 * zoom)))
+        elif self.shape == "square":
+            rect = pygame.Rect(cx - scaled, cy - scaled, scaled * 2, scaled * 2)
+            pygame.draw.rect(screen, fill, rect)
+            pygame.draw.rect(screen, outline, rect, max(1, int(2 * zoom)))
+        elif self.shape == "triangle":
+            points = [
+                (cx + scaled * math.cos(a), cy + scaled * math.sin(a))
+                for a in [math.radians(-90), math.radians(30), math.radians(150)]
+            ]
+            pygame.draw.polygon(screen, fill, points)
+            pygame.draw.polygon(screen, outline, points, max(1, int(2 * zoom)))
+        elif self.shape == "pentagon":
+            points = [
+                (
+                    cx + scaled * math.cos(i * 2 * math.pi / 5 - math.pi / 2),
+                    cy + scaled * math.sin(i * 2 * math.pi / 5 - math.pi / 2),
+                )
+                for i in range(5)
+            ]
+            pygame.draw.polygon(screen, fill, points)
+            pygame.draw.polygon(screen, outline, points, max(1, int(2 * zoom)))
+
+    def collides_with_point(self, x: float, y: float, radius: float) -> bool:
+        return math.hypot(self.x - x, self.y - y) < self.size + radius
 
 from fraction import Fraction, Color
 
@@ -115,7 +164,7 @@ class CapitalShip(FactionStructure):
     arms: list[ChannelArm] = field(default_factory=list)
     drones: list[Drone] = field(default_factory=list)
     engagement_ring: EngagementRing | None = None
-    city_stations: list[SpaceStation] = field(default_factory=list)
+    city_stations: list[Any] = field(default_factory=list)
 
     def apply_fraction_traits(self, fraction: Fraction) -> None:
         super().apply_fraction_traits(fraction)
@@ -139,13 +188,32 @@ class CapitalShip(FactionStructure):
             self.hull = 1200
             self.modules.extend(["Trade Hub", "Drone Bays"])
             self.city_stations = []
-            num = 6
+
+            shapes = (
+                ["square"] * 4
+                + ["circle"] * 3
+                + ["pentagon"]
+                + ["triangle"] * 2
+            )
             distance = self.radius * 5
-            for i in range(num):
-                ang = i * 2 * math.pi / num
-                sx = self.x + math.cos(ang) * distance
-                sy = self.y + math.sin(ang) * distance
-                self.city_stations.append(SpaceStation(sx, sy))
+            placed: list[CityBuilding] = []
+            for shape in shapes:
+                for _ in range(20):
+                    ang = random.uniform(0, 2 * math.pi)
+                    dist = random.uniform(distance * 0.8, distance * 1.2)
+                    sx = self.x + math.cos(ang) * dist
+                    sy = self.y + math.sin(ang) * dist
+                    b = CityBuilding(sx, sy, shape)
+                    if math.hypot(sx - self.x, sy - self.y) < self.radius + b.size:
+                        continue
+                    if any(
+                        math.hypot(sx - o.x, sy - o.y) < b.size + o.size
+                        for o in placed
+                    ):
+                        continue
+                    placed.append(b)
+                    self.city_stations.append(b)
+                    break
         elif fraction.name == "Nebula Order":
             self.hull = 1100
             self.modules.extend(["Research Labs", "Sensor Array"])
@@ -457,8 +525,15 @@ class CapitalShip(FactionStructure):
     def collides_with_point(self, x: float, y: float, radius: float) -> bool:
         """Return ``True`` if ``(x, y)`` overlaps this capital ship or its ring."""
         r = max(self.radius, self.aura_radius)
-        if math.hypot(self.x - x, self.y - y) < r + radius:
-            return True
+        if self.fraction and self.fraction.name == "Cosmic Guild":
+            if (
+                self.x - r - radius < x < self.x + r + radius
+                and self.y - r - radius < y < self.y + r + radius
+            ):
+                return True
+        else:
+            if math.hypot(self.x - x, self.y - y) < r + radius:
+                return True
         if self.engagement_ring and self.engagement_ring.collides_with_point(x, y, radius):
             return True
         for station in self.city_stations:
