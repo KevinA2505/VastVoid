@@ -496,6 +496,11 @@ def main():
 
         keys = pygame.key.get_pressed()
         hostiles = [en for en in enemies if en.fraction != player.fraction]
+        structures = []
+        for cap in capital_ships:
+            structures.append(cap)
+            structures.extend(cap.city_stations)
+
         ship.update(
             keys,
             dt,
@@ -504,7 +509,7 @@ def main():
             sectors,
             blackholes,
             hostiles,
-            capital_ships,
+            structures,
         )
         for enemy in list(enemies):
             enemy.update(
@@ -514,7 +519,7 @@ def main():
                 world_height,
                 sectors,
                 blackholes,
-                capital_ships,
+                structures,
             )
 
             enemy_radius = enemy.ship.collision_radius

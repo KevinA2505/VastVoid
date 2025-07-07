@@ -9,6 +9,7 @@ from combat import Drone
 from defensive_drone import DefensiveDrone
 from learning_defensive_drone import LearningDefensiveDrone
 from aggressive_defensive_drone import AggressiveDefensiveDrone
+from station import SpaceStation
 
 import pygame
 
@@ -114,6 +115,7 @@ class CapitalShip(FactionStructure):
     arms: list[ChannelArm] = field(default_factory=list)
     drones: list[Drone] = field(default_factory=list)
     engagement_ring: EngagementRing | None = None
+    city_stations: list[SpaceStation] = field(default_factory=list)
 
     def apply_fraction_traits(self, fraction: Fraction) -> None:
         super().apply_fraction_traits(fraction)
@@ -136,6 +138,14 @@ class CapitalShip(FactionStructure):
         elif fraction.name == "Cosmic Guild":
             self.hull = 1200
             self.modules.extend(["Trade Hub", "Drone Bays"])
+            self.city_stations = []
+            num = 6
+            distance = self.radius * 5
+            for i in range(num):
+                ang = i * 2 * math.pi / num
+                sx = self.x + math.cos(ang) * distance
+                sy = self.y + math.sin(ang) * distance
+                self.city_stations.append(SpaceStation(sx, sy))
         elif fraction.name == "Nebula Order":
             self.hull = 1100
             self.modules.extend(["Research Labs", "Sensor Array"])
@@ -252,6 +262,10 @@ class CapitalShip(FactionStructure):
                 if drone.expired():
                     self.drones.remove(drone)
 
+        for station in self.city_stations:
+            if hasattr(station, "update"):
+                station.update(dt)
+
     def draw(
         self,
         screen: pygame.Surface,
@@ -267,6 +281,8 @@ class CapitalShip(FactionStructure):
         x = int((self.x - offset_x) * zoom)
         y = int((self.y - offset_y) * zoom)
         scaled = int(size * zoom)
+        for station in self.city_stations:
+            station.draw(screen, offset_x, offset_y, zoom)
         if self.engagement_ring:
             self.engagement_ring.draw(screen, offset_x, offset_y, zoom)
         if self.fraction and self.fraction.name == "Solar Dominion":
@@ -445,6 +461,12 @@ class CapitalShip(FactionStructure):
             return True
         if self.engagement_ring and self.engagement_ring.collides_with_point(x, y, radius):
             return True
+        for station in self.city_stations:
+            if hasattr(station, "collides_with_point"):
+                if station.collides_with_point(x, y, radius):
+                    return True
+            elif math.hypot(station.x - x, station.y - y) < getattr(station, "radius", 0) + radius:
+                return True
         return False
 
 
@@ -490,8 +512,8 @@ def spawn_capital_ships(
     ships = []
     for frac in fractions:
         ship = CapitalShip(name=f"{frac.name} Flagship")
-        ship.apply_fraction_traits(frac)
         ship.x = random.randint(0, width)
         ship.y = random.randint(0, height)
+        ship.apply_fraction_traits(frac)
         ships.append(ship)
     return ships
