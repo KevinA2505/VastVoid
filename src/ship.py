@@ -466,6 +466,8 @@ class Ship:
             # Skip small drones so they don't trap the player when colliding.
             if isinstance(struct, Drone):
                 continue
+            if struct is self:
+                continue
             # Drones only provide ``size`` representing their collision radius,
             # while larger structures expose a ``radius`` attribute. Handle both
             # so ships properly avoid them.
