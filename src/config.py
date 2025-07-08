@@ -76,11 +76,13 @@ WORMHOLE_DELAY = 5.0         # seconds before teleport occurs
 WORMHOLE_COOLDOWN = 3.0      # delay after teleport before re-entry allowed
 WORMHOLE_FLASH_TIME = 0.75   # duration of post-teleport flash effect
 
-# Portal settings used by the Free Explorers flagship
+# Portal settings for the Free Explorers
 PORTAL_RADIUS = 15
-PORTAL_COLOR = (0, 255, 0)
-PORTAL_COST = 10            # credits required to use when not a Free Explorer
-PORTAL_COOLDOWN = 1.0       # delay after teleport before re-entry allowed
+PORTAL_COLOR = (0, 220, 0)
+PORTAL_NEAR_DISTANCE = 300
+PORTAL_PAIR_MIN_DISTANCE = 800
+PORTAL_COOLDOWN = 1.0
+PORTAL_USE_COST = 10
 
 
 # Speed multiplier applied to all computer controlled ships and drones

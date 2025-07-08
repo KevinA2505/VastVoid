@@ -178,7 +178,7 @@ class MissileTurret(Turret):
                 self.orientation += rotate if diff > 0 else -rotate
             self.orientation %= 2 * math.pi
             if self._timer <= 0:
-                proj = GuidedMissile(base_x, base_y, nearest, 250, int(30 * 1.2))
+                proj = GuidedMissile(base_x, base_y, nearest, 200, int(30 * 1.2))
                 self.owner.projectiles.append(proj)
                 self._timer = self.cooldown
 
@@ -463,11 +463,16 @@ class CapitalShip(FactionStructure):
             for proj in list(self.projectiles):
                 proj.update(dt)
                 hit = False
-                for en in hostiles:
-                    if math.hypot(proj.x - en.ship.x, proj.y - en.ship.y) <= en.ship.collision_radius:
-                        en.ship.take_damage(proj.damage)
-                        hit = True
-                        break
+                if not getattr(proj, "exploded", False):
+                    for en in hostiles:
+                        if math.hypot(proj.x - en.ship.x, proj.y - en.ship.y) <= en.ship.collision_radius:
+                            en.ship.take_damage(proj.damage)
+                            hit = True
+                            break
+                else:
+                    for en in hostiles:
+                        if math.hypot(proj.x - en.ship.x, proj.y - en.ship.y) <= proj.explosion_radius:
+                            en.ship.take_damage(proj.damage)
                 if hit or proj.expired():
                     self.projectiles.remove(proj)
 
