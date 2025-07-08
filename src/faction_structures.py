@@ -5,7 +5,7 @@ import math
 from dataclasses import dataclass, field
 from typing import Any
 from star import Star
-from combat import Drone
+from combat import Drone, Bomb
 from defensive_drone import DefensiveDrone
 from learning_defensive_drone import LearningDefensiveDrone
 from aggressive_defensive_drone import AggressiveDefensiveDrone
@@ -99,6 +99,43 @@ class ChannelArm:
 
 
 @dataclass
+class Turret:
+    """Mechanical arm used by Pirate Clans capital ships."""
+
+    owner: "CapitalShip"
+    angle: float
+    length: float
+    cooldown: float = 2.5
+    _timer: float = 0.0
+
+    def update(self, dt: float, targets: list) -> None:
+        if self._timer > 0:
+            self._timer -= dt
+        nearest = None
+        min_d = float("inf")
+        for obj in targets:
+            d = math.hypot(obj.ship.x - self.owner.x, obj.ship.y - self.owner.y)
+            if d < min_d:
+                min_d = d
+                nearest = obj.ship
+        if nearest:
+            desired = math.atan2(nearest.y - self.owner.y, nearest.x - self.owner.x)
+            diff = (desired - self.angle + math.pi) % (2 * math.pi) - math.pi
+            rotate = 2.0 * dt
+            if abs(diff) < rotate:
+                self.angle = desired
+            else:
+                self.angle += rotate if diff > 0 else -rotate
+            self.angle %= 2 * math.pi
+            if self._timer <= 0:
+                px = self.owner.x + math.cos(self.angle) * self.length
+                py = self.owner.y + math.sin(self.angle) * self.length
+                proj = Bomb(px, py, nearest.x, nearest.y)
+                self.owner.projectiles.append(proj)
+                self._timer = self.cooldown
+
+
+@dataclass
 class EngagementRing:
     """Golden ring surrounding the Nebula Order flagship."""
 
@@ -164,6 +201,9 @@ class CapitalShip(FactionStructure):
     aura_radius: int = 80
     arms: list[ChannelArm] = field(default_factory=list)
     drones: list[Drone] = field(default_factory=list)
+    turrets: list[Turret] = field(default_factory=list)
+    projectiles: list[Bomb] = field(default_factory=list)
+    outline_color: Color | None = None
     engagement_ring: EngagementRing | None = None
     city_stations: list[Any] = field(default_factory=list)
 
@@ -238,6 +278,13 @@ class CapitalShip(FactionStructure):
         elif fraction.name == "Pirate Clans":
             self.hull = 1000
             self.modules.extend(["Cloaking Device", "Raider Hangars"])
+            self.shape = "pirate_ship"
+            self.color = (0, 0, 0)
+            self.outline_color = (120, 0, 120)
+            self.turrets = [
+                Turret(self, i * (math.pi / 2), self.radius * 1.3)
+                for i in range(4)
+            ]
         elif fraction.name == "Free Explorers":
             self.hull = 1300
             self.modules.extend(["Survey Deck", "Jump Drives"])
@@ -331,6 +378,23 @@ class CapitalShip(FactionStructure):
 
                 if drone.expired():
                     self.drones.remove(drone)
+        elif self.fraction.name == "Pirate Clans":
+            hostiles = [e for e in targets if e.fraction != self.fraction]
+            if player and getattr(player, "fraction", None) != self.fraction:
+                hostiles.append(type("_P", (), {"ship": player})())
+            for turret in self.turrets:
+                turret.update(dt, hostiles)
+            for proj in list(self.projectiles):
+                proj.update(dt)
+                for en in hostiles:
+                    if not proj.exploded and math.hypot(proj.x - en.ship.x, proj.y - en.ship.y) <= en.ship.collision_radius:
+                        proj.explode()
+                if proj.exploded:
+                    for en in hostiles:
+                        if math.hypot(proj.x - en.ship.x, proj.y - en.ship.y) <= proj.radius:
+                            en.ship.take_damage(proj.damage)
+                if proj.expired():
+                    self.projectiles.remove(proj)
 
         for station in self.city_stations:
             if hasattr(station, "update"):
@@ -447,6 +511,30 @@ class CapitalShip(FactionStructure):
             pygame.draw.circle(screen, light_purple, (x, y), inner_r)
             for drone in self.drones:
                 drone.draw(screen, offset_x, offset_y, zoom)
+        elif self.fraction and self.fraction.name == "Pirate Clans":
+            rect = pygame.Rect(x - scaled, y - scaled // 2, scaled * 2, scaled)
+            pygame.draw.ellipse(screen, self.color, rect)
+            outline_c = self.outline_color or (100, 0, 100)
+            pygame.draw.ellipse(screen, outline_c, rect, max(1, int(2 * zoom)))
+            font_size = max(10, int(scaled * 0.7))
+            font = pygame.font.Font(None, font_size)
+            letter = font.render("X", True, outline_c)
+            letter_rect = letter.get_rect(center=(x, y))
+            screen.blit(letter, letter_rect)
+            arm_color = (80, 40, 20)
+            for turret in self.turrets:
+                tx = x + int(math.cos(turret.angle) * turret.length * zoom)
+                ty = y + int(math.sin(turret.angle) * turret.length * zoom)
+                pygame.draw.line(
+                    screen,
+                    arm_color,
+                    (x, y),
+                    (tx, ty),
+                    max(1, int(4 * zoom)),
+                )
+                pygame.draw.circle(screen, arm_color, (tx, ty), max(2, int(4 * zoom)))
+            for proj in self.projectiles:
+                proj.draw(screen, offset_x, offset_y, zoom)
         elif self.shape == "angular":
             # square hull with triangular wings
             hull = pygame.Rect(x - scaled // 2, y - scaled // 2, scaled, scaled)
