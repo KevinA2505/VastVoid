@@ -23,8 +23,9 @@ from ui import (
     HyperJumpMap,
     CarrierMoveMap,
     CarrierWindow,
+    CrewTransferWindow,
 )
-from cbm import CommonBerthingMechanism, CrewTransferWindow
+from cbm import CommonBerthingMechanism
 from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
 from planet_surface import PlanetSurface
 from character import choose_player_table, Robot
@@ -218,6 +219,9 @@ def main():
                 teleport_target = None
                 wormhole_cooldown = config.WORMHOLE_COOLDOWN
                 teleport_flash_timer = config.WORMHOLE_FLASH_TIME
+
+        if cbm.docked and crew_window is None:
+            crew_window = CrewTransferWindow(cbm.ship_a, cbm.ship_b)
 
         if current_surface:
             for event in pygame.event.get():
@@ -537,8 +541,7 @@ def main():
                 elif event.key == pygame.K_l:
                     load_mode = True
                 elif event.key == pygame.K_c:
-                    if cbm.attempt_dock():
-                        crew_window = CrewTransferWindow(cbm)
+                    cbm.attempt_dock()
                 elif event.key == pygame.K_SPACE:
                     mx, my = pygame.mouse.get_pos()
                     offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
