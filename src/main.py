@@ -220,6 +220,20 @@ def main():
                 wormhole_cooldown = config.WORMHOLE_COOLDOWN
                 teleport_flash_timer = config.WORMHOLE_FLASH_TIME
 
+        # Detect if the player now pilots a different ship and switch control
+        active_ship = None
+        for candidate in [ship, carrier, *extra_ships, *capital_ships]:
+            if getattr(candidate, "pilot", None) is player:
+                active_ship = candidate
+                break
+        if active_ship and active_ship is not ship:
+            ship = active_ship
+            ability_bar.set_ship(ship)
+            if weapon_menu:
+                weapon_menu.ship = ship
+            if artifact_menu:
+                artifact_menu.ship = ship
+
         if cbm.docked and crew_window is None:
             crew_window = CrewTransferWindow(cbm.ship_a, cbm.ship_b)
 
