@@ -12,6 +12,7 @@ from combat import (
     BasicWeapon,
     IonizedSymbiontWeapon,
     ChronoTachionicWhip,
+    SporesWeapon,
 )
 from sector import create_sectors
 from fraction import FRACTIONS
@@ -145,6 +146,7 @@ def main():
         MissileWeapon(),
         IonizedSymbiontWeapon(),
         ChronoTachionicWhip(),
+        SporesWeapon(),
         BasicWeapon(),
     ])
     for w in ship.weapons:

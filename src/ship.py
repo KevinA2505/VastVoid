@@ -16,6 +16,7 @@ from combat import (
     MissileWeapon,
     IonSymbiontShot,
     SlowField,
+    SporeCloud,
 )
 from artifact import (
     Artifact,
@@ -666,7 +667,7 @@ class Ship:
         else:
             proj = weapon.fire(self.x, self.y, tx, ty)
         if proj:
-            if isinstance(proj, (LaserBeam, TimedMine, Drone, BombDrone, IonSymbiontShot, SlowField)):
+            if isinstance(proj, (LaserBeam, TimedMine, Drone, BombDrone, IonSymbiontShot, SlowField, SporeCloud)):
                 self.specials.append(proj)
             else:
                 self.projectiles.append(proj)
@@ -678,7 +679,7 @@ class Ship:
         weapon = self.weapons[self.active_weapon]
         proj = weapon.fire_homing(self.x, self.y, target)
         if proj:
-            if isinstance(proj, (LaserBeam, TimedMine, Drone, BombDrone, IonSymbiontShot, SlowField)):
+            if isinstance(proj, (LaserBeam, TimedMine, Drone, BombDrone, IonSymbiontShot, SlowField, SporeCloud)):
                 self.specials.append(proj)
             else:
                 self.projectiles.append(proj)
@@ -697,7 +698,7 @@ class Ship:
         if hasattr(weapon, "release"):
             proj = weapon.release(self.x, self.y, tx, ty)
             if proj:
-                if isinstance(proj, (LaserBeam, TimedMine, Drone, BombDrone, IonSymbiontShot, SlowField)):
+                if isinstance(proj, (LaserBeam, TimedMine, Drone, BombDrone, IonSymbiontShot, SlowField, SporeCloud)):
                     self.specials.append(proj)
                 else:
                     self.projectiles.append(proj)
@@ -814,6 +815,14 @@ class Ship:
                 obj.update(dt)
                 for tar in targets or []:
                     obj.apply_slow(tar.ship)
+                if obj.expired():
+                    self.specials.remove(obj)
+            elif isinstance(obj, SporeCloud):
+                tick = obj.update(dt)
+                if tick and targets:
+                    for tar in targets:
+                        if obj.contains(tar.ship):
+                            tar.ship.take_damage(obj.damage)
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, EMPWave):
