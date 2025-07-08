@@ -407,7 +407,7 @@ class CapitalShip(FactionStructure):
                     if (
                         not proj.exploded
                         and math.hypot(proj.x - en.ship.x, proj.y - en.ship.y)
-                        <= proj.radius
+                        <= proj.radius * 0.7
                     ):
                         proj.explode()
                 if proj.exploded:
