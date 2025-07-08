@@ -3,6 +3,8 @@ import math
 from dataclasses import dataclass
 import config
 from fraction import Fraction
+from crew import CrewMember
+from cbm import CommonBerthingMechanism
 from planet import Planet
 from names import get_ship_name
 from combat import (
@@ -79,6 +81,7 @@ class Ship:
         hull: int = 100,
         speed_factor: float = 1.0,
         fraction: Fraction | None = None,
+        has_cbm: bool = False,
     ) -> None:
         self.x = float(x)
         self.y = float(y)
@@ -136,10 +139,26 @@ class Ship:
         # Collision radius for the triangular hull
         height = self.size * 1.5
         self.collision_radius = math.hypot(height / 2, self.size / 2)
+        self.passengers: list[CrewMember] = []
+        self.cbm: CommonBerthingMechanism | None = (
+            CommonBerthingMechanism(self) if has_cbm else None
+        )
 
     def set_active_weapon(self, index: int) -> None:
         if 0 <= index < len(self.weapons):
             self.active_weapon = index
+
+    def transfer_crew_to_docked(self, member: CrewMember) -> bool:
+        """Move ``member`` to the ship currently docked with this one."""
+        if self.cbm:
+            return self.cbm.transfer_to_docked(member)
+        return False
+
+    def transfer_crew_from_docked(self, member: CrewMember) -> bool:
+        """Retrieve ``member`` from the ship currently docked with this one."""
+        if self.cbm:
+            return self.cbm.transfer_from_docked(member)
+        return False
 
     def update(
         self,
