@@ -8,6 +8,7 @@ from combat import LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon, BasicWea
 from sector import create_sectors
 from fraction import FRACTIONS
 from faction_structures import spawn_capital_ships
+from portal import Portal, spawn_explorer_portals
 from star import Star
 from planet import Planet
 from station import SpaceStation
@@ -108,6 +109,13 @@ def main():
 
     capital_ships = spawn_capital_ships(FRACTIONS, world_width, world_height)
 
+    portals: list[Portal] = []
+    free_flagship = next(
+        (c for c in capital_ships if c.fraction and c.fraction.name == "Free Explorers"),
+        None,
+    )
+    if free_flagship:
+        portals = spawn_explorer_portals(free_flagship, world_width, world_height)
 
     chosen_model = choose_ship(screen)
     player.ship_model = chosen_model
@@ -150,6 +158,7 @@ def main():
     teleport_target = None
     teleport_timer = 0.0
     wormhole_cooldown = 0.0
+    portal_cooldown = 0.0
     teleport_flash_timer = 0.0
     blackhole_flash_timer = 0.0
     swallowed = False
@@ -167,6 +176,8 @@ def main():
 
         if wormhole_cooldown > 0:
             wormhole_cooldown -= dt
+        if portal_cooldown > 0:
+            portal_cooldown -= dt
         if teleport_flash_timer > 0:
             teleport_flash_timer -= dt
         if blackhole_flash_timer > 0:
@@ -628,6 +639,19 @@ def main():
                         teleport_timer = config.WORMHOLE_DELAY
                         print("Entering wormhole...")
                     break
+
+        if portal_cooldown <= 0 and teleport_timer <= 0:
+            for p in portals:
+                if math.hypot(p.x - ship.x, p.y - ship.y) < p.radius:
+                    if p.pair:
+                        if player.fraction and player.fraction.name != "Free Explorers":
+                            if player.credits < config.PORTAL_COST:
+                                break
+                            player.credits -= config.PORTAL_COST
+                        ship.x = p.pair.x
+                        ship.y = p.pair.y
+                        portal_cooldown = config.PORTAL_COOLDOWN
+                    break
         for sector in sectors:
             sector.update(dt)
         # Update roaming capital ships so their arms can track nearby stars
@@ -656,6 +680,8 @@ def main():
         offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
         for sector in sectors:
             sector.draw(screen, offset_x, offset_y, zoom)
+        for p in portals:
+            p.draw(screen, offset_x, offset_y, zoom)
         for cap in capital_ships:
             cap.draw(screen, offset_x, offset_y, zoom)
         carrier.draw(
