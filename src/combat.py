@@ -49,6 +49,7 @@ class Projectile:
         damage: int,
         curvature: float = 0.0,
         max_distance: float = config.PROJECTILE_MAX_DISTANCE,
+        trail_color: tuple[int, int, int] | None = None,
     ) -> None:
         self.x = x
         self.y = y
@@ -61,10 +62,16 @@ class Projectile:
         self.curvature = curvature
         self.max_distance = max_distance
         self.traveled = 0.0
+        self.trail_color = trail_color
+        self.trail: list[tuple[float, float]] = []
 
     def update(self, dt: float) -> None:
         self.x += self.vx * dt
         self.y += self.vy * dt
+        if self.trail_color is not None:
+            self.trail.append((self.x, self.y))
+            if len(self.trail) > 15:
+                self.trail.pop(0)
         step = math.hypot(self.vx * dt, self.vy * dt)
         self.traveled += step
         if self.curvature:
@@ -81,6 +88,12 @@ class Projectile:
     def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
         pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
         radius = max(1, int(3 * zoom))
+        if self.trail_color and len(self.trail) > 1:
+            points = [
+                (int((px - offset_x) * zoom), int((py - offset_y) * zoom))
+                for px, py in self.trail
+            ]
+            pygame.draw.lines(screen, self.trail_color, False, points, max(1, int(2 * zoom)))
         pygame.draw.circle(screen, (255, 50, 50), pos, radius)
 
 
@@ -364,8 +377,9 @@ class Bomb(Projectile):
         damage: float = 24.0,
         speed: float = 200.0,
         radius: float = 80.0,
+        trail_color: tuple[int, int, int] | None = None,
     ) -> None:
-        super().__init__(x, y, tx, ty, speed, damage, 0.0, max_distance=500)
+        super().__init__(x, y, tx, ty, speed, damage, 0.0, max_distance=500, trail_color=trail_color)
         self.radius = radius
         self.exploded = False
         self.timer = 0.0
@@ -375,6 +389,8 @@ class Bomb(Projectile):
             self.timer -= dt
         else:
             super().update(dt)
+            if self.traveled >= self.max_distance:
+                self.explode()
 
     def explode(self) -> None:
         if not self.exploded:

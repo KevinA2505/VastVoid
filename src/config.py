@@ -33,7 +33,7 @@ ORBIT_PROJECTILE_CURVATURE = 4.0        # radians per second of bullet curve
 ORBIT_TRIGGER_RANGE = 350   # max distance to start an orbit
 PROJECTILE_MAX_DISTANCE = 1200          # maximum distance a projectile can travel
 HOMING_PROJECTILE_TURN_RATE = 6.0       # rad/s a guided projectile can turn
-PIRATE_TURRET_RANGE = 600               # engagement range for Pirate capital turrets
+PIRATE_TURRET_RANGE = 500               # engagement range for Pirate capital turrets
 
 SECTOR_WIDTH = 2000
 SECTOR_HEIGHT = 2000

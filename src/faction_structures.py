@@ -103,34 +103,51 @@ class Turret:
     """Mechanical arm used by Pirate Clans capital ships."""
 
     owner: "CapitalShip"
-    angle: float
+    angle: float  # fixed anchor position around the ship
     length: float
     cooldown: float = 2.5
     _timer: float = 0.0
+    orientation: float = field(init=False)
+    offset_x: float = field(init=False)
+    offset_y: float = field(init=False)
+
+    def __post_init__(self) -> None:
+        self.orientation = self.angle
+        self.offset_x = math.cos(self.angle) * self.length
+        self.offset_y = math.sin(self.angle) * self.length
 
     def update(self, dt: float, targets: list) -> None:
         if self._timer > 0:
             self._timer -= dt
+        base_x = self.owner.x + self.offset_x
+        base_y = self.owner.y + self.offset_y
         nearest = None
         min_d = float("inf")
         for obj in targets:
-            d = math.hypot(obj.ship.x - self.owner.x, obj.ship.y - self.owner.y)
+            d = math.hypot(obj.ship.x - base_x, obj.ship.y - base_y)
             if d < min_d:
                 min_d = d
                 nearest = obj.ship
         if nearest and min_d <= config.PIRATE_TURRET_RANGE:
-            desired = math.atan2(nearest.y - self.owner.y, nearest.x - self.owner.x)
-            diff = (desired - self.angle + math.pi) % (2 * math.pi) - math.pi
+            desired = math.atan2(nearest.y - base_y, nearest.x - base_x)
+            diff = (desired - self.orientation + math.pi) % (2 * math.pi) - math.pi
             rotate = 2.0 * dt
             if abs(diff) < rotate:
-                self.angle = desired
+                self.orientation = desired
             else:
-                self.angle += rotate if diff > 0 else -rotate
-            self.angle %= 2 * math.pi
+                self.orientation += rotate if diff > 0 else -rotate
+            self.orientation %= 2 * math.pi
             if self._timer <= 0:
-                px = self.owner.x + math.cos(self.angle) * self.length
-                py = self.owner.y + math.sin(self.angle) * self.length
-                proj = Bomb(px, py, nearest.x, nearest.y)
+                px = base_x
+                py = base_y
+                proj = Bomb(
+                    px,
+                    py,
+                    nearest.x,
+                    nearest.y,
+                    damage=9.6,
+                    trail_color=(255, 215, 0),
+                )
                 self.owner.projectiles.append(proj)
                 self._timer = self.cooldown
 
@@ -387,7 +404,11 @@ class CapitalShip(FactionStructure):
             for proj in list(self.projectiles):
                 proj.update(dt)
                 for en in hostiles:
-                    if not proj.exploded and math.hypot(proj.x - en.ship.x, proj.y - en.ship.y) <= en.ship.collision_radius:
+                    if (
+                        not proj.exploded
+                        and math.hypot(proj.x - en.ship.x, proj.y - en.ship.y)
+                        <= proj.radius
+                    ):
                         proj.explode()
                 if proj.exploded:
                     for en in hostiles:
@@ -524,8 +545,8 @@ class CapitalShip(FactionStructure):
             turret_color = (0, 0, 0)
             border_color = (150, 150, 150)
             for turret in self.turrets:
-                tx = x + int(math.cos(turret.angle) * turret.length * zoom)
-                ty = y + int(math.sin(turret.angle) * turret.length * zoom)
+                tx = x + int(turret.offset_x * zoom)
+                ty = y + int(turret.offset_y * zoom)
                 size_w = max(4, int(8 * zoom))
                 size_h = max(6, int(12 * zoom))
                 rect = pygame.Rect(tx - size_w // 2, ty - size_h // 2, size_w, size_h)
