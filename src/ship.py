@@ -555,8 +555,8 @@ class Ship:
             intensity = 1.0 - self.hyperjump_timer / config.HYPERJUMP_DELAY
         elif self.hyperjump_target is not None and self.hyperjump_anim_time > 0:
             t = self.hyperjump_elapsed / self.hyperjump_anim_time
-            if t <= 0.2:
-                intensity = 1.0 - t / 0.2
+            t = min(1.0, t)
+            intensity = 1.0 - t
         if intensity <= 0.0:
             return
         cx = int((self.x - offset_x) * zoom)
