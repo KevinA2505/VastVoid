@@ -24,6 +24,7 @@ from ui import (
     CarrierMoveMap,
     CarrierWindow,
 )
+from cbm import CommonBerthingMechanism, CrewTransferWindow
 from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
 from planet_surface import PlanetSurface
 from character import choose_player_table, Robot
@@ -167,6 +168,8 @@ def main():
     ability_bar.set_ship(ship)
     carrier = Carrier(ship.x + 150, ship.y + 80, fraction=player.fraction)
     extra_ships = [extra_npc]
+    cbm = CommonBerthingMechanism(ship, extra_npc)
+    crew_window = None
     inventory_window = None
     market_window = None
     weapon_menu = None
@@ -350,6 +353,20 @@ def main():
                 pygame.display.flip()
                 continue
 
+        if crew_window:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+                if crew_window.handle_event(event):
+                    cbm.undock()
+                    crew_window = None
+                    break
+            if crew_window:
+                crew_window.draw(screen, info_font)
+                pygame.display.flip()
+                continue
+
         if market_window:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -519,6 +536,9 @@ def main():
                     artifact_menu = ArtifactMenu(ship, ability_bar)
                 elif event.key == pygame.K_l:
                     load_mode = True
+                elif event.key == pygame.K_c:
+                    if cbm.attempt_dock():
+                        crew_window = CrewTransferWindow(cbm)
                 elif event.key == pygame.K_SPACE:
                     mx, my = pygame.mouse.get_pos()
                     offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
