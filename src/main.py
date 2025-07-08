@@ -400,6 +400,16 @@ def main():
         auto_rect = pygame.Rect(
             cancel_rect.right + 10, config.WINDOW_HEIGHT - 40, 100, 25
         )
+
+        dock_target = None
+        if ship.cbm and not ship.cbm.docked_to:
+            for other in [carrier] + extra_ships + capital_ships:
+                obj = getattr(other, "ship", other)
+                if obj is ship:
+                    continue
+                if ship.cbm.can_dock(obj):
+                    dock_target = obj
+                    break
         enter_rect = pygame.Rect(
             config.WINDOW_WIDTH // 2 - 50, config.WINDOW_HEIGHT - 80, 100, 30
         )
@@ -537,8 +547,15 @@ def main():
                 elif event.key == pygame.K_g:
                     artifact_menu = ArtifactMenu(ship, ability_bar)
                 elif event.key == pygame.K_c:
-                    if ship.cbm and ship.cbm.docked_to:
-                        passenger_window = PassengerTransferWindow(ship, ship.cbm.docked_to)
+                    if ship.cbm:
+                        if ship.cbm.docked_to:
+                            passenger_window = PassengerTransferWindow(
+                                ship, ship.cbm.docked_to
+                            )
+                        elif dock_target and ship.cbm.dock(dock_target):
+                            passenger_window = PassengerTransferWindow(
+                                ship, dock_target
+                            )
                 elif event.key == pygame.K_l:
                     load_mode = True
                 elif event.key == pygame.K_SPACE:
@@ -892,6 +909,12 @@ def main():
         if load_mode:
             txt = info_font.render("Select allied ship to load or ESC", True, (255, 255, 255))
             rect = txt.get_rect(center=(config.WINDOW_WIDTH // 2, 30))
+            screen.blit(txt, rect)
+
+        if dock_target and not ship.cbm.docked_to:
+            y = 50 if load_mode else 30
+            txt = info_font.render("Press C to dock", True, (255, 255, 255))
+            rect = txt.get_rect(center=(config.WINDOW_WIDTH // 2, y))
             screen.blit(txt, rect)
 
         if pending_tractor:

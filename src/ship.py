@@ -222,6 +222,16 @@ class Ship:
             self._update_specials(dt, world_width, world_height, targets)
             return
 
+        if self.cbm and self.cbm.docked_to:
+            self.x = self.cbm.docked_to.x
+            self.y = self.cbm.docked_to.y
+            self.vx = self.vy = 0.0
+            self.autopilot_target = None
+            self.hyperjump_target = None
+            self._update_projectiles(dt, world_width, world_height)
+            self._update_specials(dt, world_width, world_height, targets)
+            return
+
         if self._update_hyperjump(dt, world_width, world_height, targets):
             return
 
