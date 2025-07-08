@@ -179,12 +179,13 @@ class MissileTurret(Turret):
             self.orientation %= 2 * math.pi
             if self._timer <= 0:
                 # Guided missiles fired by Free Explorer turrets now have a
-                # shorter lifetime and slightly reduced speed.
+                # shorter lifetime and their speed has been reduced by an
+                # additional 15%.
                 proj = GuidedMissile(
                     base_x,
                     base_y,
                     nearest,
-                    int(200 * 0.85),
+                    int(200 * 0.85 * 0.85),
                     int(30 * 1.2),
                     lifetime=3.5,
                 )
