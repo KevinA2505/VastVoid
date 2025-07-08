@@ -24,6 +24,7 @@ button to return to space.
   nearby threats.
 * Ships can deploy a **Chrono Tachionic Whip** that slows enemies within a small field.
 * A new **Spores** weapon releases a short-lived damaging cloud.
+* Charge the **Ionized Symbiont** to fire a shot that latches onto enemy hulls and inflicts damage over time.
 
 ### Defensive drones
 The Nebula Order flagship deploys a trio of small drones that protect only this
@@ -39,6 +40,19 @@ seconds and reduces the speed of enemy ships within its radius by 20%.
 While the field recharges (a 10&nbsp;second cooldown), the whip fires regular
 shots like the basic weapon but with a 5% slower projectile speed and a 10%
 shorter cooldown.
+
+### Ionized Symbiont, Chrono Tachionic Whip and Spores
+The game offers three distinctive special weapons:
+
+* **Ionized Symbiont** – hold **Space** to build charge for up to three seconds,
+  then release to launch a parasite that sticks to the target and deals damage
+  over three seconds. The weapon has a two-second cooldown after firing.
+* **Chrono Tachionic Whip** – press **Space** to deploy a slowing field when the
+  ability is ready. The field lasts five seconds and requires 10 seconds to
+  recharge. While it is on cooldown, the whip fires weaker shots 10% faster with
+  slightly reduced projectile speed.
+* **Spores** – fires a cone-shaped cloud in front of the ship that damages foes
+  for three seconds. This weapon can be used once every five seconds.
 
 ## Character creation
 
