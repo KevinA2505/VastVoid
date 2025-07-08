@@ -195,7 +195,9 @@ class Ship:
         for art in self.artifacts:
             art.update(dt)
 
-        if self._update_hyperjump(dt, world_width, world_height, targets):
+        if self.pilot and self._update_hyperjump(
+            dt, world_width, world_height, targets
+        ):
             return
 
         if self.orbit_time > 0 and self.orbit_target:
@@ -206,25 +208,31 @@ class Ship:
                 self.cancel_orbit()
             return
 
-        if self.autopilot_target:
-            self._update_autopilot(dt, world_width, world_height, sectors, blackholes)
+        if self.pilot and self.autopilot_target:
+            self._update_autopilot(
+                dt, world_width, world_height, sectors, blackholes
+            )
             return
 
-        accel = config.SHIP_ACCELERATION * self.accel_factor * self.speed_factor
-        if self.boost_time > 0:
-            self.boost_time -= dt
-            if self.boost_time <= 0:
-                self.boost_time = 0
-        else:
-            if self.boost_charge < 1.0:
-                self.boost_charge = min(1.0, self.boost_charge + dt / config.BOOST_RECHARGE)
-            if self.pilot and keys[pygame.K_LSHIFT] and self.boost_charge >= 1.0:
-                self.boost_time = config.BOOST_DURATION
-                self.boost_charge = 0.0
-        if self.boost_time > 0:
-            accel *= config.BOOST_MULTIPLIER
-
         if self.pilot:
+            accel = (
+                config.SHIP_ACCELERATION * self.accel_factor * self.speed_factor
+            )
+            if self.boost_time > 0:
+                self.boost_time -= dt
+                if self.boost_time <= 0:
+                    self.boost_time = 0
+            else:
+                if self.boost_charge < 1.0:
+                    self.boost_charge = min(
+                        1.0, self.boost_charge + dt / config.BOOST_RECHARGE
+                    )
+                if keys[pygame.K_LSHIFT] and self.boost_charge >= 1.0:
+                    self.boost_time = config.BOOST_DURATION
+                    self.boost_charge = 0.0
+            if self.boost_time > 0:
+                accel *= config.BOOST_MULTIPLIER
+
             if keys[pygame.K_w]:
                 self.vy -= accel * dt
             if keys[pygame.K_s]:
@@ -234,48 +242,50 @@ class Ship:
             if keys[pygame.K_d]:
                 self.vx += accel * dt
 
-        self.vx *= config.SHIP_FRICTION
-        self.vy *= config.SHIP_FRICTION
+            self.vx *= config.SHIP_FRICTION
+            self.vy *= config.SHIP_FRICTION
 
-        # Clamp velocity to a moderate maximum so all ships travel evenly
-        speed_limit = config.SHIP_MAX_SPEED * self.speed_factor
-        if self.boost_time > 0:
-            speed_limit *= config.BOOST_MULTIPLIER
-        vel = math.hypot(self.vx, self.vy)
-        if vel > speed_limit:
-            scale = speed_limit / vel
-            self.vx *= scale
-            self.vy *= scale
+            # Clamp velocity to a moderate maximum so all ships travel evenly
+            speed_limit = config.SHIP_MAX_SPEED * self.speed_factor
+            if self.boost_time > 0:
+                speed_limit *= config.BOOST_MULTIPLIER
+            vel = math.hypot(self.vx, self.vy)
+            if vel > speed_limit:
+                scale = speed_limit / vel
+                self.vx *= scale
+                self.vy *= scale
 
-        if abs(self.vx) > 1e-3 or abs(self.vy) > 1e-3:
-            self.angle = math.atan2(self.vy, self.vx)
-            if abs(self.vx) > 40 or abs(self.vy) > 40:
-                self._emit_particle()
+            if abs(self.vx) > 1e-3 or abs(self.vy) > 1e-3:
+                self.angle = math.atan2(self.vy, self.vx)
+                if abs(self.vx) > 40 or abs(self.vy) > 40:
+                    self._emit_particle()
 
-        if blackholes:
-            for hole in blackholes:
-                hole.apply_pull(self, dt)
+            if blackholes:
+                for hole in blackholes:
+                    hole.apply_pull(self, dt)
 
-        old_x, old_y = self.x, self.y
+            old_x, old_y = self.x, self.y
 
-        self.x += self.vx * dt
-        self.y += self.vy * dt
-
-        self.x = max(0, min(world_width, self.x))
-        self.y = max(0, min(world_height, self.y))
-
-        if self._check_collision(sectors):
-            self.x, self.y = old_x, old_y
-            self.vx *= -config.BOUNCE_FACTOR
-            self.vy *= -config.BOUNCE_FACTOR
-            # Nudge slightly away from the obstacle
             self.x += self.vx * dt
             self.y += self.vy * dt
+
+            self.x = max(0, min(world_width, self.x))
+            self.y = max(0, min(world_height, self.y))
+
+            if self._check_collision(sectors):
+                self.x, self.y = old_x, old_y
+                self.vx *= -config.BOUNCE_FACTOR
+                self.vy *= -config.BOUNCE_FACTOR
+                # Nudge slightly away from the obstacle
+                self.x += self.vx * dt
+                self.y += self.vy * dt
 
         self._update_projectiles(dt, world_width, world_height)
         self._update_specials(dt, world_width, world_height, targets)
 
     def start_autopilot(self, target) -> None:
+        if not self.pilot:
+            return
         self.autopilot_target = target
 
     def cancel_autopilot(self) -> None:
@@ -283,6 +293,8 @@ class Ship:
 
     def start_hyperjump(self, x: float, y: float) -> None:
         """Initiate a hyperjump to the given coordinates."""
+        if not self.pilot:
+            return
         if (
             self.hyperjump_cooldown > 0
             or self.hyperjump_timer > 0
