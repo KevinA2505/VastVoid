@@ -22,6 +22,7 @@ button to return to space.
   the ship to host diplomats and other non-scientists.
 * The flagship also fields defensive drones that orbit the vessel and intercept
   nearby threats.
+* Ships can deploy a **Chrono Tachionic Whip** that slows enemies within a small field.
 
 ### Defensive drones
 The Nebula Order flagship deploys a trio of small drones that protect only this
@@ -30,6 +31,13 @@ incoming threats. Each drone relies on a lightweight learning
 system provided by `drone_learning` to refine its response timing. They never
 venture far from the flagship and engage threats solely within its immediate
 vicinity.
+
+### Chrono Tachionic Whip
+This dual-phase weapon deploys a slowing field when ready. The field lasts five
+seconds and reduces the speed of enemy ships within its radius by 20%.
+While the field recharges (a 10&nbsp;second cooldown), the whip fires regular
+shots like the basic weapon but with a 5% slower projectile speed and a 10%
+shorter cooldown.
 
 ## Character creation
 

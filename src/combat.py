@@ -732,3 +732,66 @@ class IonizedSymbiontWeapon(Weapon):
         self._charge = 0.0
         self._timer = 0.0
         return IonSymbiontShot(x, y, tx, ty, self.speed, dmg)
+
+
+class SlowField:
+    """Area that slows ships passing through it."""
+
+    def __init__(self, owner, x: float, y: float, radius: float = 100.0, duration: float = 5.0) -> None:
+        self.owner = owner
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.duration = duration
+        self.timer = 0.0
+        self.slow_factor = 0.8  # 20% speed reduction
+
+    def update(self, dt: float) -> None:
+        self.timer += dt
+
+    def apply_slow(self, ship) -> None:
+        if ship is self.owner:
+            return
+        if math.hypot(ship.x - self.x, ship.y - self.y) <= self.radius:
+            ship.vx *= self.slow_factor
+            ship.vy *= self.slow_factor
+
+    def expired(self) -> bool:
+        return self.timer >= self.duration
+
+    def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
+        pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
+        rad = int(self.radius * zoom)
+        pygame.draw.circle(screen, (80, 120, 255), pos, rad, 1)
+
+
+class ChronoTachionicWhip(Weapon):
+    """Weapon that can deploy a slowing field then fire weak shots."""
+
+    def __init__(self) -> None:
+        base_cd = 0.6
+        super().__init__("Chrono Whip", 6, 380, cooldown=base_cd)
+        self._base_cd = base_cd
+        self.field_cooldown = 10.0
+        self._field_timer = self.field_cooldown
+
+    def update(self, dt: float) -> None:
+        cd = self._base_cd * (0.9 if self._field_timer < self.field_cooldown else 1.0)
+        if self._timer < cd:
+            self._timer += dt
+        if self._field_timer < self.field_cooldown:
+            self._field_timer += dt
+
+    def can_fire(self) -> bool:
+        cd = self._base_cd * (0.9 if self._field_timer < self.field_cooldown else 1.0)
+        return self._timer >= cd
+
+    def fire(self, x: float, y: float, tx: float, ty: float):
+        if not self.can_fire():
+            return None
+        self._timer = 0.0
+        if self._field_timer >= self.field_cooldown:
+            self._field_timer = 0.0
+            return SlowField(self.owner, tx, ty)
+        speed = self.speed * 0.95
+        return Projectile(x, y, tx, ty, speed, self.damage)
