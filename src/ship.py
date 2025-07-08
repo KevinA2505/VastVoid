@@ -116,6 +116,9 @@ class Ship:
         self.shield = Shield()
         self.artifacts: list[Artifact] = []
         self.area_shield: AreaShieldAura | None = None
+        # Crew handling
+        self.pilot = None
+        self.passengers: list = []
         self.hull = hull
         self.max_hull = hull
         self.invisible_timer = 0.0
@@ -140,6 +143,24 @@ class Ship:
     def set_active_weapon(self, index: int) -> None:
         if 0 <= index < len(self.weapons):
             self.active_weapon = index
+
+    def assign_pilot(self, member) -> None:
+        """Assign a crew member as pilot of this ship."""
+        self.pilot = member
+
+    def remove_pilot(self) -> None:
+        """Remove the current pilot if any."""
+        self.pilot = None
+
+    def add_passenger(self, member) -> None:
+        """Add a passenger if space allows (max two)."""
+        if member not in self.passengers and len(self.passengers) < 2:
+            self.passengers.append(member)
+
+    def remove_passenger(self, member) -> None:
+        """Remove ``member`` from passengers if present."""
+        if member in self.passengers:
+            self.passengers.remove(member)
 
     def update(
         self,
@@ -197,20 +218,21 @@ class Ship:
         else:
             if self.boost_charge < 1.0:
                 self.boost_charge = min(1.0, self.boost_charge + dt / config.BOOST_RECHARGE)
-            if keys[pygame.K_LSHIFT] and self.boost_charge >= 1.0:
+            if self.pilot and keys[pygame.K_LSHIFT] and self.boost_charge >= 1.0:
                 self.boost_time = config.BOOST_DURATION
                 self.boost_charge = 0.0
         if self.boost_time > 0:
             accel *= config.BOOST_MULTIPLIER
 
-        if keys[pygame.K_w]:
-            self.vy -= accel * dt
-        if keys[pygame.K_s]:
-            self.vy += accel * dt
-        if keys[pygame.K_a]:
-            self.vx -= accel * dt
-        if keys[pygame.K_d]:
-            self.vx += accel * dt
+        if self.pilot:
+            if keys[pygame.K_w]:
+                self.vy -= accel * dt
+            if keys[pygame.K_s]:
+                self.vy += accel * dt
+            if keys[pygame.K_a]:
+                self.vx -= accel * dt
+            if keys[pygame.K_d]:
+                self.vx += accel * dt
 
         self.vx *= config.SHIP_FRICTION
         self.vy *= config.SHIP_FRICTION
@@ -616,7 +638,7 @@ class Ship:
         return self.hyperjump_timer > 0 or self.hyperjump_target is not None
 
     def fire(self, tx: float, ty: float) -> None:
-        if not self.weapons:
+        if self.pilot is None or not self.weapons:
             return
         weapon = self.weapons[self.active_weapon]
         proj = None
