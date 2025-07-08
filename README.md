@@ -130,8 +130,9 @@ faction's fleet.
 ### Free Explorers flagship and portals
 
 The Free Explorers capital ship now appears as a round gray disk with a black
-edge and a neutral gray aura. Four missile turrets are mounted at the cardinal
-points. These launch homing missiles that deal 20% extra damage but travel 20%
+edge and a neutral gray aura. Four missile turrets sit near the extreme north,
+south, east and west edges of the hull so they are spaced farther apart. These
+launch homing missiles that deal 20% extra damage but travel 20%
 slower than standard versions. Each missile detonates after a short lifetime,
 producing a very small blast radius.
 

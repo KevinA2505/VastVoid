@@ -348,9 +348,14 @@ class CapitalShip(FactionStructure):
             self.modules.extend(["Survey Deck", "Jump Drives"])
             self.color = (160, 160, 160)
             self.outline_color = (0, 0, 0)
+            # Slightly enlarge the hull so turrets can sit farther apart
+            self.radius = 70
+            self.size = self.radius
             self.shape = "round"
+            # Position missile turrets near the outer edge but still inside
+            turret_dist = self.radius - 5
             self.turrets = [
-                MissileTurret(self, i * (math.pi / 2), self.radius)
+                MissileTurret(self, i * (math.pi / 2), turret_dist)
                 for i in range(4)
             ]
 
