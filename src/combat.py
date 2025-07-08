@@ -793,7 +793,7 @@ class ChronoTachionicWhip(Weapon):
         self._timer = 0.0
         if self._field_timer >= self.field_cooldown:
             self._field_timer = 0.0
-            return SlowField(self.owner, tx, ty)
+            return SlowField(self.owner, tx, ty, radius=250)
         speed = self.speed * 0.95
         return Projectile(x, y, tx, ty, speed, self.damage)
 
