@@ -560,7 +560,7 @@ def main():
                 elif event.key == pygame.K_l:
                     load_mode = True
                 elif event.key == pygame.K_c:
-                    cbm.attempt_dock()
+                    cbm.start_docking()
                 elif event.key == pygame.K_SPACE:
                     mx, my = pygame.mouse.get_pos()
                     offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
@@ -678,6 +678,11 @@ def main():
                 hostiles,
                 structures,
             )
+        if cbm.animation:
+            cbm.animation.update(dt)
+            if cbm.animation.done:
+                cbm.animation = None
+                cbm.docked = True
         if approaching_planet and not ship.autopilot_target:
             dist = math.hypot(
                 approaching_planet.x - ship.x,
@@ -800,6 +805,8 @@ def main():
                 player.fraction.color if player.fraction else None,
             )
         ship.draw_at(screen, offset_x, offset_y, zoom, player.fraction)
+        if cbm.animation:
+            cbm.animation.draw(screen, offset_x, offset_y, zoom)
         route_planner.draw(screen, info_font, ship, offset_x, offset_y, zoom)
 
         if selected_object:
