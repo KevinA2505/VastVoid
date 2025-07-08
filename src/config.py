@@ -55,6 +55,7 @@ SHIP_PARTICLE_COLOR = (180, 180, 180)
 
 # Camera speed when planning a route
 CAMERA_PAN_SPEED = 500  # pixels per second
+CAMERA_RECENTER_SPEED = 3.0  # how quickly the camera returns to the player
 
 # Black hole settings
 BLACKHOLE_CHANCE = 0.15       # probability of a sector containing a black hole
