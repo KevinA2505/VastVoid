@@ -264,6 +264,11 @@ class CapitalShip(FactionStructure):
     engagement_ring: EngagementRing | None = None
     city_stations: list[Any] = field(default_factory=list)
 
+    @property
+    def collision_radius(self) -> float:
+        """Return the effective collision radius for this ship."""
+        return max(self.radius, self.aura_radius)
+
     def apply_fraction_traits(self, fraction: Fraction) -> None:
         super().apply_fraction_traits(fraction)
         # Default size is tied to the collision radius so dependent systems
