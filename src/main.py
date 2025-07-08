@@ -27,7 +27,7 @@ from ui import (
 )
 from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
 from planet_surface import PlanetSurface
-from character import choose_player_table
+from character import choose_player_table, CrewMember, Robot
 
 
 class _NullKeys:
@@ -132,6 +132,7 @@ def main():
         hull=config.PLAYER_MAX_HULL,
         fraction=player.fraction,
         speed_factor=config.NPC_SPEED_FACTOR,
+        has_cbm=True,
     )
     ship.weapons.extend([
         LaserWeapon(),
@@ -144,6 +145,9 @@ def main():
         w.owner = ship
     ship.artifacts = [EMPArtifact(), AreaShieldArtifact(), GravityTractorArtifact()]
 
+    pepe = CrewMember("PEPE", Robot())
+    ship.passengers.append(pepe)
+
     zoom = 1.0
     selected_object = None
     info_font = pygame.font.Font(None, 20)
@@ -153,6 +157,16 @@ def main():
     ability_bar.set_ship(ship)
     carrier = Carrier(ship.x + 150, ship.y + 80, fraction=player.fraction)
     extra_ships = []
+    second_ship = Ship(
+        ship.x + 300,
+        ship.y,
+        chosen_model,
+        hull=config.PLAYER_MAX_HULL,
+        fraction=player.fraction,
+        speed_factor=config.NPC_SPEED_FACTOR,
+        has_cbm=True,
+    )
+    extra_ships.append(second_ship)
     inventory_window = None
     market_window = None
     weapon_menu = None
