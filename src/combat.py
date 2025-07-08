@@ -803,7 +803,8 @@ class _SporeParticle:
 
     def __init__(self, cloud) -> None:
         ang = cloud.angle + random.uniform(-cloud.arc / 2, cloud.arc / 2)
-        speed = random.uniform(40.0, 80.0)
+        max_speed = cloud.radius / cloud.duration
+        speed = random.uniform(max_speed * 0.5, max_speed)
         self.vx = math.cos(ang) * speed
         self.vy = math.sin(ang) * speed
         self.x = cloud.x
@@ -829,7 +830,7 @@ class SporeCloud:
         x: float,
         y: float,
         angle: float,
-        radius: float = 120.0,
+        radius: float = 144.0,
         arc: float = math.pi / 3,
         duration: float = 3.0,
         damage: float = 6.0,
@@ -880,18 +881,7 @@ class SporeCloud:
         offset_y: float = 0.0,
         zoom: float = 1.0,
     ) -> None:
-        start = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
-        a1 = self.angle - self.arc / 2
-        a2 = self.angle + self.arc / 2
-        end1 = (
-            int((self.x + math.cos(a1) * self.radius - offset_x) * zoom),
-            int((self.y + math.sin(a1) * self.radius - offset_y) * zoom),
-        )
-        end2 = (
-            int((self.x + math.cos(a2) * self.radius - offset_x) * zoom),
-            int((self.y + math.sin(a2) * self.radius - offset_y) * zoom),
-        )
-        pygame.draw.polygon(screen, (120, 160, 80, 60), [start, end1, end2])
+        # Damage cone is invisible; only draw particles
         for p in self.particles:
             px = int((p.x - offset_x) * zoom)
             py = int((p.y - offset_y) * zoom)
