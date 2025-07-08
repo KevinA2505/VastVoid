@@ -731,3 +731,92 @@ class CarrierWindow:
         stop_txt = font.render("Stop", True, (255, 255, 255))
         screen.blit(stop_txt, stop_txt.get_rect(center=self.stop_rect.center))
 
+
+class CrewTransferWindow:
+    """Simple interface to move crew between two ships."""
+
+    def __init__(self, ship_a, ship_b) -> None:
+        self.ship_a = ship_a
+        self.ship_b = ship_b
+        self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
+        self.left_rects: list[tuple[object, pygame.Rect]] = []
+        self.right_rects: list[tuple[object, pygame.Rect]] = []
+
+    def _crew_for_ship(self, ship) -> list:
+        crew = []
+        if getattr(ship, "pilot", None):
+            crew.append(ship.pilot)
+        crew.extend(list(getattr(ship, "passengers", [])))
+        return crew
+
+    def _remove_from_ship(self, ship, member) -> None:
+        if getattr(ship, "pilot", None) is member:
+            ship.remove_pilot()
+        else:
+            ship.remove_passenger(member)
+
+    def _add_to_ship(self, ship, member) -> None:
+        if getattr(ship, "pilot", None) is None:
+            ship.assign_pilot(member)
+        else:
+            ship.add_passenger(member)
+
+    def handle_event(self, event) -> bool:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.close_rect.collidepoint(event.pos):
+                return True
+            for member, rect in self.left_rects:
+                if rect.collidepoint(event.pos):
+                    self._remove_from_ship(self.ship_a, member)
+                    self._add_to_ship(self.ship_b, member)
+                    return False
+            for member, rect in self.right_rects:
+                if rect.collidepoint(event.pos):
+                    self._remove_from_ship(self.ship_b, member)
+                    self._add_to_ship(self.ship_a, member)
+                    return False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            return True
+        return False
+
+    def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        width = 360
+        height = 200
+        rect = pygame.Rect((config.WINDOW_WIDTH - width) // 2, 100, width, height)
+        pygame.draw.rect(screen, (30, 30, 60), rect)
+        pygame.draw.rect(screen, (200, 200, 200), rect, 1)
+
+        title = font.render("Crew Transfer", True, (255, 255, 255))
+        screen.blit(title, (rect.x + 5, rect.y + 5))
+
+        left_title = font.render(getattr(self.ship_a, "name", "Ship A"), True, (255, 255, 255))
+        right_title = font.render(getattr(self.ship_b, "name", "Ship B"), True, (255, 255, 255))
+        screen.blit(left_title, (rect.x + 20, rect.y + 30))
+        screen.blit(right_title, (rect.x + width // 2 + 20, rect.y + 30))
+
+        self.left_rects.clear()
+        self.right_rects.clear()
+        y_start = rect.y + 55
+        item_h = 25
+        for i, member in enumerate(self._crew_for_ship(self.ship_a)):
+            r = pygame.Rect(rect.x + 10, y_start + i * (item_h + 5), width // 2 - 20, item_h)
+            pygame.draw.rect(screen, (60, 60, 90), r)
+            pygame.draw.rect(screen, (200, 200, 200), r, 1)
+            name = getattr(member, "name", member.__class__.__name__)
+            txt = font.render(name, True, (255, 255, 255))
+            screen.blit(txt, txt.get_rect(center=r.center))
+            self.left_rects.append((member, r))
+        for i, member in enumerate(self._crew_for_ship(self.ship_b)):
+            r = pygame.Rect(rect.x + width // 2 + 10, y_start + i * (item_h + 5), width // 2 - 20, item_h)
+            pygame.draw.rect(screen, (60, 60, 90), r)
+            pygame.draw.rect(screen, (200, 200, 200), r, 1)
+            name = getattr(member, "name", member.__class__.__name__)
+            txt = font.render(name, True, (255, 255, 255))
+            screen.blit(txt, txt.get_rect(center=r.center))
+            self.right_rects.append((member, r))
+
+        pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
+        close_txt = font.render("Close", True, (255, 255, 255))
+        screen.blit(close_txt, close_txt.get_rect(center=self.close_rect.center))
+
