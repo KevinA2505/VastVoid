@@ -4,7 +4,14 @@ import random
 import config
 from ship import Ship, choose_ship
 from carrier import Carrier
-from combat import LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon, BasicWeapon
+from combat import (
+    LaserWeapon,
+    MineWeapon,
+    DroneWeapon,
+    MissileWeapon,
+    BasicWeapon,
+    IonizedSymbiontWeapon,
+)
 from sector import create_sectors
 from fraction import FRACTIONS
 from faction_structures import spawn_capital_ships
@@ -24,6 +31,7 @@ from ui import (
     CarrierMoveMap,
     CarrierWindow,
     CrewTransferWindow,
+    draw_charge_bar,
 )
 from cbm import CommonBerthingMechanism
 from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
@@ -134,6 +142,7 @@ def main():
         MineWeapon(),
         DroneWeapon(),
         MissileWeapon(),
+        IonizedSymbiontWeapon(),
         BasicWeapon(),
     ])
     for w in ship.weapons:
@@ -556,12 +565,25 @@ def main():
                 elif event.key == pygame.K_c:
                     cbm.start_docking()
                 elif event.key == pygame.K_SPACE:
+                    weapon = ship.weapons[ship.active_weapon]
+                    if isinstance(weapon, IonizedSymbiontWeapon):
+                        ship.start_weapon_charge()
+                    else:
+                        mx, my = pygame.mouse.get_pos()
+                        offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
+                        offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
+                        tx = mx / zoom + offset_x
+                        ty = my / zoom + offset_y
+                        ship.fire(tx, ty)
+            elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
+                weapon = ship.weapons[ship.active_weapon]
+                if isinstance(weapon, IonizedSymbiontWeapon):
                     mx, my = pygame.mouse.get_pos()
                     offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
                     offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
                     tx = mx / zoom + offset_x
                     ty = my / zoom + offset_y
-                    ship.fire(tx, ty)
+                    ship.release_weapon_charge(tx, ty)
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
                 offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
@@ -907,6 +929,11 @@ def main():
         hull_fill = int(bar_width * ship.hull / config.PLAYER_MAX_HULL)
         if hull_fill > 0:
             pygame.draw.rect(screen, (150, 0, 0), (bar_x, hull_y, hull_fill, bar_height))
+        weapon = ship.weapons[ship.active_weapon]
+        if hasattr(weapon, "charge_ratio") and weapon.charge_ratio > 0:
+            charge_y = hull_y - 15
+            draw_charge_bar(screen, weapon.charge_ratio, bar_x, charge_y, bar_width, bar_height)
+            hull_y = charge_y  # stack further bars above if needed
         ability_bar.draw(screen, info_font)
         menu.draw(screen, info_font)
 

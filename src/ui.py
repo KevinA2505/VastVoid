@@ -721,6 +721,22 @@ class CarrierWindow:
         close_txt = font.render("Close", True, (255, 255, 255))
         screen.blit(close_txt, close_txt.get_rect(center=self.close_rect.center))
 
+
+def draw_charge_bar(
+    screen: pygame.Surface,
+    ratio: float,
+    x: int,
+    y: int,
+    width: int = 100,
+    height: int = 10,
+) -> None:
+    """Render a weapon charge bar."""
+    pygame.draw.rect(screen, (60, 60, 90), (x, y, width, height))
+    pygame.draw.rect(screen, (200, 200, 200), (x, y, width, height), 1)
+    fill = int(width * max(0.0, min(1.0, ratio)))
+    if fill > 0:
+        pygame.draw.rect(screen, (200, 200, 50), (x, y, fill, height))
+
         pygame.draw.rect(screen, (60, 60, 90), self.move_rect)
         pygame.draw.rect(screen, (200, 200, 200), self.move_rect, 1)
         move_txt = font.render("Move", True, (255, 255, 255))
