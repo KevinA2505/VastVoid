@@ -910,7 +910,7 @@ class SporesWeapon(Weapon):
         if not self.can_fire():
             return None
         self._timer = 0.0
-        angle = self.owner.angle
+        angle = math.atan2(ty - y, tx - x)
         dist = self.owner.size * 2
         sx = self.owner.x + math.cos(angle) * dist
         sy = self.owner.y + math.sin(angle) * dist
