@@ -517,20 +517,60 @@ class Ship:
         end = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
         width = max(1, int(config.HYPERJUMP_TRAIL_WIDTH * zoom))
         surf = pygame.Surface((config.WINDOW_WIDTH, config.WINDOW_HEIGHT), pygame.SRCALPHA)
+        if self.hyperjump_target is not None and self.hyperjump_anim_time > 0:
+            t = self.hyperjump_elapsed / self.hyperjump_anim_time
+            t = min(1.0, max(0.0, t))
+        else:
+            t = 0.0
+        outer_alpha = int(180 * (1.0 - t))
+        inner_alpha = int(220 * (1.0 - t))
         pygame.draw.line(
             surf,
-            config.HYPERJUMP_TRAIL_COLOR + (180,),
+            config.HYPERJUMP_TRAIL_COLOR + (outer_alpha,),
             start,
             end,
             width,
         )
         pygame.draw.line(
             surf,
-            config.HYPERJUMP_TRAIL_INNER_COLOR + (220,),
+            config.HYPERJUMP_TRAIL_INNER_COLOR + (inner_alpha,),
             start,
             end,
             max(1, width // 2),
         )
+        screen.blit(surf, (0, 0))
+
+    def _draw_hyperjump_shock(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        """Render a short shock cone when entering hyperspace."""
+        if not self.hyperjump_active:
+            return
+        intensity = 0.0
+        if self.hyperjump_timer > 0:
+            intensity = 1.0 - self.hyperjump_timer / config.HYPERJUMP_DELAY
+        elif self.hyperjump_target is not None and self.hyperjump_anim_time > 0:
+            t = self.hyperjump_elapsed / self.hyperjump_anim_time
+            if t <= 0.2:
+                intensity = 1.0 - t / 0.2
+        if intensity <= 0.0:
+            return
+        cx = int((self.x - offset_x) * zoom)
+        cy = int((self.y - offset_y) * zoom)
+        length = self.size * 3 * zoom
+        width = self.size * 1.5 * zoom
+        cos_a = math.cos(self.angle)
+        sin_a = math.sin(self.angle)
+        tip = (cx + cos_a * length, cy + sin_a * length)
+        left = (cx - sin_a * width / 2, cy + cos_a * width / 2)
+        right = (cx + sin_a * width / 2, cy - cos_a * width / 2)
+        surf = pygame.Surface((config.WINDOW_WIDTH, config.WINDOW_HEIGHT), pygame.SRCALPHA)
+        color = config.HYPERJUMP_SHOCK_COLOR + (int(150 * intensity),)
+        pygame.draw.polygon(surf, color, [left, tip, right])
         screen.blit(surf, (0, 0))
 
     def draw(
@@ -545,6 +585,7 @@ class Ship:
         cy = config.WINDOW_HEIGHT // 2
         offset_x = self.x - cx / zoom
         offset_y = self.y - cy / zoom
+        self._draw_hyperjump_shock(screen, offset_x, offset_y, zoom)
         self._draw_hyperjump_trail(screen, offset_x, offset_y, zoom)
         self.draw_particles(screen, offset_x, offset_y, zoom)
         points = self._triangle_points(cx, cy, zoom)
@@ -803,6 +844,7 @@ class Ship:
         """Draw the ship on screen applying an offset and zoom."""
         if self.invisible_timer > 0:
             return
+        self._draw_hyperjump_shock(screen, offset_x, offset_y, zoom)
         self._draw_hyperjump_trail(screen, offset_x, offset_y, zoom)
         self.draw_particles(screen, offset_x, offset_y, zoom)
         cx = int((self.x - offset_x) * zoom)
