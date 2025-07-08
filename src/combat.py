@@ -642,3 +642,93 @@ class BasicWeapon(Weapon):
 
     def __init__(self) -> None:
         super().__init__("Basic", 6, 380, cooldown=0.6)
+
+
+class IonSymbiontShot(Projectile):
+    """Projectile that attaches to a ship and deals damage over time."""
+
+    def __init__(self, x: float, y: float, tx: float, ty: float, speed: float, damage: float) -> None:
+        super().__init__(x, y, tx, ty, speed, damage)
+        self.attached = False
+        self.target = None
+        self.offset = (0.0, 0.0)
+        self.timer = 3.0  # deal damage over 3 seconds
+        self.exploding = False
+
+    def update(self, dt: float, targets: list | None = None) -> None:
+        if self.exploding:
+            self.timer -= dt
+            return
+
+        if not self.attached:
+            super().update(dt)
+            if targets:
+                for obj in targets:
+                    dist = math.hypot(obj.ship.x - self.x, obj.ship.y - self.y)
+                    if dist <= obj.ship.collision_radius:
+                        self.attached = True
+                        self.target = obj.ship
+                        self.offset = (self.x - obj.ship.x, self.y - obj.ship.y)
+                        break
+        else:
+            if not self.target or self.target.hull <= 0:
+                self.attached = False
+                self.exploding = True
+                self.timer = 0.2
+                return
+            self.x = self.target.x + self.offset[0]
+            self.y = self.target.y + self.offset[1]
+            if self.timer > 0:
+                damage_rate = self.damage / 3.0
+                self.target.take_damage(damage_rate * dt)
+                self.timer -= dt
+            if self.timer <= 0:
+                self.exploding = True
+                self.timer = 0.2
+
+    def expired(self) -> bool:
+        return self.exploding and self.timer <= 0
+
+    def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
+        pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
+        if self.exploding:
+            pygame.draw.circle(screen, (255, 100, 50), pos, max(2, int(6 * zoom)), 1)
+        else:
+            pygame.draw.circle(screen, (100, 255, 255), pos, max(2, int(4 * zoom)))
+
+
+class IonizedSymbiontWeapon(Weapon):
+    """Charge-based weapon that fires a sticky ion shot."""
+
+    def __init__(self) -> None:
+        super().__init__("Ion Symbiont", 18, 300, cooldown=2.0)
+        self.max_charge = 3.0
+        self._charge = 0.0
+        self._charging = False
+
+    def update(self, dt: float) -> None:
+        super().update(dt)
+        if self._charging:
+            self._charge = min(self.max_charge, self._charge + dt)
+
+    @property
+    def charge_ratio(self) -> float:
+        if not self._charging:
+            return 0.0
+        return self._charge / self.max_charge
+
+    def start_charging(self) -> None:
+        if not self.can_fire() or self._charging:
+            return
+        self._charging = True
+        self._charge = 0.0
+
+    def release(self, x: float, y: float, tx: float, ty: float):
+        if not self._charging:
+            return None
+        ratio = self._charge / self.max_charge if self.max_charge > 0 else 0.0
+        dmg = self.damage * (1.0 + ratio)
+        self._charging = False
+        self._charge = 0.0
+        self._timer = 0.0
+        return IonSymbiontShot(x, y, tx, ty, self.speed, dmg)
