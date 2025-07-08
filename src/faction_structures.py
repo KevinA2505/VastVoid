@@ -118,7 +118,7 @@ class Turret:
             if d < min_d:
                 min_d = d
                 nearest = obj.ship
-        if nearest:
+        if nearest and min_d <= config.PIRATE_TURRET_RANGE:
             desired = math.atan2(nearest.y - self.owner.y, nearest.x - self.owner.x)
             diff = (desired - self.angle + math.pi) % (2 * math.pi) - math.pi
             rotate = 2.0 * dt
@@ -518,21 +518,19 @@ class CapitalShip(FactionStructure):
             pygame.draw.ellipse(screen, outline_c, rect, max(1, int(2 * zoom)))
             font_size = max(10, int(scaled * 0.7))
             font = pygame.font.Font(None, font_size)
-            letter = font.render("X", True, outline_c)
+            letter = font.render("\u2620", True, outline_c)
             letter_rect = letter.get_rect(center=(x, y))
             screen.blit(letter, letter_rect)
-            arm_color = (80, 40, 20)
+            turret_color = (0, 0, 0)
+            border_color = (150, 150, 150)
             for turret in self.turrets:
                 tx = x + int(math.cos(turret.angle) * turret.length * zoom)
                 ty = y + int(math.sin(turret.angle) * turret.length * zoom)
-                pygame.draw.line(
-                    screen,
-                    arm_color,
-                    (x, y),
-                    (tx, ty),
-                    max(1, int(4 * zoom)),
-                )
-                pygame.draw.circle(screen, arm_color, (tx, ty), max(2, int(4 * zoom)))
+                size_w = max(4, int(8 * zoom))
+                size_h = max(6, int(12 * zoom))
+                rect = pygame.Rect(tx - size_w // 2, ty - size_h // 2, size_w, size_h)
+                pygame.draw.rect(screen, turret_color, rect)
+                pygame.draw.rect(screen, border_color, rect, max(1, int(2 * zoom)))
             for proj in self.projectiles:
                 proj.draw(screen, offset_x, offset_y, zoom)
         elif self.shape == "angular":
