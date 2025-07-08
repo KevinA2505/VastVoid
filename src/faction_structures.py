@@ -178,7 +178,16 @@ class MissileTurret(Turret):
                 self.orientation += rotate if diff > 0 else -rotate
             self.orientation %= 2 * math.pi
             if self._timer <= 0:
-                proj = GuidedMissile(base_x, base_y, nearest, 200, int(30 * 1.2))
+                # Guided missiles fired by Free Explorer turrets now have a
+                # shorter lifetime and slightly reduced speed.
+                proj = GuidedMissile(
+                    base_x,
+                    base_y,
+                    nearest,
+                    int(200 * 0.85),
+                    int(30 * 1.2),
+                    lifetime=2.5,
+                )
                 self.owner.projectiles.append(proj)
                 self._timer = self.cooldown
 
