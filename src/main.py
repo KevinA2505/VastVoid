@@ -26,7 +26,7 @@ from ui import (
 )
 from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
 from planet_surface import PlanetSurface
-from character import choose_player_table
+from character import choose_player_table, Robot
 
 
 class _NullKeys:
@@ -142,6 +142,10 @@ def main():
     for w in ship.weapons:
         w.owner = ship
     ship.artifacts = [EMPArtifact(), AreaShieldArtifact(), GravityTractorArtifact()]
+
+    pepe = Robot()
+    pepe.name = "PEPE"
+    ship.add_passenger(pepe)
 
     zoom = 1.0
     selected_object = None
