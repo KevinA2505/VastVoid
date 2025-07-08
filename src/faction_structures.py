@@ -298,8 +298,9 @@ class CapitalShip(FactionStructure):
             self.shape = "pirate_ship"
             self.color = (0, 0, 0)
             self.outline_color = (120, 0, 120)
+            # Position four turrets exactly on the hull at the cardinal points
             self.turrets = [
-                Turret(self, i * (math.pi / 2), self.radius * 1.3)
+                Turret(self, i * (math.pi / 2), self.radius)
                 for i in range(4)
             ]
         elif fraction.name == "Free Explorers":
@@ -701,3 +702,38 @@ def spawn_capital_ships(
         ship.apply_fraction_traits(frac)
         ships.append(ship)
     return ships
+
+
+def verify_pirate_turret_positions(
+    ship: CapitalShip,
+    radius_tolerance: float = 2.0,
+    angle_tolerance: float = 0.01,
+) -> bool:
+    """Return ``True`` if ``ship`` has its Pirate turrets on the cardinal points.
+
+    The check confirms there are exactly four turrets, each positioned on the
+    hull edge at north, south, east and west. ``radius_tolerance`` allows a
+    small deviation from ``ship.radius`` to account for rounding.
+    """
+
+    if not ship.fraction or ship.fraction.name != "Pirate Clans":
+        return False
+    if len(ship.turrets) != 4:
+        return False
+
+    expected_angles = {0.0, math.pi / 2, math.pi, 3 * math.pi / 2}
+    for turret in ship.turrets:
+        dist = math.hypot(turret.offset_x, turret.offset_y)
+        if abs(dist - ship.radius) > radius_tolerance:
+            return False
+        match = None
+        for ang in list(expected_angles):
+            diff = (turret.angle - ang + math.pi) % (2 * math.pi) - math.pi
+            if abs(diff) <= angle_tolerance:
+                match = ang
+                expected_angles.remove(ang)
+                break
+        if match is None:
+            return False
+
+    return not expected_angles
