@@ -95,8 +95,8 @@ class RoutePlanner:
     ) -> None:
         if self.destination:
             start = (
-                config.WINDOW_WIDTH // 2,
-                config.WINDOW_HEIGHT // 2,
+                int((ship.x - offset_x) * zoom),
+                int((ship.y - offset_y) * zoom),
             )
             end = (
                 int((self.destination.x - offset_x) * zoom),
