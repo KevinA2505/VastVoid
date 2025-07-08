@@ -185,9 +185,9 @@ class MissileTurret(Turret):
                     base_x,
                     base_y,
                     nearest,
-                    int(200 * 0.85 * 0.85),
+                    int(200 * 0.85 * 0.85 *0.60),
                     int(30 * 1.2),
-                    lifetime=3.5,
+                    lifetime=7.5,
                 )
                 self.owner.projectiles.append(proj)
                 self._timer = self.cooldown
