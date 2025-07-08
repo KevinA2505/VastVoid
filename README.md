@@ -126,3 +126,16 @@ and transfers roughly 10 energy per second while the link is maintained,
 reducing the star's own supply. This mechanism lays the groundwork for
 constructing a Dyson Sphere that continuously harvests stellar energy for the
 faction's fleet.
+
+### Free Explorers flagship and portals
+
+The Free Explorers capital ship now appears as a round gray disk with a black
+edge and a neutral gray aura. Four missile turrets are mounted at the cardinal
+points. These launch homing missiles that deal 20% extra damage but travel 20%
+slower than standard versions. Each missile detonates after a short lifetime,
+producing a very small blast radius.
+
+Three pairs of green portals also accompany the flagship. Half of each pair
+spawns nearby while the distant counterpart is placed farther away. Members of
+the Free Explorers use them freely, but other factions must pay 10 credits per
+teleport.
