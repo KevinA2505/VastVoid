@@ -144,7 +144,6 @@ class GuidedMissile(Projectile):
         delay: float = 1.0,
         lifetime: float = 5.0,
         turn_rate: float = config.HOMING_PROJECTILE_TURN_RATE,
-        explosion_radius: float = 4.0,
     ) -> None:
         super().__init__(x, y, target.x, target.y, 0.0, damage, 0.0, max_distance=0)
         self.target = target
@@ -152,19 +151,11 @@ class GuidedMissile(Projectile):
         self.delay = delay
         self.lifetime = lifetime
         self.turn_rate = turn_rate
-        self.explosion_radius = explosion_radius
-        self.exploded = False
-        self.timer = 0.0
 
     def update(self, dt: float) -> None:
-        if self.exploded:
-            self.timer -= dt
-            return
         if self.lifetime > 0:
             self.lifetime -= dt
         if self.lifetime <= 0:
-            self.exploded = True
-            self.timer = 0.2
             return
         if self.delay > 0:
             self.delay -= dt
@@ -190,14 +181,7 @@ class GuidedMissile(Projectile):
         super().update(dt)
 
     def expired(self) -> bool:
-        return (self.lifetime <= 0 and not self.exploded) or (self.exploded and self.timer <= 0)
-
-    def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
-        if not self.exploded:
-            super().draw(screen, offset_x, offset_y, zoom)
-        else:
-            pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
-            pygame.draw.circle(screen, (255, 100, 50), pos, int(self.explosion_radius * zoom), 1)
+        return self.lifetime <= 0
 
 
 @dataclass
