@@ -140,3 +140,7 @@ Three pairs of green portals also accompany the flagship. Half of each pair
 spawns nearby while the distant counterpart is placed farther away. Members of
 the Free Explorers use them freely, but other factions must pay 10 credits per
 teleport.
+
+### Crew management and docking
+
+Each ship has a single pilot seat and two passenger slots. Press **C** when two vessels are close to attempt docking via the Common Berthing Mechanism. If docking succeeds a crew transfer window appears so you can move members between ships. Your starting ship also carries a robot named PEPE as an initial passenger.
