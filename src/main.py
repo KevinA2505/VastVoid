@@ -228,6 +228,10 @@ def main():
                 active_ship = candidate
                 break
         if active_ship and active_ship is not ship:
+            if ship not in extra_ships and ship is not carrier:
+                extra_ships.append(ship)
+            if active_ship in extra_ships:
+                extra_ships.remove(active_ship)
             ship = active_ship
             ability_bar.set_ship(ship)
             if weapon_menu:
