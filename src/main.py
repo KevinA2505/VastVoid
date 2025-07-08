@@ -172,6 +172,8 @@ def main():
     carrier_move_map = None
     camera_x = ship.x
     camera_y = ship.y
+    camera_dragging = False
+    camera_last = (0, 0)
     load_mode = False
 
     clock = pygame.time.Clock()
@@ -554,7 +556,19 @@ def main():
                             carrier_window = CarrierWindow(carrier)
                             continue
                 elif event.button == 3:
+                    camera_dragging = True
+                    camera_last = event.pos
                     selected_object = None
+
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == 3:
+                camera_dragging = False
+            elif event.type == pygame.MOUSEMOTION:
+                if camera_dragging:
+                    dx = event.pos[0] - camera_last[0]
+                    dy = event.pos[1] - camera_last[1]
+                    camera_x -= dx / zoom
+                    camera_y -= dy / zoom
+                    camera_last = event.pos
 
         if current_station:
             leave_rect, inv_rect, market_rect = draw_station_ui(
@@ -676,8 +690,17 @@ def main():
             if keys[pygame.K_DOWN]:
                 camera_y += config.CAMERA_PAN_SPEED * dt
         else:
-            camera_x = ship.x
-            camera_y = ship.y
+            if not camera_dragging:
+                moving = (
+                    ship.autopilot_target is not None
+                    or ship.hyperjump_active
+                    or abs(ship.vx) > 0.1
+                    or abs(ship.vy) > 0.1
+                )
+                if moving:
+                    t = min(1.0, config.CAMERA_RECENTER_SPEED * dt)
+                    camera_x += (ship.x - camera_x) * t
+                    camera_y += (ship.y - camera_y) * t
             if ship.hyperjump_active:
                 camera_x += random.uniform(-5, 5)
                 camera_y += random.uniform(-5, 5)
