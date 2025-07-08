@@ -23,6 +23,7 @@ from ui import (
     HyperJumpMap,
     CarrierMoveMap,
     CarrierWindow,
+    PassengerTransferWindow,
 )
 from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
 from planet_surface import PlanetSurface
@@ -157,6 +158,7 @@ def main():
     weapon_menu = None
     artifact_menu = None
     carrier_window = None
+    passenger_window = None
     current_station = None
     current_surface = None
     approaching_planet = None
@@ -335,6 +337,24 @@ def main():
                 pygame.display.flip()
                 continue
 
+        if passenger_window:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+                closed = passenger_window.handle_event(event)
+                if closed:
+                    passenger_window = None
+                    break
+                if passenger_window and passenger_window.new_ship:
+                    ship = passenger_window.new_ship
+                    ability_bar.set_ship(ship)
+                    passenger_window.new_ship = None
+            if passenger_window:
+                passenger_window.draw(screen, info_font)
+                pygame.display.flip()
+                continue
+
         if market_window:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -502,6 +522,9 @@ def main():
                     weapon_menu = WeaponMenu(ship)
                 elif event.key == pygame.K_g:
                     artifact_menu = ArtifactMenu(ship, ability_bar)
+                elif event.key == pygame.K_c:
+                    if ship.cbm and ship.cbm.docked_to:
+                        passenger_window = PassengerTransferWindow(ship, ship.cbm.docked_to)
                 elif event.key == pygame.K_l:
                     load_mode = True
                 elif event.key == pygame.K_SPACE:
