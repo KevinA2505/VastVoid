@@ -147,6 +147,17 @@ def main():
     pepe.name = "PEPE"
     ship.add_passenger(pepe)
 
+    # Create an additional ship a short distance from the player. It has no
+    # crew assigned and simply exists alongside the main player ship.
+    extra_npc = Ship(
+        ship.x + 350,
+        ship.y,
+        chosen_model,
+        hull=config.PLAYER_MAX_HULL,
+        fraction=player.fraction,
+        speed_factor=config.NPC_SPEED_FACTOR,
+    )
+
     zoom = 1.0
     selected_object = None
     info_font = pygame.font.Font(None, 20)
@@ -155,7 +166,7 @@ def main():
     ability_bar = AbilityBar()
     ability_bar.set_ship(ship)
     carrier = Carrier(ship.x + 150, ship.y + 80, fraction=player.fraction)
-    extra_ships = []
+    extra_ships = [extra_npc]
     inventory_window = None
     market_window = None
     weapon_menu = None
