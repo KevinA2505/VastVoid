@@ -1,3 +1,4 @@
+
 import random
 import math
 import pygame
@@ -11,6 +12,7 @@ class Portal:
         self.allowed_faction = allowed_faction
         self.radius = radius if radius is not None else config.PORTAL_RADIUS
         self.color = color if color is not None else config.PORTAL_COLOR
+
         self.pair: "Portal" | None = None
 
     def set_pair(self, other: "Portal") -> None:

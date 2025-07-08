@@ -114,6 +114,13 @@ def main():
         from portal import spawn_explorer_portals
         portals = spawn_explorer_portals(free_ship, world_width, world_height)
 
+    portals: list[Portal] = []
+    free_flagship = next(
+        (c for c in capital_ships if c.fraction and c.fraction.name == "Free Explorers"),
+        None,
+    )
+    if free_flagship:
+        portals = spawn_explorer_portals(free_flagship, world_width, world_height)
 
     chosen_model = choose_ship(screen)
     player.ship_model = chosen_model
@@ -678,6 +685,8 @@ def main():
         offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
         for sector in sectors:
             sector.draw(screen, offset_x, offset_y, zoom)
+        for p in portals:
+            p.draw(screen, offset_x, offset_y, zoom)
         for cap in capital_ships:
             cap.draw(screen, offset_x, offset_y, zoom)
         for portal in portals:
