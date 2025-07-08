@@ -23,6 +23,7 @@ button to return to space.
 * The flagship also fields defensive drones that orbit the vessel and intercept
   nearby threats.
 * Ships can deploy a **Chrono Tachionic Whip** that slows enemies within a small field.
+* A new **Spores** weapon releases a short-lived damaging cloud.
 
 ### Defensive drones
 The Nebula Order flagship deploys a trio of small drones that protect only this

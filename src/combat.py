@@ -1,4 +1,5 @@
 import math
+import random
 from dataclasses import dataclass, field
 from typing import List
 import pygame
@@ -795,3 +796,122 @@ class ChronoTachionicWhip(Weapon):
             return SlowField(self.owner, tx, ty)
         speed = self.speed * 0.95
         return Projectile(x, y, tx, ty, speed, self.damage)
+
+
+class _SporeParticle:
+    """Small particle emitted by a ``SporeCloud``."""
+
+    def __init__(self, cloud) -> None:
+        ang = cloud.angle + random.uniform(-cloud.arc / 2, cloud.arc / 2)
+        speed = random.uniform(40.0, 80.0)
+        self.vx = math.cos(ang) * speed
+        self.vy = math.sin(ang) * speed
+        self.x = cloud.x
+        self.y = cloud.y
+        self.life = random.uniform(0.5, 1.0)
+
+    def update(self, dt: float) -> None:
+        self.x += self.vx * dt
+        self.y += self.vy * dt
+        self.life -= dt
+
+    def expired(self) -> bool:
+        return self.life <= 0
+
+
+class SporeCloud:
+    """Cone-shaped cloud that damages ships over time."""
+
+    def __init__(
+        self,
+        owner,
+        x: float,
+        y: float,
+        angle: float,
+        radius: float = 120.0,
+        arc: float = math.pi / 3,
+        duration: float = 3.0,
+        damage: float = 6.0,
+    ) -> None:
+        self.owner = owner
+        self.x = x
+        self.y = y
+        self.angle = angle
+        self.radius = radius
+        self.arc = arc
+        self.duration = duration
+        self.damage = damage
+        self.timer = 0.0
+        self._tick = 0.0
+        self.particles: list[_SporeParticle] = []
+
+    def contains(self, ship) -> bool:
+        dx = ship.x - self.x
+        dy = ship.y - self.y
+        dist = math.hypot(dx, dy)
+        if dist > self.radius:
+            return False
+        ang = math.atan2(dy, dx)
+        diff = (ang - self.angle + math.pi) % (2 * math.pi) - math.pi
+        return abs(diff) <= self.arc / 2
+
+    def update(self, dt: float) -> bool:
+        self.timer += dt
+        self._tick += dt
+        if len(self.particles) < 30:
+            self.particles.append(_SporeParticle(self))
+        for p in list(self.particles):
+            p.update(dt)
+            if p.expired():
+                self.particles.remove(p)
+        if self._tick >= 1.0:
+            self._tick -= 1.0
+            return True
+        return False
+
+    def expired(self) -> bool:
+        return self.timer >= self.duration
+
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        start = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
+        a1 = self.angle - self.arc / 2
+        a2 = self.angle + self.arc / 2
+        end1 = (
+            int((self.x + math.cos(a1) * self.radius - offset_x) * zoom),
+            int((self.y + math.sin(a1) * self.radius - offset_y) * zoom),
+        )
+        end2 = (
+            int((self.x + math.cos(a2) * self.radius - offset_x) * zoom),
+            int((self.y + math.sin(a2) * self.radius - offset_y) * zoom),
+        )
+        pygame.draw.polygon(screen, (120, 160, 80, 60), [start, end1, end2])
+        for p in self.particles:
+            px = int((p.x - offset_x) * zoom)
+            py = int((p.y - offset_y) * zoom)
+            alpha = max(0, min(255, int(p.life / 1.0 * 255)))
+            surf = pygame.Surface((3, 3), pygame.SRCALPHA)
+            pygame.draw.circle(surf, (120, 200, 120, alpha), (1, 1), 1)
+            screen.blit(surf, (px - 1, py - 1))
+
+
+class SporesWeapon(Weapon):
+    """Weapon that releases a damaging spore cloud."""
+
+    def __init__(self) -> None:
+        super().__init__("Spores", 0, 0, cooldown=5.0)
+
+    def fire(self, x: float, y: float, tx: float, ty: float):
+        if not self.can_fire():
+            return None
+        self._timer = 0.0
+        angle = self.owner.angle
+        dist = self.owner.size * 2
+        sx = self.owner.x + math.cos(angle) * dist
+        sy = self.owner.y + math.sin(angle) * dist
+        return SporeCloud(self.owner, sx, sy, angle)
