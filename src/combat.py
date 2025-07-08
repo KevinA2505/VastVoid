@@ -352,6 +352,51 @@ class TimedMine:
             pygame.draw.circle(screen, (255, 100, 50), pos, int(self.radius * zoom), 1)
 
 
+class Bomb(Projectile):
+    """Explosive projectile that detonates on impact."""
+
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        tx: float,
+        ty: float,
+        damage: float = 24.0,
+        speed: float = 200.0,
+        radius: float = 80.0,
+    ) -> None:
+        super().__init__(x, y, tx, ty, speed, damage, 0.0, max_distance=500)
+        self.radius = radius
+        self.exploded = False
+        self.timer = 0.0
+
+    def update(self, dt: float) -> None:
+        if self.exploded:
+            self.timer -= dt
+        else:
+            super().update(dt)
+
+    def explode(self) -> None:
+        if not self.exploded:
+            self.exploded = True
+            self.timer = 0.2
+
+    def expired(self) -> bool:
+        return self.exploded and self.timer <= 0
+
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
+        pygame.draw.circle(screen, (150, 80, 30), pos, max(2, int(5 * zoom)))
+        if self.exploded:
+            pygame.draw.circle(screen, (255, 100, 50), pos, int(self.radius * zoom), 1)
+
+
 class BombDrone:
     """Slow homing drone that explodes on impact."""
 
