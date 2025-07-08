@@ -466,7 +466,7 @@ class BombDrone:
             d = math.hypot(obj.ship.x - self.x, obj.ship.y - self.y)
             if d < min_d:
                 min_d = d
-                nearest = en
+                nearest = obj
         return nearest
 
     def _explode(self) -> None:
@@ -572,7 +572,7 @@ class Drone:
             d = math.hypot(obj.ship.x - self.x, obj.ship.y - self.y)
             if d < min_d:
                 min_d = d
-                nearest = en
+                nearest = obj
         return nearest
 
     def expired(self) -> bool:
