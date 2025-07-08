@@ -174,12 +174,14 @@ def main():
     camera_y = ship.y
     camera_dragging = False
     camera_last = (0, 0)
+    last_pan_time = config.CAMERA_RECENTER_DELAY
     load_mode = False
 
     clock = pygame.time.Clock()
     running = True
     while running:
         dt = clock.tick(60) / 1000.0
+        last_pan_time += dt
 
         if wormhole_cooldown > 0:
             wormhole_cooldown -= dt
@@ -558,10 +560,12 @@ def main():
                 elif event.button == 3:
                     camera_dragging = True
                     camera_last = event.pos
+                    last_pan_time = 0.0
                     selected_object = None
 
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 3:
                 camera_dragging = False
+                last_pan_time = 0.0
             elif event.type == pygame.MOUSEMOTION:
                 if camera_dragging:
                     dx = event.pos[0] - camera_last[0]
@@ -569,6 +573,7 @@ def main():
                     camera_x -= dx / zoom
                     camera_y -= dy / zoom
                     camera_last = event.pos
+                    last_pan_time = 0.0
 
         if current_station:
             leave_rect, inv_rect, market_rect = draw_station_ui(
@@ -690,7 +695,7 @@ def main():
             if keys[pygame.K_DOWN]:
                 camera_y += config.CAMERA_PAN_SPEED * dt
         else:
-            if not camera_dragging:
+            if not camera_dragging and last_pan_time >= config.CAMERA_RECENTER_DELAY:
                 moving = (
                     ship.autopilot_target is not None
                     or ship.hyperjump_active
