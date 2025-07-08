@@ -1,6 +1,7 @@
 import pygame
 import math
 from dataclasses import dataclass
+from character import CrewMember
 import config
 from fraction import Fraction
 from crew import CrewMember
@@ -48,6 +49,9 @@ SHIP_MODELS = [
     ShipModel("Interceptor", "Starlight", 16, (255, 100, 100), 1.4),
 ]
 
+# Default capacity for passengers carried by a ship
+DEFAULT_PASSENGER_CAPACITY = 2
+
 
 class _ShipParticle:
     """Simple exhaust particle emitted by a ship."""
@@ -82,6 +86,7 @@ class Ship:
         speed_factor: float = 1.0,
         fraction: Fraction | None = None,
         has_cbm: bool = False,
+        passenger_capacity: int = DEFAULT_PASSENGER_CAPACITY,
     ) -> None:
         self.x = float(x)
         self.y = float(y)
@@ -103,6 +108,9 @@ class Ship:
         self.hyperjump_anim_time = 0.0
         self.hyperjump_elapsed = 0.0
         self._hyperjump_start = (0.0, 0.0)
+        self.pilot: CrewMember | None = None
+        self.passengers: list[CrewMember] = []
+        self.passenger_capacity = passenger_capacity
         self.boost_charge = 1.0
         self.boost_time = 0.0
         self.model = model
@@ -159,6 +167,22 @@ class Ship:
         if self.cbm:
             return self.cbm.transfer_from_docked(member)
         return False
+    def set_pilot(self, pilot: CrewMember | None) -> None:
+        """Assign or remove the ship's pilot."""
+        self.pilot = pilot
+
+    def add_passenger(self, passenger: CrewMember) -> bool:
+        """Add a passenger if space is available."""
+        if len(self.passengers) >= self.passenger_capacity:
+            return False
+        self.passengers.append(passenger)
+        return True
+
+    def remove_passenger(self, passenger: CrewMember) -> None:
+        """Remove ``passenger`` if present."""
+        if passenger in self.passengers:
+            self.passengers.remove(passenger)
+            
 
     def update(
         self,
@@ -192,6 +216,11 @@ class Ship:
             weapon.update(dt)
         for art in self.artifacts:
             art.update(dt)
+
+        if self.pilot is None:
+            self._update_projectiles(dt, world_width, world_height)
+            self._update_specials(dt, world_width, world_height, targets)
+            return
 
         if self._update_hyperjump(dt, world_width, world_height, targets):
             return

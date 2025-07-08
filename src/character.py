@@ -1,4 +1,5 @@
 import pygame
+from dataclasses import dataclass
 import config
 from fraction import FRACTIONS, Fraction
 from items import ITEMS_BY_NAME
@@ -17,6 +18,14 @@ class Robot:
     """Basic Robot species."""
     def __init__(self):
         self.species = "Robot"
+
+
+@dataclass
+class CrewMember:
+    """Simple crew member with a name and species."""
+
+    name: str
+    species: Human | Alien | Robot
 
 class Player:
     """The player controlled character."""
