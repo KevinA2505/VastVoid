@@ -8,7 +8,7 @@ from combat import LaserWeapon, MineWeapon, DroneWeapon, MissileWeapon, BasicWea
 from sector import create_sectors
 from fraction import FRACTIONS
 from faction_structures import spawn_capital_ships
-from portal import Portal
+from portal import Portal, spawn_explorer_portals
 from star import Star
 from planet import Planet
 from station import SpaceStation
@@ -110,17 +110,11 @@ def main():
     world_height = config.GRID_SIZE * config.SECTOR_HEIGHT
 
     capital_ships = spawn_capital_ships(FRACTIONS, world_width, world_height)
-    free_ship = next((c for c in capital_ships if c.fraction and c.fraction.name == "Free Explorers"), None)
-    portals = []
-    if free_ship:
-        from portal import spawn_explorer_portals
-        portals = spawn_explorer_portals(free_ship, world_width, world_height)
-
-    portals: list[Portal] = []
     free_flagship = next(
         (c for c in capital_ships if c.fraction and c.fraction.name == "Free Explorers"),
         None,
     )
+    portals: list[Portal] = []
     if free_flagship:
         portals = spawn_explorer_portals(free_flagship, world_width, world_height)
 
