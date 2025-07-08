@@ -33,7 +33,7 @@ from ui import (
     CarrierMoveMap,
     CarrierWindow,
     CrewTransferWindow,
-    draw_charge_bar,
+    draw_labeled_bar,
 )
 from cbm import CommonBerthingMechanism
 from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
@@ -936,7 +936,16 @@ def main():
         weapon = ship.weapons[ship.active_weapon]
         if hasattr(weapon, "charge_ratio") and weapon.charge_ratio > 0:
             charge_y = hull_y - 15
-            draw_charge_bar(screen, weapon.charge_ratio, bar_x, charge_y, bar_width, bar_height)
+            draw_labeled_bar(
+                screen,
+                info_font,
+                "Charge",
+                weapon.charge_ratio,
+                bar_x,
+                charge_y,
+                bar_width,
+                bar_height,
+            )
             hull_y = charge_y  # stack further bars above if needed
         ability_bar.draw(screen, info_font)
         menu.draw(screen, info_font)

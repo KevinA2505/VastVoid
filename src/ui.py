@@ -737,15 +737,29 @@ def draw_charge_bar(
     if fill > 0:
         pygame.draw.rect(screen, (200, 200, 50), (x, y, fill, height))
 
-        pygame.draw.rect(screen, (60, 60, 90), self.move_rect)
-        pygame.draw.rect(screen, (200, 200, 200), self.move_rect, 1)
-        move_txt = font.render("Move", True, (255, 255, 255))
-        screen.blit(move_txt, move_txt.get_rect(center=self.move_rect.center))
 
-        pygame.draw.rect(screen, (60, 60, 90), self.stop_rect)
-        pygame.draw.rect(screen, (200, 200, 200), self.stop_rect, 1)
-        stop_txt = font.render("Stop", True, (255, 255, 255))
-        screen.blit(stop_txt, stop_txt.get_rect(center=self.stop_rect.center))
+def draw_labeled_bar(
+    screen: pygame.Surface,
+    font: pygame.font.Font,
+    label: str,
+    ratio: float,
+    x: int,
+    y: int,
+    width: int = 100,
+    height: int = 10,
+    color: tuple[int, int, int] = (200, 200, 50),
+) -> None:
+    """Draw a horizontal progress bar with ``label`` above it."""
+
+    pygame.draw.rect(screen, (60, 60, 90), (x, y, width, height))
+    pygame.draw.rect(screen, (200, 200, 200), (x, y, width, height), 1)
+    fill = int(width * max(0.0, min(1.0, ratio)))
+    if fill > 0:
+        pygame.draw.rect(screen, color, (x, y, fill, height))
+    if label:
+        txt = font.render(label, True, (255, 255, 255))
+        txt_rect = txt.get_rect(midbottom=(x + width // 2, y - 2))
+        screen.blit(txt, txt_rect)
 
 
 class CrewTransferWindow:
