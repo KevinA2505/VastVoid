@@ -742,7 +742,7 @@ def main():
                 player.fraction,
                 player.fraction.color if player.fraction else None,
             )
-        ship.draw(screen, zoom, player.fraction)
+        ship.draw_at(screen, offset_x, offset_y, zoom, player.fraction)
         route_planner.draw(screen, info_font, ship, offset_x, offset_y, zoom)
 
         if selected_object:
