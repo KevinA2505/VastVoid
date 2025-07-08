@@ -175,6 +175,7 @@ def main():
     camera_dragging = False
     camera_last = (0, 0)
     last_pan_time = config.CAMERA_RECENTER_DELAY
+    follow_ship = True
     load_mode = False
 
     clock = pygame.time.Clock()
@@ -561,6 +562,7 @@ def main():
                     camera_dragging = True
                     camera_last = event.pos
                     last_pan_time = 0.0
+                    follow_ship = False
                     selected_object = None
 
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 3:
@@ -695,7 +697,7 @@ def main():
             if keys[pygame.K_DOWN]:
                 camera_y += config.CAMERA_PAN_SPEED * dt
         else:
-            if not camera_dragging and last_pan_time >= config.CAMERA_RECENTER_DELAY:
+            if follow_ship and not camera_dragging and last_pan_time >= config.CAMERA_RECENTER_DELAY:
                 moving = (
                     ship.autopilot_target is not None
                     or ship.hyperjump_active
