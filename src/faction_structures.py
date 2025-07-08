@@ -349,7 +349,7 @@ class CapitalShip(FactionStructure):
             self.color = (160, 160, 160)
             self.outline_color = (0, 0, 0)
             # Slightly enlarge the hull so turrets can sit farther apart
-            self.radius = 70
+            self.radius = 130
             self.size = self.radius
             self.shape = "round"
             # Position missile turrets near the outer edge but still inside
