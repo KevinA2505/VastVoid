@@ -134,6 +134,7 @@ def main():
         fraction=player.fraction,
         speed_factor=config.NPC_SPEED_FACTOR,
     )
+    ship.assign_pilot(player)
     ship.weapons.extend([
         LaserWeapon(),
         MineWeapon(),
