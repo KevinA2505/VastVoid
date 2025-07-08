@@ -5,7 +5,7 @@ import math
 from dataclasses import dataclass, field
 from typing import Any
 from star import Star
-from combat import Drone, Bomb
+from combat import Drone, Bomb, GuidedMissile
 from defensive_drone import DefensiveDrone
 from learning_defensive_drone import LearningDefensiveDrone
 from aggressive_defensive_drone import AggressiveDefensiveDrone
@@ -151,6 +151,36 @@ class Turret:
                 self.owner.projectiles.append(proj)
                 self._timer = self.cooldown
 
+
+@dataclass
+class MissileTurret(Turret):
+    """Turret variant that launches guided missiles."""
+
+    def update(self, dt: float, targets: list) -> None:
+        if self._timer > 0:
+            self._timer -= dt
+        base_x = self.owner.x + self.offset_x
+        base_y = self.owner.y + self.offset_y
+        nearest = None
+        min_d = float("inf")
+        for obj in targets:
+            d = math.hypot(obj.ship.x - base_x, obj.ship.y - base_y)
+            if d < min_d:
+                min_d = d
+                nearest = obj.ship
+        if nearest and min_d <= config.PIRATE_TURRET_RANGE:
+            desired = math.atan2(nearest.y - base_y, nearest.x - base_x)
+            diff = (desired - self.orientation + math.pi) % (2 * math.pi) - math.pi
+            rotate = 2.0 * dt
+            if abs(diff) < rotate:
+                self.orientation = desired
+            else:
+                self.orientation += rotate if diff > 0 else -rotate
+            self.orientation %= 2 * math.pi
+            if self._timer <= 0:
+                proj = GuidedMissile(base_x, base_y, nearest, 250, int(30 * 1.2))
+                self.owner.projectiles.append(proj)
+                self._timer = self.cooldown
 
 @dataclass
 class EngagementRing:
@@ -306,6 +336,13 @@ class CapitalShip(FactionStructure):
         elif fraction.name == "Free Explorers":
             self.hull = 1300
             self.modules.extend(["Survey Deck", "Jump Drives"])
+            self.color = (160, 160, 160)
+            self.outline_color = (0, 0, 0)
+            self.shape = "round"
+            self.turrets = [
+                MissileTurret(self, i * (math.pi / 2), self.radius)
+                for i in range(4)
+            ]
 
     def update(
         self,
@@ -416,6 +453,22 @@ class CapitalShip(FactionStructure):
                         if math.hypot(proj.x - en.ship.x, proj.y - en.ship.y) <= proj.radius:
                             en.ship.take_damage(proj.damage)
                 if proj.expired():
+                    self.projectiles.remove(proj)
+        elif self.fraction.name == "Free Explorers":
+            hostiles = [e for e in targets if e.fraction != self.fraction]
+            if player and getattr(player, "fraction", None) != self.fraction:
+                hostiles.append(type("_P", (), {"ship": player})())
+            for turret in self.turrets:
+                turret.update(dt, hostiles)
+            for proj in list(self.projectiles):
+                proj.update(dt)
+                hit = False
+                for en in hostiles:
+                    if math.hypot(proj.x - en.ship.x, proj.y - en.ship.y) <= en.ship.collision_radius:
+                        en.ship.take_damage(proj.damage)
+                        hit = True
+                        break
+                if hit or proj.expired():
                     self.projectiles.remove(proj)
 
         for station in self.city_stations:
@@ -543,6 +596,27 @@ class CapitalShip(FactionStructure):
             letter = font.render("\u2620", True, outline_c)
             letter_rect = letter.get_rect(center=(x, y))
             screen.blit(letter, letter_rect)
+            turret_color = (0, 0, 0)
+            border_color = (150, 150, 150)
+            for turret in self.turrets:
+                tx = x + int(turret.offset_x * zoom)
+                ty = y + int(turret.offset_y * zoom)
+                size_w = max(4, int(8 * zoom))
+                size_h = max(6, int(12 * zoom))
+                rect = pygame.Rect(tx - size_w // 2, ty - size_h // 2, size_w, size_h)
+                pygame.draw.rect(screen, turret_color, rect)
+                pygame.draw.rect(screen, border_color, rect, max(1, int(2 * zoom)))
+            for proj in self.projectiles:
+                proj.draw(screen, offset_x, offset_y, zoom)
+        elif self.fraction and self.fraction.name == "Free Explorers":
+            pygame.draw.circle(screen, self.color, (x, y), scaled)
+            outline_c = self.outline_color or (0, 0, 0)
+            pygame.draw.circle(screen, outline_c, (x, y), scaled, max(1, int(2 * zoom)))
+            aura_r = int(self.aura_radius * zoom)
+            if aura_r > 0:
+                aura = pygame.Surface((aura_r * 2, aura_r * 2), pygame.SRCALPHA)
+                pygame.draw.circle(aura, (160, 160, 160, 60), (aura_r, aura_r), aura_r)
+                screen.blit(aura, (x - aura_r, y - aura_r))
             turret_color = (0, 0, 0)
             border_color = (150, 150, 150)
             for turret in self.turrets:
