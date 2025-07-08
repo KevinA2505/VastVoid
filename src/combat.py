@@ -808,7 +808,8 @@ class _SporeParticle:
         self.vy = math.sin(ang) * speed
         self.x = cloud.x
         self.y = cloud.y
-        self.life = random.uniform(0.5, 1.0)
+        self.max_life = cloud.duration
+        self.life = self.max_life
 
     def update(self, dt: float) -> None:
         self.x += self.vx * dt
@@ -894,7 +895,7 @@ class SporeCloud:
         for p in self.particles:
             px = int((p.x - offset_x) * zoom)
             py = int((p.y - offset_y) * zoom)
-            alpha = max(0, min(255, int(p.life / 1.0 * 255)))
+            alpha = max(0, min(255, int(p.life / p.max_life * 255)))
             surf = pygame.Surface((3, 3), pygame.SRCALPHA)
             pygame.draw.circle(surf, (120, 200, 120, alpha), (1, 1), 1)
             screen.blit(surf, (px - 1, py - 1))
