@@ -740,6 +740,7 @@ def main():
                 icon = info_font.render("\u25B2", True, (255, 255, 255))
                 screen.blit(icon, (visit_rect.x + 5, visit_rect.y + 3))
                 txt = info_font.render("Visit planet", True, (255, 255, 255))
+                # Ensure we reference the correct rectangle for the button text
                 txt_rect = txt.get_rect(midleft=(visit_rect.x + 20, visit_rect.centery))
                 screen.blit(txt, txt_rect)
 
