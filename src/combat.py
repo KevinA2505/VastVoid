@@ -702,8 +702,8 @@ class IonizedSymbiontWeapon(Weapon):
     """Charge-based weapon that fires a sticky ion shot."""
 
     def __init__(self) -> None:
-        # Projectile speed boosted by 25% for snappier hits
-        super().__init__("Ion Symbiont", 18, 375, cooldown=2.0)
+        # Base speed was increased but will now scale with charge up to 400
+        super().__init__("Ion Symbiont", 18, 300, cooldown=2.0)
         self.max_charge = 3.0
         self._charge = 0.0
         self._charging = False
@@ -730,10 +730,12 @@ class IonizedSymbiontWeapon(Weapon):
             return None
         ratio = self._charge / self.max_charge if self.max_charge > 0 else 0.0
         dmg = self.damage * (1.0 + ratio)
+        # Projectile speed scales with charge but is capped at 400
+        speed = self.speed + ratio * (400 - self.speed)
         self._charging = False
         self._charge = 0.0
         self._timer = 0.0
-        return IonSymbiontShot(x, y, tx, ty, self.speed, dmg)
+        return IonSymbiontShot(x, y, tx, ty, speed, dmg)
 
 
 class SlowField:
