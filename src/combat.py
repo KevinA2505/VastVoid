@@ -254,8 +254,14 @@ class LaserBeam:
     def update(self, dt: float, targets: list) -> None:
         if self.state == "probe":
             for obj in targets:
-                if self.hits(obj.ship):
-                    self.target = obj.ship
+                target = getattr(obj, "ship", obj)
+                if (
+                    hasattr(target, "x")
+                    and hasattr(target, "y")
+                    and hasattr(target, "size")
+                    and self.hits(target)
+                ):
+                    self.target = target
                     self.state = "channel"
                     self.timer = self.channel_time
                     break
@@ -865,9 +871,9 @@ class SporeCloud:
         self._tick = 0.0
         self.particles: list[_SporeParticle] = []
 
-    def contains(self, ship) -> bool:
-        dx = ship.x - self.x
-        dy = ship.y - self.y
+    def contains(self, obj) -> bool:
+        dx = obj.x - self.x
+        dy = obj.y - self.y
         dist = math.hypot(dx, dy)
         if dist > self.radius:
             return False
