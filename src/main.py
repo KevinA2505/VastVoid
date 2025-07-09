@@ -29,6 +29,7 @@ from ui import (
     AbilityBar,
     WeaponMenu,
     ArtifactMenu,
+    SettingsWindow,
     HyperJumpMap,
     CarrierMoveMap,
     CarrierWindow,
@@ -171,7 +172,13 @@ def main():
     zoom = 1.0
     selected_object = None
     info_font = pygame.font.Font(None, 20)
-    menu = DropdownMenu(10, 10, 100, 25, ["Plan Route", "Inventory", "Weapons", "Artifacts"])
+    menu = DropdownMenu(
+        10,
+        10,
+        100,
+        25,
+        ["Plan Route", "Inventory", "Weapons", "Artifacts", "Ajustes"],
+    )
     route_planner = RoutePlanner()
     ability_bar = AbilityBar()
     ability_bar.set_ship(ship)
@@ -183,6 +190,7 @@ def main():
     market_window = None
     weapon_menu = None
     artifact_menu = None
+    settings_window = None
     carrier_window = None
     current_station = None
     current_surface = None
@@ -327,6 +335,19 @@ def main():
                     break
             if artifact_menu:
                 artifact_menu.draw(screen, info_font)
+                pygame.display.flip()
+                continue
+
+        if settings_window:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+                if settings_window.handle_event(event):
+                    settings_window = None
+                    break
+            if settings_window:
+                settings_window.draw(screen, info_font)
                 pygame.display.flip()
                 continue
 
@@ -507,6 +528,8 @@ def main():
                 weapon_menu = WeaponMenu(ship)
             elif selection == "Artifacts":
                 artifact_menu = ArtifactMenu(ship, ability_bar)
+            elif selection == "Ajustes":
+                settings_window = SettingsWindow()
 
             route_planner.handle_event(event, sectors, (camera_x, camera_y), zoom)
             if ability_bar.handle_event(event, ship):

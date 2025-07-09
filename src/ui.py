@@ -4,6 +4,26 @@ import math
 import types
 from artifact import Artifact
 
+# Default key bindings for common actions. These match the table in the README
+# so they can be displayed in the in-game Ajustes/Settings window.
+DEFAULT_CONTROLS = [
+    ("Mover nave o explorador", "W, A, S, D"),
+    ("Impulso (boost)", "Mantener LSHIFT"),
+    ("Abrir inventario", "I"),
+    ("Abrir menú de armas", "F"),
+    ("Abrir menú de artefactos", "G"),
+    ("Abrir mercado en estación", "M"),
+    ("Iniciar acoplamiento", "C"),
+    ("Cargar nave aliada en portador", "L"),
+    ("Disparar arma principal", "Barra espaciadora"),
+    ("Seleccionar/interactuar", "Clic izquierdo"),
+    ("Cerrar ventana o cancelar", "Escape"),
+    ("Cambiar zoom", "Rueda del ratón"),
+    ("Elegir ranura (al equipar)", "1, 2 o 3"),
+    ("Mover cámara en planificador", "Flechas del teclado"),
+    ("Activar/desactivar bote", "B"),
+]
+
 class DropdownMenu:
     """Simple dropdown menu triggered by a button."""
 
@@ -359,6 +379,40 @@ class ArtifactMenu:
 
         # Draw current ability bar so the player knows which slot to replace
         self.ability_bar.draw(screen, font)
+
+
+class SettingsWindow:
+    """Display the default control bindings."""
+
+    def __init__(self) -> None:
+        self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
+
+    def handle_event(self, event) -> bool:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.close_rect.collidepoint(event.pos):
+                return True
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            return True
+        return False
+
+    def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        screen.fill((20, 20, 40))
+        title = font.render("Ajustes", True, (255, 255, 255))
+        screen.blit(title, (20, 20))
+
+        x0, y0 = 20, 60
+        row_h = 20
+        col_x = 320
+        for i, (action, key) in enumerate(DEFAULT_CONTROLS):
+            action_txt = font.render(action, True, (255, 255, 255))
+            key_txt = font.render(key, True, (255, 255, 255))
+            screen.blit(action_txt, (x0, y0 + i * row_h))
+            screen.blit(key_txt, (col_x, y0 + i * row_h))
+
+        pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
+        txt = font.render("Close", True, (255, 255, 255))
+        screen.blit(txt, txt.get_rect(center=self.close_rect.center))
 
 
 class AbilityBar:

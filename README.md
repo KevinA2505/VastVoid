@@ -196,3 +196,5 @@ Lista de controles predeterminados para las acciones principales:
 | Mover cámara en planificador | Flechas del teclado |
 | Activar/desactivar bote | B |
 
+Puedes consultar esta misma lista durante la partida desde la opción **Ajustes** del menú principal.
+
