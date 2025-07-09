@@ -803,18 +803,30 @@ class _SporeParticle:
 
     def __init__(self, cloud) -> None:
         ang = cloud.angle + random.uniform(-cloud.arc / 2, cloud.arc / 2)
-        max_speed = cloud.radius / cloud.duration
-        speed = random.uniform(max_speed * 0.5, max_speed)
-        self.vx = math.cos(ang) * speed
-        self.vy = math.sin(ang) * speed
+        dist = random.uniform(0, cloud.radius)
+        self.target_x = cloud.x + math.cos(ang) * dist
+        self.target_y = cloud.y + math.sin(ang) * dist
         self.x = cloud.x
         self.y = cloud.y
+        travel_time = 0.4
+        self.vx = (self.target_x - self.x) / travel_time
+        self.vy = (self.target_y - self.y) / travel_time
+        self._move_timer = 0.0
+        self._move_duration = travel_time
         self.max_life = cloud.duration
         self.life = self.max_life
 
     def update(self, dt: float) -> None:
-        self.x += self.vx * dt
-        self.y += self.vy * dt
+        if self._move_timer < self._move_duration:
+            step = min(dt, self._move_duration - self._move_timer)
+            self.x += self.vx * step
+            self.y += self.vy * step
+            self._move_timer += step
+            if self._move_timer >= self._move_duration:
+                self.x = self.target_x
+                self.y = self.target_y
+                self.vx = 0.0
+                self.vy = 0.0
         self.life -= dt
 
     def expired(self) -> bool:
@@ -831,7 +843,7 @@ class SporeCloud:
         y: float,
         angle: float,
         radius: float = 220.0,
-        arc: float = math.pi / 3,
+        arc: float = math.pi * 0.4,
         duration: float = 7.0,
         damage: float = 6.0,
     ) -> None:
@@ -860,7 +872,7 @@ class SporeCloud:
     def update(self, dt: float) -> bool:
         self.timer += dt
         self._tick += dt
-        if len(self.particles) < 30:
+        if len(self.particles) < 38:
             self.particles.append(_SporeParticle(self))
         for p in list(self.particles):
             p.update(dt)
@@ -886,9 +898,11 @@ class SporeCloud:
             px = int((p.x - offset_x) * zoom)
             py = int((p.y - offset_y) * zoom)
             alpha = max(0, min(255, int(p.life / p.max_life * 255)))
-            surf = pygame.Surface((3, 3), pygame.SRCALPHA)
-            pygame.draw.circle(surf, (120, 200, 120, alpha), (1, 1), 1)
-            screen.blit(surf, (px - 1, py - 1))
+            size = int(math.ceil(3 * 1.15))
+            radius = int(math.ceil(1 * 1.15))
+            surf = pygame.Surface((size, size), pygame.SRCALPHA)
+            pygame.draw.circle(surf, (120, 200, 120, alpha), (size // 2, size // 2), radius)
+            screen.blit(surf, (px - size // 2, py - size // 2))
 
 
 class SporesWeapon(Weapon):

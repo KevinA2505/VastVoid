@@ -23,8 +23,10 @@ button to return to space.
 * The flagship also fields defensive drones that orbit the vessel and intercept
   nearby threats.
 * Ships can deploy a **Chrono Tachionic Whip** that slows enemies within a small field.
-* A new **Spores** weapon releases a damaging cloud that lasts four seconds and
-  reaches 30% farther.
+* A new **Spores** weapon releases a damaging cloud that lasts four seconds,
+  reaches 30% farther and spreads across a moderately wide cone. Spores now
+  burst from the ship before settling in place, appear 15% larger and are 25%
+  more numerous for better visibility.
 * Charge the **Ionized Symbiont** to fire a shot that latches onto enemy hulls and inflicts damage over time.
 
 ### Defensive drones
@@ -52,9 +54,10 @@ The game offers three distinctive special weapons:
   ability is ready. The field lasts five seconds and requires 10 seconds to
   recharge. While it is on cooldown, the whip fires weaker shots 10% faster with
   slightly reduced projectile speed.
-* **Spores** – fires a cone-shaped cloud in front of the ship that damages foes
-  for four seconds and extends 30% farther. This weapon can be used once every
-  five seconds.
+* **Spores** – fires a moderately wide cone-shaped cloud in front of the ship
+  that damages foes for four seconds and extends 30% farther. Spores fly out
+  from the ship before settling in place, appear 15% larger and there are 25%
+  more of them. This weapon can be used once every five seconds.
 
 ## Character creation
 
