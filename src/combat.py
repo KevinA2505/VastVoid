@@ -830,9 +830,9 @@ class SporeCloud:
         x: float,
         y: float,
         angle: float,
-        radius: float = 187.2,
+        radius: float = 220.0,
         arc: float = math.pi / 3,
-        duration: float = 4.0,
+        duration: float = 7.0,
         damage: float = 6.0,
     ) -> None:
         self.owner = owner
