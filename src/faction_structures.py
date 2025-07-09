@@ -59,6 +59,16 @@ class CityBuilding:
             ]
             pygame.draw.polygon(screen, fill, points)
             pygame.draw.polygon(screen, outline, points, max(1, int(2 * zoom)))
+        elif self.shape == "hexagon":
+            points = [
+                (
+                    cx + scaled * math.cos(i * math.pi / 3),
+                    cy + scaled * math.sin(i * math.pi / 3),
+                )
+                for i in range(6)
+            ]
+            pygame.draw.polygon(screen, fill, points)
+            pygame.draw.polygon(screen, outline, points, max(1, int(2 * zoom)))
 
     def collides_with_point(self, x: float, y: float, radius: float) -> bool:
         return math.hypot(self.x - x, self.y - y) < self.size + radius
@@ -325,35 +335,34 @@ class CapitalShip(FactionStructure):
             self.modules.extend(["Trade Hub", "Drone Bays"])
             self.city_stations = []
 
-            shapes = (
-                ["square"] * 6
-                + ["circle"] * 3
-                + ["pentagon"]
-                + ["triangle"] * 5
-            )
-            range_min = self.radius * 4.5
-            range_max = self.radius * 5.5
+            levels = [
+                (["pentagon"], self.radius * 2.5, self.radius * 3.0),
+                (["square"] * 6 + ["circle"] * 3, self.radius * 4.5, self.radius * 5.5),
+                (["triangle"] * 5 + ["hexagon"] * 3, self.radius * 6.5, self.radius * 7.5),
+            ]
+
             placed: list[CityBuilding] = []
-            for shape in shapes:
-                for _ in range(20):
-                    ang = random.uniform(0, 2 * math.pi)
-                    dist = random.uniform(range_min, range_max)
-                    sx = self.x + math.cos(ang) * dist
-                    sy = self.y + math.sin(ang) * dist
-                    if shape == "triangle":
-                        b = CityTurret(sx, sy)
-                    else:
-                        b = CityBuilding(sx, sy, shape)
-                    if math.hypot(sx - self.x, sy - self.y) < self.radius + b.size:
-                        continue
-                    if any(
-                        math.hypot(sx - o.x, sy - o.y) < b.size + o.size
-                        for o in placed
-                    ):
-                        continue
-                    placed.append(b)
-                    self.city_stations.append(b)
-                    break
+            for shapes, range_min, range_max in levels:
+                for shape in shapes:
+                    for _ in range(20):
+                        ang = random.uniform(0, 2 * math.pi)
+                        dist = random.uniform(range_min, range_max)
+                        sx = self.x + math.cos(ang) * dist
+                        sy = self.y + math.sin(ang) * dist
+                        if shape == "triangle":
+                            b = CityTurret(sx, sy)
+                        else:
+                            b = CityBuilding(sx, sy, shape)
+                        if math.hypot(sx - self.x, sy - self.y) < self.radius + b.size:
+                            continue
+                        if any(
+                            math.hypot(sx - o.x, sy - o.y) < b.size + o.size
+                            for o in placed
+                        ):
+                            continue
+                        placed.append(b)
+                        self.city_stations.append(b)
+                        break
         elif fraction.name == "Nebula Order":
             self.hull = 1100
             self.modules.extend(["Research Labs", "Sensor Array"])
