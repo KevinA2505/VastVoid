@@ -19,6 +19,7 @@ from combat import (
     SlowField,
     SporeCloud,
 )
+from light_channeler import Channeler, Battery, StarTurret
 from artifact import (
     Artifact,
     AreaShieldAura,
@@ -931,6 +932,14 @@ class Ship:
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, Decoy):
+                obj.update(dt, targets or [])
+                if obj.expired():
+                    self.specials.remove(obj)
+            elif isinstance(obj, Channeler):
+                obj.update(dt)
+            elif isinstance(obj, Battery):
+                obj.update(dt)
+            elif isinstance(obj, StarTurret):
                 obj.update(dt, targets or [])
                 if obj.expired():
                     self.specials.remove(obj)
