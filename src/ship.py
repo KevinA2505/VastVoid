@@ -521,8 +521,14 @@ class Ship:
         return False
 
     def _structure_collision(self, x: float, y: float, r: float = 0) -> bool:
-        """Return ``True`` if the given point overlaps any known structure."""
+        """Return ``True`` if the point overlaps any stationary structure."""
+        for sector in getattr(self, "_sectors", []):
+            if sector.collides_with_point(x, y, r):
+                return True
+
         for struct in self._structures:
+            if isinstance(struct, (Ship, Drone)):
+                continue
             if hasattr(struct, "collides_with_point"):
                 if struct.collides_with_point(x, y, r):
                     return True
