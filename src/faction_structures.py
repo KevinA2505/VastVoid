@@ -723,8 +723,13 @@ class CapitalShip(FactionStructure):
             pygame.draw.rect(screen, color, horiz)
             pygame.draw.rect(screen, color, vert)
             pygame.draw.rect(screen, outline, horiz, max(1, int(2 * zoom)))
+
             pygame.draw.rect(screen, outline, vert, max(1, int(2 * zoom)))
             pygame.draw.circle(screen, flash, (x, y), max(2, int(3 * zoom)))
+
+    def take_damage(self, amount: float) -> None:
+        """Reduce the hull integrity of the ship."""
+        self.hull = max(0, self.hull - amount)
 
     def collides_with_point(self, x: float, y: float, radius: float) -> bool:
         """Return ``True`` if ``(x, y)`` overlaps this capital ship or its ring."""
