@@ -758,21 +758,27 @@ class Ship:
         self.particles.append(_ShipParticle(px, py, vx, vy))
 
     def _update_specials(self, dt: float, world_width: int, world_height: int, targets: list | None = None) -> None:
+        structures = list(self._structures or [])
         for obj in list(self.specials):
             if isinstance(obj, LaserBeam):
-                obj.update(dt, targets or [])
+                obj.update(dt, (targets or []) + structures)
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, TimedMine):
                 obj.update(dt)
-                if obj.exploded and targets:
-                    for tar in targets:
-                        if math.hypot(tar.ship.x - obj.x, tar.ship.y - obj.y) <= obj.radius:
-                            tar.ship.take_damage(obj.damage)
+                if obj.exploded:
+                    if targets:
+                        for tar in targets:
+                            if math.hypot(tar.ship.x - obj.x, tar.ship.y - obj.y) <= obj.radius:
+                                tar.ship.take_damage(obj.damage)
+                    for struct in structures:
+                        sr = getattr(struct, "radius", getattr(struct, "size", 0))
+                        if math.hypot(struct.x - obj.x, struct.y - obj.y) <= obj.radius + sr:
+                            pass
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, Drone):
-                obj.update(dt, targets or [])
+                obj.update(dt, (targets or []) + structures)
                 for proj in list(obj.projectiles):
                     for tar in targets or []:
                         if (
@@ -782,6 +788,12 @@ class Ship:
                             tar.ship.take_damage(proj.damage)
                             obj.projectiles.remove(proj)
                             break
+                    else:
+                        for struct in structures:
+                            sr = getattr(struct, "radius", getattr(struct, "size", 0))
+                            if math.hypot(proj.x - struct.x, proj.y - struct.y) <= sr:
+                                obj.projectiles.remove(proj)
+                                break
                 drone_rect = pygame.Rect(
                     obj.x - obj.size / 2,
                     obj.y - obj.size / 2,
@@ -795,10 +807,17 @@ class Ship:
                             tar.ship.projectiles.remove(proj)
                             if obj.hp <= 0:
                                 break
+                for struct in structures:
+                    for proj in list(getattr(struct, "projectiles", [])):
+                        if drone_rect.collidepoint(proj.x, proj.y):
+                            obj.hp -= getattr(proj, "damage", 0)
+                            getattr(struct, "projectiles").remove(proj)
+                            if obj.hp <= 0:
+                                break
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, BombDrone):
-                obj.update(dt, targets or [])
+                obj.update(dt, (targets or []) + structures)
                 bomb_rect = pygame.Rect(
                     obj.x - obj.size / 2,
                     obj.y - obj.size / 2,
@@ -822,12 +841,32 @@ class Ship:
                     ):
                         hit = True
                         break
+                if not hit:
+                    for struct in structures:
+                        for proj in list(getattr(struct, "projectiles", [])):
+                            if bomb_rect.collidepoint(proj.x, proj.y):
+                                obj.hp -= getattr(proj, "damage", 0)
+                                getattr(struct, "projectiles").remove(proj)
+                                if obj.hp <= 0:
+                                    hit = True
+                                    break
+                        if hit:
+                            break
+                        sr = getattr(struct, "radius", getattr(struct, "size", 0))
+                        if math.hypot(struct.x - obj.x, struct.y - obj.y) <= sr:
+                            hit = True
+                            break
                 if hit:
                     obj._explode()
-                if obj.exploded and targets:
-                    for tar in targets:
-                        if math.hypot(tar.ship.x - obj.x, tar.ship.y - obj.y) <= obj.radius:
-                            tar.ship.take_damage(obj.damage)
+                if obj.exploded:
+                    if targets:
+                        for tar in targets:
+                            if math.hypot(tar.ship.x - obj.x, tar.ship.y - obj.y) <= obj.radius:
+                                tar.ship.take_damage(obj.damage)
+                    for struct in structures:
+                        sr = getattr(struct, "radius", getattr(struct, "size", 0))
+                        if math.hypot(struct.x - obj.x, struct.y - obj.y) <= obj.radius + sr:
+                            pass
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, IonSymbiontShot):
@@ -842,12 +881,21 @@ class Ship:
                     self.specials.remove(obj)
             elif isinstance(obj, SporeCloud):
                 tick = obj.update(dt)
-                if tick and targets:
-                    for tar in targets:
-                        if obj.contains(tar.ship):
-                            tar.ship.take_damage(obj.damage)
-                if obj.expired():
-                    self.specials.remove(obj)
+                for struct in structures:
+                    if obj.contains(struct):
+                        sr = getattr(struct, "radius", getattr(struct, "size", 0))
+                        dist = math.hypot(struct.x - obj.x, struct.y - obj.y) - sr
+                        if dist <= 0:
+                            self.specials.remove(obj)
+                            break
+                        obj.radius = min(obj.radius, dist)
+                else:
+                    if tick:
+                        for tar in targets or []:
+                            if obj.contains(tar.ship):
+                                tar.ship.take_damage(obj.damage)
+                    if obj.expired():
+                        self.specials.remove(obj)
             elif isinstance(obj, EMPWave):
                 obj.update(dt)
                 if obj.expired():
