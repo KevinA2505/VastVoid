@@ -13,6 +13,7 @@ button to return to space.
 ## Features
 
 * Land on planets to explore procedurally generated surfaces.
+* Zoom in and out using the mouse wheel.
 * Travel instantly via wormholes linking distant sectors.
 * Engage hyper-speed travel to jump across the map
   (one-second charge with an eight-second cooldown).
