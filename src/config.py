@@ -133,3 +133,17 @@ DEF_DRONE_DETECTION_RANGE = 250
 DEF_DRONE_ALPHA = 0.5
 DEF_DRONE_GAMMA = 0.9
 DEF_DRONE_EPSILON = 0.1
+
+# --- Light channeler settings -----------------------------------------------
+# Energy transferred each second from a channeler to its battery
+CHANNELER_TRANSFER_RATE = 10.0
+# Maximum energy capacity of a battery
+BATTERY_MAX_ENERGY = 200.0
+# Energy consumed per shot when the StarTurret is connected to the battery
+STAR_TURRET_ENERGY_PER_SHOT = 1.0
+# Hit points lost per second when the turret is disconnected
+STAR_TURRET_DISCONNECTED_LOSS = 1.0
+# Seconds between shots for a cadence of 100 rounds per minute
+CADENCE_100_RPM = 60.0 / 100.0
+# Seconds between shots for a cadence of 30 rounds per minute
+CADENCE_30_RPM = 60.0 / 30.0
