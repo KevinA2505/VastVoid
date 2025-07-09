@@ -147,6 +147,7 @@ class StarTurret:
                 self.y + math.sin(ang),
                 config.STAR_TURRET_PROJECTILE_SPEED,
                 config.STAR_TURRET_PROJECTILE_DAMAGE,
+                max_distance=config.STAR_TURRET_PROJECTILE_MAX_DISTANCE,
             )
             self.projectiles.append(proj)
         for proj in list(self.projectiles):

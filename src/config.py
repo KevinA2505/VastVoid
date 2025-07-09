@@ -158,3 +158,5 @@ CHANNELER_TURRET_DELAY = 5.0   # seconds before the turret activates
 STAR_TURRET_ARC = math.pi * 0.1
 STAR_TURRET_PROJECTILE_SPEED = 380
 STAR_TURRET_PROJECTILE_DAMAGE = 6
+# Maximum distance for star turret projectiles (30% shorter than default)
+STAR_TURRET_PROJECTILE_MAX_DISTANCE = PROJECTILE_MAX_DISTANCE * 0.7
