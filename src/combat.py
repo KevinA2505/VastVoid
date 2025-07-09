@@ -842,7 +842,9 @@ class SporeCloud:
         x: float,
         y: float,
         angle: float,
-        radius: float = 220.0,
+        # Reduced radius to make the isosceles triangle of the spore cloud
+        # 20% shorter, resulting in a tighter damage cone.
+        radius: float = 176.0,
         arc: float = math.pi * 0.4,
         duration: float = 7.0,
         damage: float = 6.0,
