@@ -192,6 +192,44 @@ class MissileTurret(Turret):
                 self.owner.projectiles.append(proj)
                 self._timer = self.cooldown
 
+
+class CityTurret(CityBuilding):
+    """Triangle building that fires guided missiles."""
+
+    def __init__(self, x: float, y: float, size: int = 20) -> None:
+        super().__init__(x, y, "triangle", size)
+        self.projectiles: list = []
+        self.turret = MissileTurret(self, 0.0, 0.0)
+
+    def update(self, dt: float, targets: list) -> None:
+        self.turret.update(dt, targets)
+        for proj in list(self.projectiles):
+            proj.update(dt)
+            hit = False
+            if not getattr(proj, "exploded", False):
+                for en in targets:
+                    if math.hypot(proj.x - en.ship.x, proj.y - en.ship.y) <= en.ship.collision_radius:
+                        en.ship.take_damage(proj.damage)
+                        hit = True
+                        break
+            else:
+                for en in targets:
+                    if math.hypot(proj.x - en.ship.x, proj.y - en.ship.y) <= proj.explosion_radius:
+                        en.ship.take_damage(proj.damage)
+            if hit or proj.expired():
+                self.projectiles.remove(proj)
+
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        super().draw(screen, offset_x, offset_y, zoom)
+        for proj in self.projectiles:
+            proj.draw(screen, offset_x, offset_y, zoom)
+
 @dataclass
 class EngagementRing:
     """Golden ring surrounding the Nebula Order flagship."""
@@ -288,20 +326,24 @@ class CapitalShip(FactionStructure):
             self.city_stations = []
 
             shapes = (
-                ["square"] * 4
+                ["square"] * 6
                 + ["circle"] * 3
                 + ["pentagon"]
-                + ["triangle"] * 2
+                + ["triangle"] * 5
             )
-            distance = self.radius * 5
+            range_min = self.radius * 4.5
+            range_max = self.radius * 5.5
             placed: list[CityBuilding] = []
             for shape in shapes:
                 for _ in range(20):
                     ang = random.uniform(0, 2 * math.pi)
-                    dist = random.uniform(distance * 0.8, distance * 1.2)
+                    dist = random.uniform(range_min, range_max)
                     sx = self.x + math.cos(ang) * dist
                     sy = self.y + math.sin(ang) * dist
-                    b = CityBuilding(sx, sy, shape)
+                    if shape == "triangle":
+                        b = CityTurret(sx, sy)
+                    else:
+                        b = CityBuilding(sx, sy, shape)
                     if math.hypot(sx - self.x, sy - self.y) < self.radius + b.size:
                         continue
                     if any(
@@ -370,6 +412,9 @@ class CapitalShip(FactionStructure):
             return
         if targets is None:
             targets = []
+        hostiles_all = [e for e in targets if e.fraction != self.fraction]
+        if player and getattr(player, "fraction", None) != self.fraction:
+            hostiles_all.append(type("_P", (), {"ship": player})())
         if self.fraction.name == "Solar Dominion":
             stars: list[Star] = []
             for sec in sectors:
@@ -412,9 +457,7 @@ class CapitalShip(FactionStructure):
                         self.energy += amount
                         arm.target.energy -= amount
         elif self.fraction.name == "Nebula Order":
-            hostiles = [e for e in targets if e.fraction != self.fraction]
-            if player and getattr(player, "fraction", None) != self.fraction:
-                hostiles.append(type("_P", (), {"ship": player})())
+            hostiles = hostiles_all
             for drone in list(self.drones):
                 drone.update(dt, hostiles)
 
@@ -449,9 +492,7 @@ class CapitalShip(FactionStructure):
                 if drone.expired():
                     self.drones.remove(drone)
         elif self.fraction.name == "Pirate Clans":
-            hostiles = [e for e in targets if e.fraction != self.fraction]
-            if player and getattr(player, "fraction", None) != self.fraction:
-                hostiles.append(type("_P", (), {"ship": player})())
+            hostiles = hostiles_all
             for turret in self.turrets:
                 turret.update(dt, hostiles)
             for proj in list(self.projectiles):
@@ -470,9 +511,7 @@ class CapitalShip(FactionStructure):
                 if proj.expired():
                     self.projectiles.remove(proj)
         elif self.fraction.name == "Free Explorers":
-            hostiles = [e for e in targets if e.fraction != self.fraction]
-            if player and getattr(player, "fraction", None) != self.fraction:
-                hostiles.append(type("_P", (), {"ship": player})())
+            hostiles = hostiles_all
             for turret in self.turrets:
                 turret.update(dt, hostiles)
             for proj in list(self.projectiles):
@@ -493,7 +532,7 @@ class CapitalShip(FactionStructure):
 
         for station in self.city_stations:
             if hasattr(station, "update"):
-                station.update(dt)
+                station.update(dt, hostiles_all)
 
     def draw(
         self,
