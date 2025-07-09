@@ -1,5 +1,6 @@
 import math
 import pygame
+import config
 from combat import Weapon, SporeCloud
 
 
@@ -18,7 +19,7 @@ class Channeler:
         else:
             self.x = owner.x
             self.y = owner.y
-        self.transfer_rate = 10.0
+        self.transfer_rate = config.CHANNELER_TRANSFER_RATE
         self.battery = None
         self.timer = 0.0
 
@@ -68,7 +69,7 @@ class Battery:
         self.x = channeler.x + math.cos(self.angle) * distance
         self.y = channeler.y + math.sin(self.angle) * distance
         self.energy = 0.0
-        self.max_energy = 200.0
+        self.max_energy = config.BATTERY_MAX_ENERGY
         self.turret = None
 
     def update(self, dt: float) -> None:
@@ -109,8 +110,8 @@ class StarTurret:
         self.hp = 60.0
         self.projectiles: list[SporeCloud] = []
         self._timer = 0.0
-        self.connected_rate = 60.0 / 100.0  # seconds between shots
-        self.disconnected_rate = 60.0 / 30.0
+        self.connected_rate = config.CADENCE_100_RPM  # seconds between shots
+        self.disconnected_rate = config.CADENCE_30_RPM
 
     @property
     def connected(self) -> bool:
@@ -119,12 +120,15 @@ class StarTurret:
     def update(self, dt: float, targets: list | None = None) -> None:
         self._timer += dt
         if not self.connected:
-            self.hp -= dt
+            self.hp -= dt * config.STAR_TURRET_DISCONNECTED_LOSS
         rate = self.connected_rate if self.connected else self.disconnected_rate
         if self._timer >= rate:
             self._timer -= rate
-            if self.connected and self.battery.energy >= 1.0:
-                self.battery.energy -= 1.0
+            if (
+                self.connected
+                and self.battery.energy >= config.STAR_TURRET_ENERGY_PER_SHOT
+            ):
+                self.battery.energy -= config.STAR_TURRET_ENERGY_PER_SHOT
             ang = self.angle
             if targets:
                 nearest = None
