@@ -15,6 +15,7 @@ from combat import (
     ChronoTachionicWhip,
     SporesWeapon,
 )
+from light_channeler import LightChannelerWeapon
 from sector import create_sectors
 from fraction import FRACTIONS
 from faction_structures import spawn_capital_ships
@@ -150,6 +151,7 @@ def main():
         IonizedSymbiontWeapon(),
         ChronoTachionicWhip(),
         SporesWeapon(),
+        LightChannelerWeapon(),
         BasicWeapon(),
     ])
     for w in ship.weapons:
