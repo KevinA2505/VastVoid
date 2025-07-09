@@ -803,12 +803,11 @@ class _SporeParticle:
 
     def __init__(self, cloud) -> None:
         ang = cloud.angle + random.uniform(-cloud.arc / 2, cloud.arc / 2)
-        max_speed = cloud.radius / cloud.duration
-        speed = random.uniform(max_speed * 0.5, max_speed)
-        self.vx = math.cos(ang) * speed
-        self.vy = math.sin(ang) * speed
-        self.x = cloud.x
-        self.y = cloud.y
+        dist = random.uniform(0, cloud.radius)
+        self.x = cloud.x + math.cos(ang) * dist
+        self.y = cloud.y + math.sin(ang) * dist
+        self.vx = 0.0
+        self.vy = 0.0
         self.max_life = cloud.duration
         self.life = self.max_life
 
@@ -831,7 +830,7 @@ class SporeCloud:
         y: float,
         angle: float,
         radius: float = 220.0,
-        arc: float = math.pi / 3,
+        arc: float = math.pi / 2,
         duration: float = 7.0,
         damage: float = 6.0,
     ) -> None:
@@ -886,9 +885,11 @@ class SporeCloud:
             px = int((p.x - offset_x) * zoom)
             py = int((p.y - offset_y) * zoom)
             alpha = max(0, min(255, int(p.life / p.max_life * 255)))
-            surf = pygame.Surface((3, 3), pygame.SRCALPHA)
-            pygame.draw.circle(surf, (120, 200, 120, alpha), (1, 1), 1)
-            screen.blit(surf, (px - 1, py - 1))
+            size = int(math.ceil(3 * 1.15))
+            radius = int(math.ceil(1 * 1.15))
+            surf = pygame.Surface((size, size), pygame.SRCALPHA)
+            pygame.draw.circle(surf, (120, 200, 120, alpha), (size // 2, size // 2), radius)
+            screen.blit(surf, (px - size // 2, py - size // 2))
 
 
 class SporesWeapon(Weapon):
