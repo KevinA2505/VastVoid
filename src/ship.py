@@ -520,6 +520,18 @@ class Ship:
                 return True
         return False
 
+    def _structure_collision(self, x: float, y: float, r: float = 0) -> bool:
+        """Return ``True`` if the given point overlaps any known structure."""
+        for struct in self._structures:
+            if hasattr(struct, "collides_with_point"):
+                if struct.collides_with_point(x, y, r):
+                    return True
+            else:
+                sr = getattr(struct, "radius", getattr(struct, "size", 0))
+                if sr and math.hypot(struct.x - x, struct.y - y) < sr + r:
+                    return True
+        return False
+
     def _triangle_points(self, cx: float, cy: float, zoom: float) -> list[tuple[int, int]]:
         """Return the three rotated vertices of the ship."""
         base = self.size * zoom
@@ -713,8 +725,13 @@ class Ship:
     def _update_projectiles(self, dt: float, world_width: int, world_height: int) -> None:
         for proj in list(self.projectiles):
             proj.update(dt)
+            hit = self._structure_collision(
+                proj.x,
+                proj.y,
+                getattr(proj, "radius", 0),
+            )
             out_of_bounds = not (0 <= proj.x <= world_width and 0 <= proj.y <= world_height)
-            if proj.expired() or out_of_bounds:
+            if proj.expired() or out_of_bounds or hit:
                 self.projectiles.remove(proj)
 
     def _update_particles(self, dt: float) -> None:
