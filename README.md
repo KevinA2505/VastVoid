@@ -173,3 +173,26 @@ teleport.
 ### Crew management and docking
 
 Each ship has a single pilot seat and two passenger slots. Press **C** when two vessels are close to attempt docking via the Common Berthing Mechanism. If docking succeeds a crew transfer window appears so you can move members between ships. Your starting ship also carries a robot named PEPE as an initial passenger.
+
+## Ajustes
+
+Lista de controles predeterminados para las acciones principales:
+
+| Acción | Tecla/Botón |
+| --- | --- |
+| Mover nave o explorador | W, A, S, D |
+| Impulso (boost) | Mantener LSHIFT |
+| Abrir inventario | I |
+| Abrir menú de armas | F |
+| Abrir menú de artefactos | G |
+| Abrir mercado en estación | M |
+| Iniciar acoplamiento | C |
+| Cargar nave aliada en portador | L |
+| Disparar arma principal | Barra espaciadora |
+| Seleccionar/interactuar | Clic izquierdo |
+| Cerrar ventana o cancelar | Escape |
+| Cambiar zoom | Rueda del ratón |
+| Elegir ranura (al equipar) | 1, 2 o 3 |
+| Mover cámara en planificador | Flechas del teclado |
+| Activar/desactivar bote | B |
+
