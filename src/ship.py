@@ -536,7 +536,6 @@ class Ship:
                 sr = getattr(struct, "radius", getattr(struct, "size", 0))
                 if sr and math.hypot(struct.x - x, struct.y - y) < sr + r:
                     return True
-
         return False
 
     def _triangle_points(self, cx: float, cy: float, zoom: float) -> list[tuple[int, int]]:
