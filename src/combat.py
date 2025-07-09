@@ -875,7 +875,7 @@ class SporeCloud:
     def update(self, dt: float) -> bool:
         self.timer += dt
         self._tick += dt
-        if len(self.particles) < 38:
+        if len(self.particles) < 60:
             self.particles.append(_SporeParticle(self))
         for p in list(self.particles):
             p.update(dt)
