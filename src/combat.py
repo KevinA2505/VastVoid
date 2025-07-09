@@ -846,6 +846,7 @@ class SporeCloud:
         # 20% shorter, resulting in a tighter damage cone.
         radius: float = 270.0,
         arc: float = math.pi * 0.20,
+
         duration: float = 7.0,
         damage: float = 6.0,
     ) -> None:
