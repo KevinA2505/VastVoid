@@ -2,6 +2,7 @@ import pygame
 import math
 import random
 import config
+import control_settings as controls
 from ship import Ship, choose_ship
 from carrier import Carrier
 from combat import (
@@ -105,6 +106,7 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((config.WINDOW_WIDTH, config.WINDOW_HEIGHT))
     pygame.display.set_caption("VastVoid")
+    controls.load_bindings()
     vignette = _create_vignette(config.WINDOW_WIDTH, config.WINDOW_HEIGHT)
 
     player = choose_player_table(screen)
@@ -266,13 +268,13 @@ def main():
                     if inventory_window.handle_event(event):
                         inventory_window = None
                     continue
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_i:
+                if event.type == pygame.KEYDOWN and event.key == controls.get_key("open_inventory"):
                     inventory_window = InventoryWindow(player)
                     continue
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                if event.type == pygame.KEYDOWN and event.key == controls.get_key("open_weapons"):
                     weapon_menu = WeaponMenu(ship)
                     continue
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_g:
+                if event.type == pygame.KEYDOWN and event.key == controls.get_key("open_artifacts"):
                     artifact_menu = ArtifactMenu(ship, ability_bar)
                     continue
                 if (
@@ -458,7 +460,7 @@ def main():
                 continue
 
             if load_mode:
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                if event.type == pygame.KEYDOWN and event.key == controls.get_key("cancel"):
                     load_mode = False
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
@@ -480,18 +482,18 @@ def main():
                 leave_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
                 inv_rect = pygame.Rect(10, 10, 100, 30)
                 market_rect = pygame.Rect(10, 50, 100, 30)
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                if event.type == pygame.KEYDOWN and event.key == controls.get_key("cancel"):
                     current_station.undock_ship(ship)
                     ship.x = current_station.x + current_station.radius + 40
                     current_station = None
                     continue
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_i:
+                if event.type == pygame.KEYDOWN and event.key == controls.get_key("open_inventory"):
                     inventory_window = InventoryWindow(player)
                     continue
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
+                if event.type == pygame.KEYDOWN and event.key == controls.get_key("open_market"):
                     market_window = MarketWindow(current_station, player)
                     continue
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                if event.type == pygame.KEYDOWN and event.key == controls.get_key("open_weapons"):
                     weapon_menu = WeaponMenu(ship)
                     continue
                 if (
@@ -575,19 +577,19 @@ def main():
                     continue
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
+                if event.key == controls.get_key("cancel"):
                     selected_object = None
-                elif event.key == pygame.K_i:
+                elif event.key == controls.get_key("open_inventory"):
                     inventory_window = InventoryWindow(player)
-                elif event.key == pygame.K_f:
+                elif event.key == controls.get_key("open_weapons"):
                     weapon_menu = WeaponMenu(ship)
-                elif event.key == pygame.K_g:
+                elif event.key == controls.get_key("open_artifacts"):
                     artifact_menu = ArtifactMenu(ship, ability_bar)
-                elif event.key == pygame.K_l:
+                elif event.key == controls.get_key("load_ship"):
                     load_mode = True
-                elif event.key == pygame.K_c:
+                elif event.key == controls.get_key("dock"):
                     cbm.start_docking()
-                elif event.key == pygame.K_SPACE:
+                elif event.key == controls.get_key("fire"):
                     weapon = ship.weapons[ship.active_weapon]
                     if isinstance(weapon, IonizedSymbiontWeapon):
                         ship.start_weapon_charge()
@@ -598,7 +600,7 @@ def main():
                         tx = mx / zoom + offset_x
                         ty = my / zoom + offset_y
                         ship.fire(tx, ty)
-            elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
+            elif event.type == pygame.KEYUP and event.key == controls.get_key("fire"):
                 weapon = ship.weapons[ship.active_weapon]
                 if isinstance(weapon, IonizedSymbiontWeapon):
                     mx, my = pygame.mouse.get_pos()
@@ -795,13 +797,13 @@ def main():
 
         screen.fill(config.BACKGROUND_COLOR)
         if route_planner.active:
-            if keys[pygame.K_LEFT]:
+            if keys[controls.get_key("camera_left")]:
                 camera_x -= config.CAMERA_PAN_SPEED * dt
-            if keys[pygame.K_RIGHT]:
+            if keys[controls.get_key("camera_right")]:
                 camera_x += config.CAMERA_PAN_SPEED * dt
-            if keys[pygame.K_UP]:
+            if keys[controls.get_key("camera_up")]:
                 camera_y -= config.CAMERA_PAN_SPEED * dt
-            if keys[pygame.K_DOWN]:
+            if keys[controls.get_key("camera_down")]:
                 camera_y += config.CAMERA_PAN_SPEED * dt
         else:
             if not camera_dragging and last_pan_time >= config.CAMERA_RECENTER_DELAY:

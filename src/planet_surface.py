@@ -2,6 +2,7 @@ import math
 import pygame
 import random
 import config
+import control_settings as controls
 from biome import BIOMES, Biome
 
 
@@ -65,13 +66,13 @@ class Explorer:
         height: int,
         speed: float = config.EXPLORER_SPEED,
     ) -> None:
-        if keys[pygame.K_w]:
+        if keys[controls.get_key("move_up")]:
             self.y -= speed * dt
-        if keys[pygame.K_s]:
+        if keys[controls.get_key("move_down")]:
             self.y += speed * dt
-        if keys[pygame.K_a]:
+        if keys[controls.get_key("move_left")]:
             self.x -= speed * dt
-        if keys[pygame.K_d]:
+        if keys[controls.get_key("move_right")]:
             self.x += speed * dt
         # Clamp position so mask lookups stay within bounds
         self.x = max(0, min(width - 1, self.x))
@@ -326,9 +327,9 @@ class PlanetSurface:
             if self.exit_rect.collidepoint(event.pos):
                 return True
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
+            if event.key == controls.get_key("cancel"):
                 return True
-            if event.key == pygame.K_b:
+            if event.key == controls.get_key("toggle_boat"):
                 if self.boat_active:
                     self.boat_active = False
                     self.boat = None

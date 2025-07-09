@@ -1,4 +1,5 @@
 import pygame
+import control_settings as controls
 
 # Constants
 WINDOW_WIDTH, WINDOW_HEIGHT = 600, 600
@@ -24,13 +25,13 @@ def main():
                 running = False
 
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
+        if keys[controls.get_key("move_up")]:
             ship_y -= SPEED
-        if keys[pygame.K_s]:
+        if keys[controls.get_key("move_down")]:
             ship_y += SPEED
-        if keys[pygame.K_a]:
+        if keys[controls.get_key("move_left")]:
             ship_x -= SPEED
-        if keys[pygame.K_d]:
+        if keys[controls.get_key("move_right")]:
             ship_x += SPEED
 
         # Constrain ship to the window boundaries
