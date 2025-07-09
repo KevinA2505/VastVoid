@@ -60,6 +60,14 @@ The game offers three distinctive special weapons:
   from the ship before settling in place, appear 15% larger and there are 25%
   more of them. This weapon can be used once every five seconds.
 
+### Light Channeler
+Deploys a channeling station around the nearest star. A small **Channeler**
+extracts stellar energy and feeds it into a **Battery**, which in turn powers a
+turret that fires spore bursts at enemies. The device only functions when a
+star is close enough for the Channeler to make contact. Connected turrets fire
+roughly once every 0.6&nbsp;seconds (around 100 shots per minute), but the rate
+drops to one shot every two seconds if the link is lost.
+
 ## Character creation
 
 When starting the game you can personalise the player by entering a name,
