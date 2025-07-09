@@ -702,7 +702,8 @@ class IonizedSymbiontWeapon(Weapon):
     """Charge-based weapon that fires a sticky ion shot."""
 
     def __init__(self) -> None:
-        super().__init__("Ion Symbiont", 18, 300, cooldown=2.0)
+        # Projectile speed boosted by 25% for snappier hits
+        super().__init__("Ion Symbiont", 18, 375, cooldown=2.0)
         self.max_charge = 3.0
         self._charge = 0.0
         self._charging = False
