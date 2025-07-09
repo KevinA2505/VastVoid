@@ -687,7 +687,21 @@ class Ship:
         else:
             proj = weapon.fire(self.x, self.y, tx, ty)
         if proj:
-            if isinstance(proj, (LaserBeam, TimedMine, Drone, BombDrone, IonSymbiontShot, SlowField, SporeCloud)):
+            if isinstance(
+                proj,
+                (
+                    LaserBeam,
+                    TimedMine,
+                    Drone,
+                    BombDrone,
+                    IonSymbiontShot,
+                    SlowField,
+                    SporeCloud,
+                    Channeler,
+                    Battery,
+                    StarTurret,
+                ),
+            ):
                 self.specials.append(proj)
             else:
                 self.projectiles.append(proj)
@@ -699,7 +713,21 @@ class Ship:
         weapon = self.weapons[self.active_weapon]
         proj = weapon.fire_homing(self.x, self.y, target)
         if proj:
-            if isinstance(proj, (LaserBeam, TimedMine, Drone, BombDrone, IonSymbiontShot, SlowField, SporeCloud)):
+            if isinstance(
+                proj,
+                (
+                    LaserBeam,
+                    TimedMine,
+                    Drone,
+                    BombDrone,
+                    IonSymbiontShot,
+                    SlowField,
+                    SporeCloud,
+                    Channeler,
+                    Battery,
+                    StarTurret,
+                ),
+            ):
                 self.specials.append(proj)
             else:
                 self.projectiles.append(proj)
@@ -718,7 +746,21 @@ class Ship:
         if hasattr(weapon, "release"):
             proj = weapon.release(self.x, self.y, tx, ty)
             if proj:
-                if isinstance(proj, (LaserBeam, TimedMine, Drone, BombDrone, IonSymbiontShot, SlowField, SporeCloud)):
+                if isinstance(
+                    proj,
+                    (
+                        LaserBeam,
+                        TimedMine,
+                        Drone,
+                        BombDrone,
+                        IonSymbiontShot,
+                        SlowField,
+                        SporeCloud,
+                        Channeler,
+                        Battery,
+                        StarTurret,
+                    ),
+                ):
                     self.specials.append(proj)
                 else:
                     self.projectiles.append(proj)
@@ -937,10 +979,17 @@ class Ship:
                     self.specials.remove(obj)
             elif isinstance(obj, Channeler):
                 obj.update(dt)
+                if obj.expired():
+                    self.specials.remove(obj)
             elif isinstance(obj, Battery):
                 obj.update(dt)
+                if obj.expired():
+                    self.specials.remove(obj)
             elif isinstance(obj, StarTurret):
                 obj.update(dt, targets or [])
+                for sc in list(obj.projectiles):
+                    if sc.expired():
+                        obj.projectiles.remove(sc)
                 if obj.expired():
                     self.specials.remove(obj)
 
@@ -972,6 +1021,9 @@ class Ship:
             if isinstance(obj, Drone):
                 for proj in obj.projectiles:
                     proj.draw(screen, offset_x, offset_y, zoom)
+            elif isinstance(obj, StarTurret):
+                for sc in obj.projectiles:
+                    sc.draw(screen, offset_x, offset_y, zoom)
             obj.draw(screen, offset_x, offset_y, zoom)
         if self.area_shield:
             self.area_shield.draw(screen, offset_x, offset_y, zoom)
