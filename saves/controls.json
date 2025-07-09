@@ -1,0 +1,20 @@
+{
+  "move_up": "w",
+  "move_down": "s",
+  "move_left": "a",
+  "move_right": "d",
+  "boost": "left shift",
+  "open_inventory": "i",
+  "open_weapons": "f",
+  "open_artifacts": "g",
+  "open_market": "m",
+  "dock": "c",
+  "load_ship": "l",
+  "fire": "space",
+  "cancel": "escape",
+  "toggle_boat": "b",
+  "camera_left": "left",
+  "camera_right": "right",
+  "camera_up": "up",
+  "camera_down": "down"
+}
