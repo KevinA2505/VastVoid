@@ -1,3 +1,5 @@
+import math
+
 WINDOW_WIDTH, WINDOW_HEIGHT = 800, 600
 BACKGROUND_COLOR = (0, 0, 20)  # near black
 
@@ -147,3 +149,12 @@ STAR_TURRET_DISCONNECTED_LOSS = 1.0
 CADENCE_100_RPM = 60.0 / 100.0
 # Seconds between shots for a cadence of 30 rounds per minute
 CADENCE_30_RPM = 60.0 / 30.0
+
+# Deployment timing for LightChannelerWeapon components
+CHANNELER_BATTERY_DELAY = 2.0  # seconds before the battery becomes visible
+CHANNELER_TURRET_DELAY = 5.0   # seconds before the turret activates
+
+# Firing parameters for the star turret
+STAR_TURRET_ARC = math.pi * 0.1
+STAR_TURRET_PROJECTILE_SPEED = 380
+STAR_TURRET_PROJECTILE_DAMAGE = 6
