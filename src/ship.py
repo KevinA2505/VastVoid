@@ -2,6 +2,7 @@ import pygame
 import math
 from dataclasses import dataclass
 import config
+import control_settings as controls
 from fraction import Fraction
 from planet import Planet
 from names import get_ship_name
@@ -230,19 +231,19 @@ class Ship:
                     self.boost_charge = min(
                         1.0, self.boost_charge + dt / config.BOOST_RECHARGE
                     )
-                if keys[pygame.K_LSHIFT] and self.boost_charge >= 1.0:
+                if keys[controls.get_key("boost")] and self.boost_charge >= 1.0:
                     self.boost_time = config.BOOST_DURATION
                     self.boost_charge = 0.0
             if self.boost_time > 0:
                 accel *= config.BOOST_MULTIPLIER
 
-            if keys[pygame.K_w]:
+            if keys[controls.get_key("move_up")]:
                 self.vy -= accel * dt
-            if keys[pygame.K_s]:
+            if keys[controls.get_key("move_down")]:
                 self.vy += accel * dt
-            if keys[pygame.K_a]:
+            if keys[controls.get_key("move_left")]:
                 self.vx -= accel * dt
-            if keys[pygame.K_d]:
+            if keys[controls.get_key("move_right")]:
                 self.vx += accel * dt
 
             self.vx *= config.SHIP_FRICTION

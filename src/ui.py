@@ -1,5 +1,6 @@
 import pygame
 import config
+import control_settings as controls
 import math
 import types
 from artifact import Artifact
@@ -382,16 +383,30 @@ class ArtifactMenu:
 
 
 class SettingsWindow:
-    """Display the default control bindings."""
+    """View and edit control bindings."""
 
     def __init__(self) -> None:
         self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
+        self.actions = list(controls.DEFAULT_BINDINGS.keys())
+        self.editing: str | None = None
+        self.row_rects: list[pygame.Rect] = []
 
     def handle_event(self, event) -> bool:
+        if self.editing:
+            if event.type == pygame.KEYDOWN:
+                controls.set_key(self.editing, event.key)
+                controls.save_bindings()
+                self.editing = None
+            return False
+
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.close_rect.collidepoint(event.pos):
                 return True
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            for action, rect in zip(self.actions, self.row_rects):
+                if rect.collidepoint(event.pos):
+                    self.editing = action
+                    break
+        if event.type == pygame.KEYDOWN and event.key == controls.get_key("cancel"):
             return True
         return False
 
@@ -403,10 +418,17 @@ class SettingsWindow:
         x0, y0 = 20, 60
         row_h = 20
         col_x = 320
-        for i, (action, key) in enumerate(DEFAULT_CONTROLS):
-            action_txt = font.render(action, True, (255, 255, 255))
-            key_txt = font.render(key, True, (255, 255, 255))
-            screen.blit(action_txt, (x0, y0 + i * row_h))
+        self.row_rects = []
+        for i, action in enumerate(self.actions):
+            rect = pygame.Rect(x0, y0 + i * row_h, col_x - x0 - 10, row_h)
+            self.row_rects.append(rect)
+            color = (80, 80, 120) if action == self.editing else (20, 20, 40)
+            pygame.draw.rect(screen, color, rect)
+            action_label = action
+            keyname = pygame.key.name(controls.get_key(action))
+            action_txt = font.render(action_label, True, (255, 255, 255))
+            key_txt = font.render(keyname, True, (255, 255, 255))
+            screen.blit(action_txt, (x0 + 5, y0 + i * row_h))
             screen.blit(key_txt, (col_x, y0 + i * row_h))
 
         pygame.draw.rect(screen, (60, 60, 90), self.close_rect)

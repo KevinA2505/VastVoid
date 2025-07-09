@@ -198,3 +198,7 @@ Lista de controles predeterminados para las acciones principales:
 
 Puedes consultar esta misma lista durante la partida desde la opción **Ajustes** del menú principal.
 
+Las preferencias de teclado se guardan en `saves/controls.json`. Abre dicho
+menú, haz clic en una acción y pulsa la nueva tecla para actualizarla. Los
+cambios se escriben de inmediato y estarán disponibles en la siguiente sesión.
+
