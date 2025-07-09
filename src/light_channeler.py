@@ -1,7 +1,8 @@
 import math
+import random
 import pygame
 import config
-from combat import Weapon, SporeCloud
+from combat import Weapon, Projectile
 
 
 class Channeler:
@@ -71,31 +72,34 @@ class Battery:
         self.energy = 0.0
         self.max_energy = config.BATTERY_MAX_ENERGY
         self.turret = None
+        self.timer = 0.0
+        self.deploy_delay = config.CHANNELER_BATTERY_DELAY
 
     def update(self, dt: float) -> None:
-        pass
+        self.timer += dt
 
     def expired(self) -> bool:
         return False
 
     def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
-        pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
-        pygame.draw.rect(
-            screen,
-            (120, 180, 255),
-            (pos[0] - int(6 * zoom), pos[1] - int(6 * zoom), int(12 * zoom), int(12 * zoom)),
-        )
-        chan_pos = (
-            int((self.channeler.x - offset_x) * zoom),
-            int((self.channeler.y - offset_y) * zoom),
-        )
-        pygame.draw.line(screen, (100, 200, 255), pos, chan_pos, max(1, int(2 * zoom)))
-        if self.turret:
-            tur_pos = (
-                int((self.turret.x - offset_x) * zoom),
-                int((self.turret.y - offset_y) * zoom),
+        if self.timer >= self.deploy_delay:
+            pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
+            pygame.draw.rect(
+                screen,
+                (120, 180, 255),
+                (pos[0] - int(6 * zoom), pos[1] - int(6 * zoom), int(12 * zoom), int(12 * zoom)),
             )
-            pygame.draw.line(screen, (100, 200, 255), pos, tur_pos, max(1, int(2 * zoom)))
+            chan_pos = (
+                int((self.channeler.x - offset_x) * zoom),
+                int((self.channeler.y - offset_y) * zoom),
+            )
+            pygame.draw.line(screen, (100, 200, 255), pos, chan_pos, max(1, int(2 * zoom)))
+            if self.turret and self.turret.timer >= self.turret.deploy_delay:
+                tur_pos = (
+                    int((self.turret.x - offset_x) * zoom),
+                    int((self.turret.y - offset_y) * zoom),
+                )
+                pygame.draw.line(screen, (100, 200, 255), pos, tur_pos, max(1, int(2 * zoom)))
 
 
 class StarTurret:
@@ -108,16 +112,22 @@ class StarTurret:
         self.x = battery.x + math.cos(self.angle) * distance
         self.y = battery.y + math.sin(self.angle) * distance
         self.hp = 60.0
-        self.projectiles: list[SporeCloud] = []
+        self.projectiles: list[Projectile] = []
         self._timer = 0.0
         self.connected_rate = config.CADENCE_100_RPM  # seconds between shots
         self.disconnected_rate = config.CADENCE_30_RPM
+        self.timer = 0.0
+        self.deploy_delay = config.CHANNELER_TURRET_DELAY
+        self.arc = config.STAR_TURRET_ARC
 
     @property
     def connected(self) -> bool:
         return self.battery.channeler is not None
 
     def update(self, dt: float, targets: list | None = None) -> None:
+        self.timer += dt
+        if self.timer < self.deploy_delay:
+            return
         self._timer += dt
         if not self.connected:
             self.hp -= dt * config.STAR_TURRET_DISCONNECTED_LOSS
@@ -129,36 +139,40 @@ class StarTurret:
                 and self.battery.energy >= config.STAR_TURRET_ENERGY_PER_SHOT
             ):
                 self.battery.energy -= config.STAR_TURRET_ENERGY_PER_SHOT
-            ang = self.angle
+            ang = self.angle + random.uniform(-self.arc / 2, self.arc / 2)
+            proj = Projectile(
+                self.x,
+                self.y,
+                self.x + math.cos(ang),
+                self.y + math.sin(ang),
+                config.STAR_TURRET_PROJECTILE_SPEED,
+                config.STAR_TURRET_PROJECTILE_DAMAGE,
+            )
+            self.projectiles.append(proj)
+        for proj in list(self.projectiles):
+            proj.update(dt)
+            hit = False
             if targets:
-                nearest = None
-                min_d = float("inf")
                 for t in targets:
-                    d = math.hypot(t.ship.x - self.x, t.ship.y - self.y)
-                    if d < min_d:
-                        min_d = d
-                        nearest = t.ship
-                if nearest:
-                    ang = math.atan2(nearest.y - self.y, nearest.x - self.x)
-            sc = SporeCloud(self, self.x, self.y, ang)
-            self.projectiles.append(sc)
-        for sc in list(self.projectiles):
-            tick = sc.update(dt)
-            if tick and targets:
-                for t in targets:
-                    if sc.contains(t.ship):
-                        t.ship.take_damage(sc.damage)
-            if sc.expired():
-                self.projectiles.remove(sc)
+                    if (
+                        math.hypot(proj.x - t.ship.x, proj.y - t.ship.y)
+                        <= t.ship.collision_radius
+                    ):
+                        t.ship.take_damage(proj.damage)
+                        hit = True
+                        break
+            if hit or proj.expired():
+                self.projectiles.remove(proj)
 
     def expired(self) -> bool:
         return self.hp <= 0
 
     def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
-        pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
-        pygame.draw.circle(screen, (200, 120, 120), pos, max(3, int(6 * zoom)))
-        for sc in self.projectiles:
-            sc.draw(screen, offset_x, offset_y, zoom)
+        if self.timer >= self.deploy_delay:
+            pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
+            pygame.draw.circle(screen, (200, 120, 120), pos, max(3, int(6 * zoom)))
+            for proj in self.projectiles:
+                proj.draw(screen, offset_x, offset_y, zoom)
 
 
 class LightChannelerWeapon(Weapon):
