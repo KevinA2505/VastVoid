@@ -146,9 +146,9 @@ STAR_TURRET_ENERGY_PER_SHOT = 1.0
 # Hit points lost per second when the turret is disconnected
 STAR_TURRET_DISCONNECTED_LOSS = 1.0
 # Seconds between shots for a cadence of 100 rounds per minute
-CADENCE_100_RPM = 60.0 / 100.0
+CADENCE_100_RPM = 60.0 / 300.0
 # Seconds between shots for a cadence of 30 rounds per minute
-CADENCE_30_RPM = 60.0 / 30.0
+CADENCE_30_RPM = 60.0 / 90.0
 
 # Deployment timing for LightChannelerWeapon components
 CHANNELER_BATTERY_DELAY = 2.0  # seconds before the battery becomes visible
