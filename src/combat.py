@@ -843,7 +843,11 @@ class _SporeParticle:
 
 
 class SporeCloud:
-    """Cone-shaped cloud that damages ships over time."""
+    """Cone-shaped cloud that damages ships over time.
+
+    The radius may be shortened during initialization if a structure lies in
+    the cone's path to prevent the effect from extending through obstacles.
+    """
 
     def __init__(
         self,
@@ -858,6 +862,7 @@ class SporeCloud:
 
         duration: float = 7.0,
         damage: float = 6.0,
+        structures: list | None = None,
     ) -> None:
         self.owner = owner
         self.x = x
@@ -870,6 +875,18 @@ class SporeCloud:
         self.timer = 0.0
         self._tick = 0.0
         self.particles: list[_SporeParticle] = []
+
+        # Shorten the radius if a structure falls inside the cone
+        if structures:
+            for struct in structures:
+                dx = struct.x - self.x
+                dy = struct.y - self.y
+                ang = math.atan2(dy, dx)
+                diff = (ang - self.angle + math.pi) % (2 * math.pi) - math.pi
+                if abs(diff) <= self.arc / 2:
+                    dist = math.hypot(dx, dy)
+                    sr = getattr(struct, "radius", getattr(struct, "size", 0))
+                    self.radius = max(0.0, min(self.radius, dist - sr))
 
     def contains(self, obj) -> bool:
         dx = obj.x - self.x
@@ -923,7 +940,14 @@ class SporesWeapon(Weapon):
     def __init__(self) -> None:
         super().__init__("Spores", 0, 0, cooldown=5.0)
 
-    def fire(self, x: float, y: float, tx: float, ty: float):
+    def fire(
+        self,
+        x: float,
+        y: float,
+        tx: float,
+        ty: float,
+        structures: list | None = None,
+    ):
         if not self.can_fire():
             return None
         self._timer = 0.0
@@ -931,4 +955,6 @@ class SporesWeapon(Weapon):
         dist = self.owner.size * 2
         sx = self.owner.x + math.cos(angle) * dist
         sy = self.owner.y + math.sin(angle) * dist
-        return SporeCloud(self.owner, sx, sy, angle)
+        if structures is None:
+            structures = getattr(self.owner, "_structures", None)
+        return SporeCloud(self.owner, sx, sy, angle, structures=structures)
