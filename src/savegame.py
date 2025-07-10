@@ -76,7 +76,7 @@ def list_players() -> List[str]:
         return []
     names = []
     for fname in os.listdir(SAVE_DIR):
-        if fname.endswith(".json"):
+        if fname.endswith(".json") and fname not in {"controls.json", "settings.json"}:
             names.append(os.path.splitext(fname)[0])
     return sorted(names)
 
