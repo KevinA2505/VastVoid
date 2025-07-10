@@ -23,6 +23,8 @@ class Channeler:
         self.transfer_rate = config.CHANNELER_TRANSFER_RATE
         self.battery = None
         self.timer = 0.0
+        self.hp = config.CHANNELER_HP
+        self.max_hp = config.CHANNELER_HP
 
     def _find_star(self):
         nearest = None
@@ -47,11 +49,20 @@ class Channeler:
             self.battery.energy += moved
 
     def expired(self) -> bool:
-        return False
+        return self.hp <= 0
 
     def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
         pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
         pygame.draw.circle(screen, (255, 240, 150), pos, max(2, int(8 * zoom)))
+        bar_w = max(12, int(20 * zoom))
+        bar_h = max(2, int(4 * zoom))
+        bar_x = pos[0] - bar_w // 2
+        bar_y = pos[1] - int(12 * zoom)
+        pygame.draw.rect(screen, (60, 60, 90), (bar_x, bar_y, bar_w, bar_h))
+        pygame.draw.rect(screen, (200, 200, 200), (bar_x, bar_y, bar_w, bar_h), 1)
+        fill = int(bar_w * max(0.0, min(1.0, self.hp / self.max_hp)))
+        if fill > 0:
+            pygame.draw.rect(screen, (150, 0, 0), (bar_x, bar_y, fill, bar_h))
         if self.star:
             end = (
                 int((self.star.x - offset_x) * zoom),
@@ -73,13 +84,15 @@ class Battery:
         self.max_energy = config.BATTERY_MAX_ENERGY
         self.turret = None
         self.timer = 0.0
+        self.hp = config.BATTERY_HP
+        self.max_hp = config.BATTERY_HP
         self.deploy_delay = config.CHANNELER_BATTERY_DELAY
 
     def update(self, dt: float) -> None:
         self.timer += dt
 
     def expired(self) -> bool:
-        return False
+        return self.hp <= 0
 
     def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
         if self.timer >= self.deploy_delay:
@@ -89,6 +102,15 @@ class Battery:
                 (120, 180, 255),
                 (pos[0] - int(6 * zoom), pos[1] - int(6 * zoom), int(12 * zoom), int(12 * zoom)),
             )
+            bar_w = max(12, int(20 * zoom))
+            bar_h = max(2, int(4 * zoom))
+            bar_x = pos[0] - bar_w // 2
+            bar_y = pos[1] - int(12 * zoom)
+            pygame.draw.rect(screen, (60, 60, 90), (bar_x, bar_y, bar_w, bar_h))
+            pygame.draw.rect(screen, (200, 200, 200), (bar_x, bar_y, bar_w, bar_h), 1)
+            fill = int(bar_w * max(0.0, min(1.0, self.hp / self.max_hp)))
+            if fill > 0:
+                pygame.draw.rect(screen, (150, 0, 0), (bar_x, bar_y, fill, bar_h))
             chan_pos = (
                 int((self.channeler.x - offset_x) * zoom),
                 int((self.channeler.y - offset_y) * zoom),
@@ -111,7 +133,8 @@ class StarTurret:
         self.angle = battery.angle
         self.x = battery.x + math.cos(self.angle) * distance
         self.y = battery.y + math.sin(self.angle) * distance
-        self.hp = 60.0
+        self.hp = config.STAR_TURRET_HP
+        self.max_hp = config.STAR_TURRET_HP
         self.projectiles: list[Projectile] = []
         self._timer = 0.0
         self.connected_rate = config.CADENCE_100_RPM  # seconds between shots
@@ -172,6 +195,15 @@ class StarTurret:
         if self.timer >= self.deploy_delay:
             pos = (int((self.x - offset_x) * zoom), int((self.y - offset_y) * zoom))
             pygame.draw.circle(screen, (200, 120, 120), pos, max(3, int(6 * zoom)))
+            bar_w = max(12, int(20 * zoom))
+            bar_h = max(2, int(4 * zoom))
+            bar_x = pos[0] - bar_w // 2
+            bar_y = pos[1] - int(12 * zoom)
+            pygame.draw.rect(screen, (60, 60, 90), (bar_x, bar_y, bar_w, bar_h))
+            pygame.draw.rect(screen, (200, 200, 200), (bar_x, bar_y, bar_w, bar_h), 1)
+            fill = int(bar_w * max(0.0, min(1.0, self.hp / self.max_hp)))
+            if fill > 0:
+                pygame.draw.rect(screen, (150, 0, 0), (bar_x, bar_y, fill, bar_h))
             for proj in self.projectiles:
                 proj.draw(screen, offset_x, offset_y, zoom)
 
