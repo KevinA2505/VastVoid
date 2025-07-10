@@ -1,6 +1,7 @@
 import pygame
 import math
 import random
+import types
 import config
 import control_settings as controls
 import game_settings as settings
@@ -673,6 +674,8 @@ def main():
                         if math.hypot(carrier.x - world_x, carrier.y - world_y) <= carrier.collision_radius:
                             carrier_window = CarrierWindow(carrier)
                             continue
+                        dest = types.SimpleNamespace(x=world_x, y=world_y)
+                        ship.start_autopilot(dest)
                 elif event.button == 3:
                     camera_dragging = True
                     camera_last = event.pos
