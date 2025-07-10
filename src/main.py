@@ -604,6 +604,11 @@ def main():
                         tx = mx / zoom + offset_x
                         ty = my / zoom + offset_y
                         ship.fire(tx, ty)
+                elif not settings.get_setting("zoom_with_wheel"):
+                    if event.key == pygame.K_e:
+                        zoom += 0.1
+                    elif event.key == pygame.K_q:
+                        zoom = max(0.1, zoom - 0.1)
             elif event.type == pygame.KEYUP and event.key == controls.get_key("fire"):
                 weapon = ship.weapons[ship.active_weapon]
                 if isinstance(weapon, IonizedSymbiontWeapon):
@@ -615,11 +620,6 @@ def main():
                     ship.release_weapon_charge(tx, ty)
             elif event.type == pygame.MOUSEWHEEL and settings.get_setting("zoom_with_wheel"):
                 zoom = max(0.1, zoom + event.y * 0.1)
-            elif event.type == pygame.KEYDOWN and not settings.get_setting("zoom_with_wheel"):
-                if event.key == pygame.K_e:
-                    zoom += 0.1
-                elif event.key == pygame.K_q:
-                    zoom = max(0.1, zoom - 0.1)
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if settings.get_setting("zoom_with_wheel"):
                     if event.button == 4:
