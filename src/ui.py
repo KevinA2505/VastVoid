@@ -18,7 +18,7 @@ DEFAULT_CONTROLS = [
     ("Iniciar acoplamiento", "C"),
     ("Cargar nave aliada en portador", "L"),
     ("Disparar arma principal", "Barra espaciadora"),
-    ("Seleccionar/interactuar", "Clic izquierdo"),
+    ("Seleccionar/interactuar o mover nave", "Clic izquierdo"),
     ("Cerrar ventana o cancelar", "Escape"),
     ("Cambiar zoom", "Rueda del ratón"),
     ("Elegir ranura (al equipar)", "1, 2 o 3"),

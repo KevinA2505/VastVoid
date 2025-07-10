@@ -197,7 +197,7 @@ Lista de controles predeterminados para las acciones principales:
 | Iniciar acoplamiento | C |
 | Cargar nave aliada en portador | L |
 | Disparar arma principal | Barra espaciadora |
-| Seleccionar/interactuar | Clic izquierdo |
+| Seleccionar/interactuar (o mover nave en punto vacío) | Clic izquierdo |
 | Cerrar ventana o cancelar | Escape |
 | Cambiar zoom | Rueda del ratón o Q/E |
 | Elegir ranura (al equipar) | 1, 2 o 3 |
