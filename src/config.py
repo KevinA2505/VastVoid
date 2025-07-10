@@ -141,6 +141,10 @@ DEF_DRONE_EPSILON = 0.1
 CHANNELER_TRANSFER_RATE = 10.0
 # Maximum energy capacity of a battery
 BATTERY_MAX_ENERGY = 200.0
+# Hit points for Light Channeler components
+CHANNELER_HP = 30.0
+BATTERY_HP = 40.0
+STAR_TURRET_HP = 60.0
 # Energy consumed per shot when the StarTurret is connected to the battery
 STAR_TURRET_ENERGY_PER_SHOT = 1.0
 # Hit points lost per second when the turret is disconnected
