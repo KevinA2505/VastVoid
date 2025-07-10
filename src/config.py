@@ -15,7 +15,7 @@ BOUNCE_FACTOR = 1.0
 # Maximum travel speed for manual control
 SHIP_MAX_SPEED = 100
 # Slightly slower autopilot speed to keep movement moderate
-AUTOPILOT_SPEED = 100  # pixels per second when auto moving
+AUTOPILOT_SPEED = 80  # pixels per second when auto moving
 PLANET_LANDING_SPEED = 80  # slower speed when approaching a planet
 
 # --- Hull settings -----------------------------------------------------------
