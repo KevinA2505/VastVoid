@@ -199,7 +199,7 @@ Lista de controles predeterminados para las acciones principales:
 | Disparar arma principal | Barra espaciadora |
 | Seleccionar/interactuar | Clic izquierdo |
 | Cerrar ventana o cancelar | Escape |
-| Cambiar zoom | Rueda del ratón |
+| Cambiar zoom | Rueda del ratón o Q/E |
 | Elegir ranura (al equipar) | 1, 2 o 3 |
 | Mover cámara en planificador | Flechas del teclado |
 | Activar/desactivar bote | B |
@@ -209,4 +209,6 @@ Puedes consultar esta misma lista durante la partida desde la opción **Ajustes*
 Las preferencias de teclado se guardan en `saves/controls.json`. Abre dicho
 menú, haz clic en una acción y pulsa la nueva tecla para actualizarla. Los
 cambios se escriben de inmediato y estarán disponibles en la siguiente sesión.
+La misma ventana incluye un conmutador para elegir si el zoom se controla con
+la rueda del ratón o con las teclas **Q** y **E**.
 

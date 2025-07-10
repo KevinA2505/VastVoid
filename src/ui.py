@@ -1,6 +1,7 @@
 import pygame
 import config
 import control_settings as controls
+import game_settings as settings
 import math
 import types
 from artifact import Artifact
@@ -390,6 +391,7 @@ class SettingsWindow:
         self.actions = list(controls.DEFAULT_BINDINGS.keys())
         self.editing: str | None = None
         self.row_rects: list[pygame.Rect] = []
+        self.zoom_rect = pygame.Rect(0, 0, 0, 0)
 
     def handle_event(self, event) -> bool:
         if self.editing:
@@ -406,6 +408,11 @@ class SettingsWindow:
                 if rect.collidepoint(event.pos):
                     self.editing = action
                     break
+            if self.zoom_rect.collidepoint(event.pos):
+                current = settings.get_setting("zoom_with_wheel")
+                settings.set_setting("zoom_with_wheel", not current)
+                settings.save_settings()
+                return False
         if event.type == pygame.KEYDOWN and event.key == controls.get_key("cancel"):
             return True
         return False
@@ -430,6 +437,13 @@ class SettingsWindow:
             key_txt = font.render(keyname, True, (255, 255, 255))
             screen.blit(action_txt, (x0 + 5, y0 + i * row_h))
             screen.blit(key_txt, (col_x, y0 + i * row_h))
+
+        zoom_y = y0 + len(self.actions) * row_h + 10
+        self.zoom_rect = pygame.Rect(x0, zoom_y, col_x - x0 - 10, row_h)
+        pygame.draw.rect(screen, (60, 60, 90), self.zoom_rect)
+        mode = "Rueda" if settings.get_setting("zoom_with_wheel") else "Q/E"
+        zoom_txt = font.render(f"Zoom: {mode}", True, (255, 255, 255))
+        screen.blit(zoom_txt, (x0 + 5, zoom_y))
 
         pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
         pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)

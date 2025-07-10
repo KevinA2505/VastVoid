@@ -3,6 +3,7 @@ import math
 import random
 import config
 import control_settings as controls
+import game_settings as settings
 from ship import Ship, choose_ship
 from carrier import Carrier
 from combat import (
@@ -108,6 +109,7 @@ def main():
     screen = pygame.display.set_mode((config.WINDOW_WIDTH, config.WINDOW_HEIGHT))
     pygame.display.set_caption("VastVoid")
     controls.load_bindings()
+    settings.load_settings()
     vignette = _create_vignette(config.WINDOW_WIDTH, config.WINDOW_HEIGHT)
 
     player = choose_player_table(screen)
@@ -611,15 +613,21 @@ def main():
                     tx = mx / zoom + offset_x
                     ty = my / zoom + offset_y
                     ship.release_weapon_charge(tx, ty)
-            elif event.type == pygame.MOUSEWHEEL:
+            elif event.type == pygame.MOUSEWHEEL and settings.get_setting("zoom_with_wheel"):
                 zoom = max(0.1, zoom + event.y * 0.1)
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 4:
+            elif event.type == pygame.KEYDOWN and not settings.get_setting("zoom_with_wheel"):
+                if event.key == pygame.K_e:
                     zoom += 0.1
-                    continue
-                elif event.button == 5:
+                elif event.key == pygame.K_q:
                     zoom = max(0.1, zoom - 0.1)
-                    continue
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if settings.get_setting("zoom_with_wheel"):
+                    if event.button == 4:
+                        zoom += 0.1
+                        continue
+                    elif event.button == 5:
+                        zoom = max(0.1, zoom - 0.1)
+                        continue
                 offset_x = camera_x - config.WINDOW_WIDTH / (2 * zoom)
                 offset_y = camera_y - config.WINDOW_HEIGHT / (2 * zoom)
                 world_x = event.pos[0] / zoom + offset_x
