@@ -49,6 +49,16 @@ SHIP_MODELS = [
     ShipModel("Explorer", "NovaCorp", 20, (255, 220, 150), 1.0),
     ShipModel("Freighter", "Galactic Haul", 24, (180, 180, 180), 0.8),
     ShipModel("Interceptor", "Starlight", 16, (255, 100, 100), 1.4),
+    ShipModel("Corvette", "ReconX", 17, (180, 220, 255), 1.5),
+    ShipModel("Medical Frigate", "MediFleet", 22, (220, 255, 220), 0.9),
+    ShipModel("Colony Transport", "Nexus", 26, (245, 210, 180), 0.7),
+    ShipModel("Diplomatic Cruiser", "UnityWorks", 25, (240, 200, 255), 0.95),
+    ShipModel("Automated Miner", "OreBots", 23, (200, 200, 150), 0.85),
+    ShipModel("Research Vessel", "QuasarLabs", 21, (255, 245, 170), 1.0),
+    ShipModel("Drone Carrier", "Vanguard", 19, (190, 230, 210), 1.1),
+    ShipModel("Support Destroyer", "Bulwark", 23, (230, 190, 190), 0.9),
+    ShipModel("Stealth Ship", "ShadowTech", 18, (100, 100, 100), 1.4),
+    ShipModel("Mobile Workshop", "FixIt", 22, (200, 190, 180), 0.8),
 ]
 
 
