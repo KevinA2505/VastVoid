@@ -1196,9 +1196,15 @@ def choose_ship_table(screen: pygame.Surface) -> ShipModel:
     spacing = 10
     start_x, start_y = 50, 100
 
+    visible_h = config.WINDOW_HEIGHT - start_y - 50
+    table_h = len(SHIP_MODELS) * (row_h + 5) - 5
+    scroll_y = 0
+    dragging = False
+    drag_offset = 0
+
     while True:
         row_rects: list[tuple[pygame.Rect, pygame.Rect]] = []
-        y = start_y
+        y = start_y - scroll_y
         for _ in SHIP_MODELS:
             choose_rect = pygame.Rect(start_x + name_w + spacing, y, btn_w, row_h)
             info_rect = pygame.Rect(
@@ -1210,20 +1216,54 @@ def choose_ship_table(screen: pygame.Surface) -> ShipModel:
             row_rects.append((choose_rect, info_rect))
             y += row_h + 5
 
+        bar_rect = None
+        handle_rect = None
+        if table_h > visible_h:
+            bar_x = start_x + name_w + spacing * 2 + btn_w * 2 + spacing
+            bar_rect = pygame.Rect(bar_x, start_y, 20, visible_h)
+            handle_h = max(int(visible_h * visible_h / table_h), 20)
+            handle_y = start_y + int(scroll_y * (visible_h - handle_h) / (table_h - visible_h))
+            handle_rect = pygame.Rect(bar_x, handle_y, 20, handle_h)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 raise SystemExit
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                for idx, (choose_rect, info_rect) in enumerate(row_rects):
-                    if choose_rect.collidepoint(event.pos):
-                        return SHIP_MODELS[idx]
-                    if info_rect.collidepoint(event.pos):
-                        _show_ship_info(screen, SHIP_MODELS[idx])
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if handle_rect and handle_rect.collidepoint(event.pos):
+                        dragging = True
+                        drag_offset = event.pos[1] - handle_rect.y
+                    else:
+                        for idx, (choose_rect, info_rect) in enumerate(row_rects):
+                            if choose_rect.collidepoint(event.pos):
+                                return SHIP_MODELS[idx]
+                            if info_rect.collidepoint(event.pos):
+                                _show_ship_info(screen, SHIP_MODELS[idx])
+                elif event.button == 4:
+                    scroll_y = max(scroll_y - 20, 0)
+                elif event.button == 5:
+                    scroll_y = min(scroll_y + 20, max(table_h - visible_h, 0))
+
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                dragging = False
+
+            elif event.type == pygame.MOUSEMOTION and dragging and handle_rect:
+                new_y = event.pos[1] - drag_offset
+                new_y = max(start_y, min(new_y, start_y + visible_h - handle_rect.height))
+                scroll_y = int((new_y - start_y) * max(table_h - visible_h, 0) / max(visible_h - handle_rect.height, 1))
+
+            elif event.type == pygame.MOUSEWHEEL:
+                scroll_y = max(0, min(scroll_y - event.y * 20, max(table_h - visible_h, 0)))
 
         screen.fill(config.BACKGROUND_COLOR)
-        y = start_y
+        y = start_y - scroll_y
         for i, model in enumerate(SHIP_MODELS):
+            if y + row_h < start_y or y > start_y + visible_h:
+                y += row_h + 5
+                continue
+
             name_rect = pygame.Rect(start_x, y, name_w, row_h)
             pygame.draw.rect(screen, (60, 60, 90), name_rect)
             pygame.draw.rect(screen, (200, 200, 200), name_rect, 1)
@@ -1245,6 +1285,12 @@ def choose_ship_table(screen: pygame.Surface) -> ShipModel:
             info_txt = font.render("Info", True, (255, 255, 255))
             screen.blit(info_txt, info_txt.get_rect(center=info_rect.center))
             y += row_h + 5
+
+        if bar_rect and handle_rect:
+            pygame.draw.rect(screen, (60, 60, 90), bar_rect)
+            pygame.draw.rect(screen, (200, 200, 200), bar_rect, 1)
+            pygame.draw.rect(screen, (120, 120, 180), handle_rect)
+            pygame.draw.rect(screen, (200, 200, 200), handle_rect, 1)
 
         pygame.display.flip()
         clock.tick(30)
