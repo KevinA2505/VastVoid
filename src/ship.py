@@ -39,8 +39,10 @@ class ShipModel:
 
     Attributes
     ----------
+    name:
+        Model name of the vessel.
     classification:
-        Descriptive class of the vessel (e.g. Fighter).
+        Category grouping ships with similar purpose (e.g. Combat).
     brand:
         Manufacturer name for flavor.
     size:
@@ -59,6 +61,7 @@ class ShipModel:
         Optional name of a unique ability.
     """
 
+    name: str
     classification: str
     brand: str
     size: int
@@ -72,20 +75,20 @@ class ShipModel:
 
 # Some predefined ship models used during character creation
 SHIP_MODELS = [
-    ShipModel("Fighter", "AeroTech", 18, (200, 200, 255), 1.2, 110, 120, [BasicWeapon]),
-    ShipModel("Explorer", "NovaCorp", 20, (255, 220, 150), 1.0, 120, 100, [BasicWeapon]),
-    ShipModel("Freighter", "Galactic Haul", 24, (180, 180, 180), 0.8, 150, 120, [BasicWeapon]),
-    ShipModel("Interceptor", "Starlight", 16, (255, 100, 100), 1.4, 105, 110, [BasicWeapon]),
-    ShipModel("Corvette", "ReconX", 17, (180, 220, 255), 1.5, 115, 110, [BasicWeapon]),
-    ShipModel("Medical Frigate", "MediFleet", 22, (220, 255, 220), 0.9, 130, 130, [BasicWeapon]),
-    ShipModel("Colony Transport", "Nexus", 26, (245, 210, 180), 0.7, 160, 120, [BasicWeapon]),
-    ShipModel("Diplomatic Cruiser", "UnityWorks", 25, (240, 200, 255), 0.95, 140, 140, [BasicWeapon]),
-    ShipModel("Automated Miner", "OreBots", 23, (200, 200, 150), 0.85, 135, 100, [BasicWeapon]),
-    ShipModel("Research Vessel", "QuasarLabs", 21, (255, 245, 170), 1.0, 125, 120, [BasicWeapon]),
-    ShipModel("Drone Carrier", "Vanguard", 19, (190, 230, 210), 1.1, 115, 110, [BasicWeapon]),
-    ShipModel("Support Destroyer", "Bulwark", 23, (230, 190, 190), 0.9, 145, 130, [BasicWeapon]),
-    ShipModel("Stealth Ship", "ShadowTech", 18, (100, 100, 100), 1.4, 100, 100, [BasicWeapon]),
-    ShipModel("Mobile Workshop", "FixIt", 22, (200, 190, 180), 0.8, 130, 120, [BasicWeapon]),
+    ShipModel("Fighter", "Combat", "AeroTech", 18, (200, 200, 255), 1.2, 110, 120, [BasicWeapon]),
+    ShipModel("Explorer", "Exploration", "NovaCorp", 20, (255, 220, 150), 1.0, 120, 100, [BasicWeapon]),
+    ShipModel("Freighter", "Logistics", "Galactic Haul", 24, (180, 180, 180), 0.8, 150, 120, [BasicWeapon]),
+    ShipModel("Interceptor", "Combat", "Starlight", 16, (255, 100, 100), 1.4, 105, 110, [BasicWeapon]),
+    ShipModel("Corvette", "Combat", "ReconX", 17, (180, 220, 255), 1.5, 115, 110, [BasicWeapon]),
+    ShipModel("Medical Frigate", "Support", "MediFleet", 22, (220, 255, 220), 0.9, 130, 130, [BasicWeapon]),
+    ShipModel("Colony Transport", "Logistics", "Nexus", 26, (245, 210, 180), 0.7, 160, 120, [BasicWeapon]),
+    ShipModel("Diplomatic Cruiser", "Diplomatic", "UnityWorks", 25, (240, 200, 255), 0.95, 140, 140, [BasicWeapon]),
+    ShipModel("Automated Miner", "Industrial", "OreBots", 23, (200, 200, 150), 0.85, 135, 100, [BasicWeapon]),
+    ShipModel("Research Vessel", "Exploration", "QuasarLabs", 21, (255, 245, 170), 1.0, 125, 120, [BasicWeapon]),
+    ShipModel("Drone Carrier", "Carrier", "Vanguard", 19, (190, 230, 210), 1.1, 115, 110, [BasicWeapon]),
+    ShipModel("Support Destroyer", "Combat", "Bulwark", 23, (230, 190, 190), 0.9, 145, 130, [BasicWeapon]),
+    ShipModel("Stealth Ship", "Stealth", "ShadowTech", 18, (100, 100, 100), 1.4, 100, 100, [BasicWeapon]),
+    ShipModel("Mobile Workshop", "Industrial", "FixIt", 22, (200, 190, 180), 0.8, 130, 120, [BasicWeapon]),
 ]
 
 
@@ -146,6 +149,7 @@ class Ship:
         self.boost_time = 0.0
         self.model = model
         self.name = get_ship_name()
+        self.model_name = model.name if model else "Prototype"
         self.fraction = fraction
         if model and model.default_weapons:
             self.weapons = [cls() for cls in model.default_weapons]
@@ -1132,7 +1136,7 @@ def choose_ship(screen: pygame.Surface) -> ShipModel:
         lines = ["Choose your ship:"]
         for i, model in enumerate(SHIP_MODELS):
             lines.append(
-                f"{i+1} - {model.brand} {model.classification}"
+                f"{i+1} - {model.brand} {model.name} [{model.classification}]"
             )
         for i, line in enumerate(lines):
             msg = font.render(line, True, (255, 255, 255))

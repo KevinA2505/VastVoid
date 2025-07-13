@@ -14,6 +14,7 @@ def _model_to_dict(model: ShipModel | None):
     if not model:
         return None
     return {
+        "name": model.name,
         "classification": model.classification,
         "brand": model.brand,
     }
@@ -24,9 +25,18 @@ def _dict_to_model(data: dict | None) -> ShipModel | None:
         return None
     classification = data.get("classification")
     brand = data.get("brand")
+    name = data.get("name")
     for m in SHIP_MODELS:
-        if m.classification == classification and m.brand == brand:
-            return m
+        if name:
+            if (
+                m.name == name
+                and m.classification == classification
+                and m.brand == brand
+            ):
+                return m
+        else:
+            if m.classification == classification and m.brand == brand:
+                return m
     return None
 
 
