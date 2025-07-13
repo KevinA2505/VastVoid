@@ -212,3 +212,7 @@ cambios se escriben de inmediato y estarán disponibles en la siguiente sesión.
 La misma ventana incluye un conmutador para elegir si el zoom se controla con
 la rueda del ratón o con las teclas **Q** y **E**.
 
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
