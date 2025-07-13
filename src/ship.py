@@ -1143,3 +1143,110 @@ def choose_ship(screen: pygame.Surface) -> ShipModel:
             screen.blit(msg, (50, 100 + i * 30))
         pygame.display.flip()
         clock.tick(30)
+
+
+def _show_ship_info(screen: pygame.Surface, model: ShipModel) -> None:
+    """Display a simple window with details for ``model``."""
+    font = pygame.font.Font(None, 32)
+    clock = pygame.time.Clock()
+    width, height = 360, 260
+    rect = pygame.Rect(
+        (config.WINDOW_WIDTH - width) // 2,
+        (config.WINDOW_HEIGHT - height) // 2,
+        width,
+        height,
+    )
+    close_rect = pygame.Rect(rect.x + width - 110, rect.y + height - 40, 100, 30)
+    lines = [
+        f"{model.brand} {model.name}",
+        f"Clase: {model.classification}",
+        f"Tamaño: {model.size}",
+        f"Aceleración: {model.accel_factor}",
+        f"Casco: {model.hull}",
+        f"Escudo: {model.shield}",
+    ]
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                raise SystemExit
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if close_rect.collidepoint(event.pos):
+                    return
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                return
+
+        screen.fill((0, 0, 0))
+        pygame.draw.rect(screen, (30, 30, 60), rect)
+        pygame.draw.rect(screen, (200, 200, 200), rect, 1)
+        for i, line in enumerate(lines):
+            txt = font.render(line, True, (255, 255, 255))
+            screen.blit(txt, (rect.x + 10, rect.y + 10 + i * 30))
+        pygame.draw.rect(screen, (60, 60, 90), close_rect)
+        pygame.draw.rect(screen, (200, 200, 200), close_rect, 1)
+        close_txt = font.render("Close", True, (255, 255, 255))
+        screen.blit(close_txt, close_txt.get_rect(center=close_rect.center))
+        pygame.display.flip()
+        clock.tick(30)
+
+
+def choose_ship_table(screen: pygame.Surface) -> ShipModel:
+    """GUI with buttons to select a ship and view its details."""
+    font = pygame.font.Font(None, 32)
+    clock = pygame.time.Clock()
+    name_w, btn_w, row_h = 260, 100, 40
+    spacing = 10
+    start_x, start_y = 50, 100
+
+    while True:
+        row_rects: list[tuple[pygame.Rect, pygame.Rect]] = []
+        y = start_y
+        for _ in SHIP_MODELS:
+            choose_rect = pygame.Rect(start_x + name_w + spacing, y, btn_w, row_h)
+            info_rect = pygame.Rect(
+                start_x + name_w + spacing * 2 + btn_w,
+                y,
+                btn_w,
+                row_h,
+            )
+            row_rects.append((choose_rect, info_rect))
+            y += row_h + 5
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                raise SystemExit
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                for idx, (choose_rect, info_rect) in enumerate(row_rects):
+                    if choose_rect.collidepoint(event.pos):
+                        return SHIP_MODELS[idx]
+                    if info_rect.collidepoint(event.pos):
+                        _show_ship_info(screen, SHIP_MODELS[idx])
+
+        screen.fill(config.BACKGROUND_COLOR)
+        y = start_y
+        for i, model in enumerate(SHIP_MODELS):
+            name_rect = pygame.Rect(start_x, y, name_w, row_h)
+            pygame.draw.rect(screen, (60, 60, 90), name_rect)
+            pygame.draw.rect(screen, (200, 200, 200), name_rect, 1)
+            txt = font.render(
+                f"{model.brand} {model.name} [{model.classification}]",
+                True,
+                (255, 255, 255),
+            )
+            screen.blit(txt, txt.get_rect(center=name_rect.center))
+
+            choose_rect, info_rect = row_rects[i]
+            pygame.draw.rect(screen, (60, 60, 90), choose_rect)
+            pygame.draw.rect(screen, (200, 200, 200), choose_rect, 1)
+            choose_txt = font.render("Elegir", True, (255, 255, 255))
+            screen.blit(choose_txt, choose_txt.get_rect(center=choose_rect.center))
+
+            pygame.draw.rect(screen, (60, 60, 90), info_rect)
+            pygame.draw.rect(screen, (200, 200, 200), info_rect, 1)
+            info_txt = font.render("Info", True, (255, 255, 255))
+            screen.blit(info_txt, info_txt.get_rect(center=info_rect.center))
+            y += row_h + 5
+
+        pygame.display.flip()
+        clock.tick(30)
