@@ -1135,9 +1135,7 @@ def choose_ship(screen: pygame.Surface) -> ShipModel:
         screen.fill(config.BACKGROUND_COLOR)
         lines = ["Choose your ship:"]
         for i, model in enumerate(SHIP_MODELS):
-            lines.append(
-                f"{i+1} - {model.brand} {model.name} [{model.classification}]"
-            )
+            lines.append(f"{i+1} - {model.name}")
         for i, line in enumerate(lines):
             msg = font.render(line, True, (255, 255, 255))
             screen.blit(msg, (50, 100 + i * 30))
@@ -1230,7 +1228,7 @@ def choose_ship_table(screen: pygame.Surface) -> ShipModel:
             pygame.draw.rect(screen, (60, 60, 90), name_rect)
             pygame.draw.rect(screen, (200, 200, 200), name_rect, 1)
             txt = font.render(
-                f"{model.brand} {model.name} [{model.classification}]",
+                model.name,
                 True,
                 (255, 255, 255),
             )
