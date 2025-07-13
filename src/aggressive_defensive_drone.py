@@ -15,7 +15,11 @@ class AggressiveDefensiveDrone(Drone):
         orbit_speed: float = 1.0,
         speed_factor: float = 1.0,
     ) -> None:
-        super().__init__(owner, hp=hp, orbit_speed=orbit_speed, speed_factor=speed_factor)
+        super().__init__(
+            owner,
+            hp=hp,
+            orbit_speed=orbit_speed,
+            speed_factor=speed_factor,
+        )
         self.radius = radius
         self.fire_cooldown = fire_cooldown
-

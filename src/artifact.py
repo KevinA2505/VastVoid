@@ -39,7 +39,13 @@ class AreaShieldAura:
     def expired(self) -> bool:
         return self.strength <= 0.0
 
-    def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
         pos = (
             int((self.owner.x - offset_x) * zoom),
             int((self.owner.y - offset_y) * zoom),
@@ -50,7 +56,13 @@ class AreaShieldAura:
 class EMPWave:
     """Short lived visual effect for an EMP blast."""
 
-    def __init__(self, x: float, y: float, radius: float, duration: float = 0.6) -> None:
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        radius: float,
+        duration: float = 0.6,
+    ) -> None:
         self.x = x
         self.y = y
         self.radius = radius
@@ -63,11 +75,19 @@ class EMPWave:
     def expired(self) -> bool:
         return self.timer >= self.duration
 
-    def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
         progress = min(1.0, self.timer / self.duration)
         cur_radius = self.radius * progress
         alpha = max(0, int(255 * (1.0 - progress)))
-        surf = pygame.Surface((config.WINDOW_WIDTH, config.WINDOW_HEIGHT), pygame.SRCALPHA)
+        surf = pygame.Surface(
+            (config.WINDOW_WIDTH, config.WINDOW_HEIGHT), pygame.SRCALPHA
+        )
         pos = (
             int((self.x - offset_x) * zoom),
             int((self.y - offset_y) * zoom),
@@ -199,16 +219,31 @@ class RepairNanobots:
     def update(self, dt: float) -> None:
         self.timer += dt
         if self.owner.hull < self.owner.max_hull:
-            self.owner.hull = min(self.owner.max_hull, self.owner.hull + self.hull_rate * dt)
+            self.owner.hull = min(
+                self.owner.max_hull,
+                self.owner.hull + self.hull_rate * dt,
+            )
         shield = self.owner.shield
         if shield.strength < shield.max_strength:
-            shield.strength = min(shield.max_strength, shield.strength + self.shield_rate * dt)
+            shield.strength = min(
+                shield.max_strength,
+                shield.strength + self.shield_rate * dt,
+            )
 
     def expired(self) -> bool:
         return self.timer >= self.duration
 
-    def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
-        pos = (int((self.owner.x - offset_x) * zoom), int((self.owner.y - offset_y) * zoom))
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        pos = (
+            int((self.owner.x - offset_x) * zoom),
+            int((self.owner.y - offset_y) * zoom),
+        )
         radius = int(self.owner.size * 0.7 * zoom)
         pygame.draw.circle(screen, (100, 255, 100), pos, radius, 1)
 
@@ -253,10 +288,28 @@ class SolarLink:
             return True
         return False
 
-    def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
-        start = (int((self.owner.x - offset_x) * zoom), int((self.owner.y - offset_y) * zoom))
-        end = (int((self.star.x - offset_x) * zoom), int((self.star.y - offset_y) * zoom))
-        pygame.draw.line(screen, (255, 255, 100), start, end, max(1, int(2 * zoom)))
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
+        start = (
+            int((self.owner.x - offset_x) * zoom),
+            int((self.owner.y - offset_y) * zoom),
+        )
+        end = (
+            int((self.star.x - offset_x) * zoom),
+            int((self.star.y - offset_y) * zoom),
+        )
+        pygame.draw.line(
+            screen,
+            (255, 255, 100),
+            start,
+            end,
+            max(1, int(2 * zoom)),
+        )
 
 
 class SolarGeneratorArtifact(Artifact):
@@ -314,7 +367,13 @@ class Decoy:
     def expired(self) -> bool:
         return self.lifetime <= 0 or self.hp <= 0
 
-    def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        zoom: float = 1.0,
+    ) -> None:
         rect = pygame.Rect(
             int((self.x - offset_x) * zoom - self.size * zoom / 2),
             int((self.y - offset_y) * zoom - self.size * zoom / 2),
@@ -349,4 +408,3 @@ AVAILABLE_ARTIFACTS: list[type[Artifact]] = [
     SolarGeneratorArtifact,
     DecoyArtifact,
 ]
-
