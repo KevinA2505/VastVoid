@@ -141,7 +141,6 @@ def main():
         world_width // 2,
         world_height // 2,
         chosen_model,
-        hull=config.PLAYER_MAX_HULL,
         fraction=player.fraction,
         speed_factor=config.NPC_SPEED_FACTOR,
     )
@@ -171,7 +170,6 @@ def main():
         ship.x + 350,
         ship.y,
         chosen_model,
-        hull=config.PLAYER_MAX_HULL,
         fraction=player.fraction,
         speed_factor=config.NPC_SPEED_FACTOR,
     )
@@ -972,7 +970,7 @@ def main():
         hull_y = shield_y - 15
         pygame.draw.rect(screen, (60, 60, 90), (bar_x, hull_y, bar_width, bar_height))
         pygame.draw.rect(screen, (200, 200, 200), (bar_x, hull_y, bar_width, bar_height), 1)
-        hull_fill = int(bar_width * ship.hull / config.PLAYER_MAX_HULL)
+        hull_fill = int(bar_width * ship.hull / ship.max_hull)
         if hull_fill > 0:
             pygame.draw.rect(screen, (150, 0, 0), (bar_x, hull_y, hull_fill, bar_height))
         weapon = ship.weapons[ship.active_weapon]
