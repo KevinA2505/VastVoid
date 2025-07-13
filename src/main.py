@@ -5,7 +5,7 @@ import types
 import config
 import control_settings as controls
 import game_settings as settings
-from ship import Ship, choose_ship
+from ship import Ship, choose_ship_table
 from carrier import Carrier
 from combat import (
     LaserWeapon,
@@ -135,7 +135,7 @@ def main():
     if free_flagship:
         portals = spawn_explorer_portals(free_flagship, world_width, world_height)
 
-    chosen_model = choose_ship(screen)
+    chosen_model = choose_ship_table(screen)
     player.ship_model = chosen_model
     ship = Ship(
         world_width // 2,
