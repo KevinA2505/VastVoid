@@ -1,6 +1,6 @@
 import pygame
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import config
 import control_settings as controls
 from fraction import Fraction
@@ -18,6 +18,7 @@ from combat import (
     IonSymbiontShot,
     SlowField,
     SporeCloud,
+    BasicWeapon,
 )
 from light_channeler import Channeler, Battery, StarTurret
 from artifact import (
@@ -34,31 +35,57 @@ from blackhole import TemporaryBlackHole
 
 @dataclass
 class ShipModel:
-    """Template describing a type of ship."""
+    """Template describing a type of ship.
+
+    Attributes
+    ----------
+    classification:
+        Descriptive class of the vessel (e.g. Fighter).
+    brand:
+        Manufacturer name for flavor.
+    size:
+        Visual size used for drawing and collisions.
+    color:
+        RGB hull color.
+    accel_factor:
+        Multiplier applied to the base acceleration.
+    hull:
+        Starting and maximum hull integrity.
+    shield:
+        Maximum shield strength.
+    default_weapons:
+        Weapon classes that ships of this model start with.
+    special_ability:
+        Optional name of a unique ability.
+    """
 
     classification: str
     brand: str
     size: int
     color: tuple[int, int, int]
     accel_factor: float = 1.0
+    hull: int = 100
+    shield: int = 100
+    default_weapons: list[type[Weapon]] = field(default_factory=list)
+    special_ability: str | None = None
 
 
 # Some predefined ship models used during character creation
 SHIP_MODELS = [
-    ShipModel("Fighter", "AeroTech", 18, (200, 200, 255), 1.2),
-    ShipModel("Explorer", "NovaCorp", 20, (255, 220, 150), 1.0),
-    ShipModel("Freighter", "Galactic Haul", 24, (180, 180, 180), 0.8),
-    ShipModel("Interceptor", "Starlight", 16, (255, 100, 100), 1.4),
-    ShipModel("Corvette", "ReconX", 17, (180, 220, 255), 1.5),
-    ShipModel("Medical Frigate", "MediFleet", 22, (220, 255, 220), 0.9),
-    ShipModel("Colony Transport", "Nexus", 26, (245, 210, 180), 0.7),
-    ShipModel("Diplomatic Cruiser", "UnityWorks", 25, (240, 200, 255), 0.95),
-    ShipModel("Automated Miner", "OreBots", 23, (200, 200, 150), 0.85),
-    ShipModel("Research Vessel", "QuasarLabs", 21, (255, 245, 170), 1.0),
-    ShipModel("Drone Carrier", "Vanguard", 19, (190, 230, 210), 1.1),
-    ShipModel("Support Destroyer", "Bulwark", 23, (230, 190, 190), 0.9),
-    ShipModel("Stealth Ship", "ShadowTech", 18, (100, 100, 100), 1.4),
-    ShipModel("Mobile Workshop", "FixIt", 22, (200, 190, 180), 0.8),
+    ShipModel("Fighter", "AeroTech", 18, (200, 200, 255), 1.2, 110, 120, [BasicWeapon]),
+    ShipModel("Explorer", "NovaCorp", 20, (255, 220, 150), 1.0, 120, 100, [BasicWeapon]),
+    ShipModel("Freighter", "Galactic Haul", 24, (180, 180, 180), 0.8, 150, 120, [BasicWeapon]),
+    ShipModel("Interceptor", "Starlight", 16, (255, 100, 100), 1.4, 105, 110, [BasicWeapon]),
+    ShipModel("Corvette", "ReconX", 17, (180, 220, 255), 1.5, 115, 110, [BasicWeapon]),
+    ShipModel("Medical Frigate", "MediFleet", 22, (220, 255, 220), 0.9, 130, 130, [BasicWeapon]),
+    ShipModel("Colony Transport", "Nexus", 26, (245, 210, 180), 0.7, 160, 120, [BasicWeapon]),
+    ShipModel("Diplomatic Cruiser", "UnityWorks", 25, (240, 200, 255), 0.95, 140, 140, [BasicWeapon]),
+    ShipModel("Automated Miner", "OreBots", 23, (200, 200, 150), 0.85, 135, 100, [BasicWeapon]),
+    ShipModel("Research Vessel", "QuasarLabs", 21, (255, 245, 170), 1.0, 125, 120, [BasicWeapon]),
+    ShipModel("Drone Carrier", "Vanguard", 19, (190, 230, 210), 1.1, 115, 110, [BasicWeapon]),
+    ShipModel("Support Destroyer", "Bulwark", 23, (230, 190, 190), 0.9, 145, 130, [BasicWeapon]),
+    ShipModel("Stealth Ship", "ShadowTech", 18, (100, 100, 100), 1.4, 100, 100, [BasicWeapon]),
+    ShipModel("Mobile Workshop", "FixIt", 22, (200, 190, 180), 0.8, 130, 120, [BasicWeapon]),
 ]
 
 
@@ -120,22 +147,26 @@ class Ship:
         self.model = model
         self.name = get_ship_name()
         self.fraction = fraction
-        self.weapons: list[Weapon] = [Weapon("Laser", 8, 400)]
-        self.active_weapon: int = 0
+        if model and model.default_weapons:
+            self.weapons = [cls() for cls in model.default_weapons]
+        else:
+            self.weapons = [Weapon("Laser", 8, 400)]
+        self.active_weapon = 0
         for w in self.weapons:
             w.owner = self
         self.projectiles: list[Projectile] = []
         self.specials: list = []
         self.particles: list[_ShipParticle] = []
         self._structures: list | None = None
-        self.shield = Shield()
+        shield_strength = model.shield if model else 100
+        self.shield = Shield(max_strength=shield_strength)
         self.artifacts: list[Artifact] = []
         self.area_shield: AreaShieldAura | None = None
         # Crew handling
         self.pilot = None
         self.passengers: list = []
-        self.hull = hull
-        self.max_hull = hull
+        self.hull = model.hull if model else hull
+        self.max_hull = self.hull
         self.invisible_timer = 0.0
         if model:
             self.brand = model.brand
@@ -143,12 +174,14 @@ class Ship:
             self.size = model.size
             self.color = model.color
             self.accel_factor = model.accel_factor
+            self.special_ability = model.special_ability
         else:
             self.brand = "Generic"
             self.classification = "Standard"
             self.size = config.SHIP_SIZE
             self.color = config.SHIP_COLOR
             self.accel_factor = 1.0
+            self.special_ability = None
         # Orientation angle in radians. 0 points to the right.
         self.angle = -math.pi / 2
         # Collision radius for the triangular hull
