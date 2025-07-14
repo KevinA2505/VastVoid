@@ -1,6 +1,7 @@
 import math
 import pygame
 import random
+import noise
 import config
 import control_settings as controls
 from biome import BIOMES, Biome
@@ -238,7 +239,7 @@ class PlanetSurface:
             pygame.draw.circle(self.surface, (20, 70, 20), (tx, ty), r)
 
     def _generate_map(self) -> None:
-        """Create a map using a simple expansion algorithm for large regions."""
+        """Create a map using 2D noise to assign biomes."""
         cell = self.cell
         cols = self.cols
         rows = self.rows
@@ -254,29 +255,24 @@ class PlanetSurface:
             for name in biome_names
         ]
 
-        grid = [[-1 for _ in range(cols)] for _ in range(rows)]
-        queue: list[tuple[int, int, int]] = []
-        for idx in range(len(biomes)):
-            x = random.randint(0, cols - 1)
-            y = random.randint(0, rows - 1)
-            grid[y][x] = idx
-            queue.append((x, y, idx))
+        # Setup noise parameters for biome distribution
+        offset_x = random.random() * 1000
+        offset_y = random.random() * 1000
+        scale = 0.1
 
-        dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-        while queue:
-            qidx = random.randrange(len(queue))
-            x, y, idx = queue.pop(qidx)
-            for dx, dy in dirs:
-                nx, ny = x + dx, y + dy
-                if 0 <= nx < cols and 0 <= ny < rows and grid[ny][nx] == -1:
-                    grid[ny][nx] = idx
-                    queue.append((nx, ny, idx))
+        thresholds = [ (i + 1) / len(biomes) for i in range(len(biomes) - 1) ]
 
         self.pickups.clear()
         is_ocean_planet = self.planet.environment == "ocean world"
         for j in range(rows):
             for i in range(cols):
-                biome_idx = grid[j][i]
+                nval = noise.pnoise2(i * scale + offset_x, j * scale + offset_y, octaves=3)
+                nval = (nval + 1) / 2  # map to [0,1]
+                biome_idx = len(biomes) - 1
+                for idx, th in enumerate(thresholds):
+                    if nval < th:
+                        biome_idx = idx
+                        break
                 biome = biomes[biome_idx]
                 rect = pygame.Rect(i * cell, j * cell, cell, cell)
                 pygame.draw.rect(self.surface, biome.color, rect)

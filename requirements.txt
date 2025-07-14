@@ -1,4 +1,7 @@
 pygame
 numpy
 
+# 2D Perlin noise for terrain generation
+noise
+
 # Optional dependencies for advanced features:
