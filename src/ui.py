@@ -5,6 +5,8 @@ import game_settings as settings
 import math
 import types
 from artifact import Artifact
+from tech_tree import ResearchManager
+from tech_ui import draw_tree, draw_info, _compute_levels, _layout_nodes
 
 # Default key bindings for common actions. These match the table in the README
 # so they can be displayed in the in-game Ajustes/Settings window.
@@ -953,4 +955,33 @@ class CrewTransferWindow:
         pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
         close_txt = font.render("Close", True, (255, 255, 255))
         screen.blit(close_txt, close_txt.get_rect(center=self.close_rect.center))
+
+
+class ResearchWindow:
+    """Display the technology tree and allow starting research."""
+
+    def __init__(self, manager: ResearchManager) -> None:
+        self.manager = manager
+        self.levels = _compute_levels()
+        self.rects = _layout_nodes(self.levels, config.WINDOW_WIDTH)
+        self.selected: str | None = None
+        self._start_rect: pygame.Rect | None = None
+
+    def handle_event(self, event) -> bool:
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            return True
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.selected and self._start_rect and self._start_rect.collidepoint(event.pos):
+                self.manager.start(self.selected)
+                return False
+            self.selected = None
+            for tid, rect in self.rects.items():
+                if rect.collidepoint(event.pos):
+                    self.selected = tid
+                    break
+        return False
+
+    def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        draw_tree(screen, font, self.rects, self.manager)
+        self._start_rect = draw_info(screen, font, self.selected, self.manager)
 
