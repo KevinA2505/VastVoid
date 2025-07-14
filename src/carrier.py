@@ -26,6 +26,11 @@ class Carrier(Ship):
         self.hangars = [None] * 5
 
     def load_ship(self, ship: Ship) -> bool:
+        """Place ``ship`` in the first empty hangar.
+
+        Moves the ship to the carrier, zeroes its velocity and clears
+        autopilot settings. Returns ``True`` if a slot was available.
+        """
         for i, slot in enumerate(self.hangars):
             if slot is None:
                 self.hangars[i] = ship
@@ -39,6 +44,11 @@ class Carrier(Ship):
         return False
 
     def deploy_ship(self, index: int) -> Ship | None:
+        """Remove the ship at ``index`` and spawn it near the carrier.
+
+        The ship's velocity and autopilot are reset. Returns ``None`` if the
+        index is invalid or the hangar is empty.
+        """
         if 0 <= index < len(self.hangars):
             ship = self.hangars[index]
             self.hangars[index] = None
