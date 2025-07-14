@@ -14,9 +14,9 @@ class AggressiveDefensiveDrone(Drone):
         owner,
         radius: float,
         hp: float = 40.0,
-        fire_cooldown: float = 0.22,
-        orbit_speed: float = 0.7,
-        speed_factor: float = 1.0,
+        fire_cooldown: float = 0.3,
+        orbit_speed: float = 0.5,
+        speed_factor: float = 0.8,
         optimal_range: float = 60.0,
     ) -> None:
         super().__init__(
