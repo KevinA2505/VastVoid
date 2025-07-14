@@ -95,6 +95,17 @@ pip install -r requirements.txt
 Planet terrain generation relies on the `noise` package. If it is missing the
 game will raise an error explaining how to install it.
 
+This project targets **Python&nbsp;3.11**. It is recommended to install
+the dependencies inside a virtual environment, although this step is
+optional. Run the following commands from the repository root:
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate       # Windows
+# or: source .venv/bin/activate  # macOS/Linux
+python -m pip install -r requirements.txt
+```
+
 ## Running the game
 
 ```bash
