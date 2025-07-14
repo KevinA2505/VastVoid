@@ -232,9 +232,22 @@ class PlanetSurface:
         x = random.randint(0, self.width - w)
         y = random.randint(0, self.height - h)
         area = pygame.Rect(x, y, w, h)
+        # Leave some distance between forests and rivers to avoid unnatural
+        # overlaps. Use a slightly larger margin than the default for a more
+        # natural look.
+        margin = 30.0
         for _ in range(150):
             tx = random.randint(area.left, area.right)
             ty = random.randint(area.top, area.bottom)
+            # If this point is too close to a river, try a few times to find a
+            # better position. Skip the tree if all attempts fail.
+            for _ in range(3):
+                if not self._point_near_river(tx, ty, margin):
+                    break
+                tx = random.randint(area.left, area.right)
+                ty = random.randint(area.top, area.bottom)
+            else:
+                continue
             r = random.randint(3, 8)
             pygame.draw.circle(self.surface, (20, 70, 20), (tx, ty), r)
 
