@@ -7,6 +7,19 @@ from names import get_planet_name, PLANET_ENVIRONMENTS
 from biome import BIOMES
 from planet_surface import ENV_COLORS
 
+# Each planetary environment favours certain biomes.  The tuples store the
+# biome name and its relative weight when picking random biomes for a planet.
+ENVIRONMENT_BIOMES: dict[str, list[tuple[str, float]]] = {
+    "rocky": [("rocky", 0.6), ("desert", 0.2), ("forest", 0.2)],
+    "gas giant": [("rocky", 0.4), ("ice world", 0.3), ("desert", 0.3)],
+    "ocean world": [("ocean world", 0.7), ("forest", 0.2), ("ice world", 0.1)],
+    "ice world": [("ice world", 0.7), ("rocky", 0.2), ("ocean world", 0.1)],
+    "desert": [("desert", 0.7), ("rocky", 0.2), ("lava", 0.1)],
+    "lava": [("lava", 0.7), ("rocky", 0.2), ("desert", 0.1)],
+    "forest": [("forest", 0.7), ("rocky", 0.2), ("ocean world", 0.1)],
+    "toxic": [("lava", 0.5), ("desert", 0.3), ("rocky", 0.2)],
+}
+
 
 def _lighter_color(color: tuple[int, int, int], factor: float = 1.3) -> tuple[int, int, int]:
     """Return a lighter variant of ``color`` by the given ``factor``."""
@@ -67,9 +80,23 @@ class Planet:
         color = ENV_COLORS.get(environment, fallback_random_color)
         angle = random.uniform(0, 2 * math.pi)
         speed = random.choice([-1, 1]) * config.ORBIT_SPEED_FACTOR / math.sqrt(distance)
-        biome_names = list(BIOMES.keys())
-        num_biomes = random.randint(1, min(3, len(biome_names)))
-        biomes = random.sample(biome_names, k=num_biomes)
+        weights = ENVIRONMENT_BIOMES.get(environment)
+        if weights:
+            names, probs = zip(*weights)
+            pool_names = list(names)
+            pool_probs = list(probs)
+            num_biomes = random.randint(1, min(3, len(pool_names)))
+            biomes: list[str] = []
+            for _ in range(num_biomes):
+                choice = random.choices(pool_names, weights=pool_probs, k=1)[0]
+                biomes.append(choice)
+                idx = pool_names.index(choice)
+                pool_names.pop(idx)
+                pool_probs.pop(idx)
+        else:
+            biome_names = list(BIOMES.keys())
+            num_biomes = random.randint(1, min(3, len(biome_names)))
+            biomes = random.sample(biome_names, k=num_biomes)
         if atmosphere_color is None:
             atmosphere_color = _lighter_color(color)
         return Planet(
