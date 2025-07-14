@@ -206,6 +206,13 @@ teleport.
 
 Each ship has a single pilot seat and two passenger slots. Press **C** when two vessels are close to attempt docking via the Common Berthing Mechanism. If docking succeeds a crew transfer window appears so you can move members between ships. Your starting ship also carries a robot named PEPE as an initial passenger.
 
+## Árbol de investigación
+
+Ejecuta `python src/tech_ui.py` para abrir la interfaz que muestra las tecnologías disponibles.
+Cada nodo indica los requisitos y el coste necesario para investigar. Al seleccionar un nodo con el ratón se despliega una breve descripción y, si todos los prerequisitos se cumplen, aparece el botón **Start**. Al pulsarlo el progreso aumenta con el tiempo hasta completar la investigación.
+
+Las tecnologías terminadas otorgan mejoras permanentes, como escudos de energía o el hiperpropulsor, y ciertas estructuras reciben bonificaciones si determinados avances ya están completados. Por ello, avanzar en el árbol amplía tus opciones durante la partida.
+
 ## Ajustes
 
 Lista de controles predeterminados para las acciones principales:
