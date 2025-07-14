@@ -14,9 +14,10 @@ class AggressiveDefensiveDrone(Drone):
         owner,
         radius: float,
         hp: float = 40.0,
-        fire_cooldown: float = 0.2,
-        orbit_speed: float = 1.0,
+        fire_cooldown: float = 0.22,
+        orbit_speed: float = 0.7,
         speed_factor: float = 1.0,
+        optimal_range: float = 60.0,
     ) -> None:
         super().__init__(
             owner,
@@ -26,7 +27,10 @@ class AggressiveDefensiveDrone(Drone):
         )
         self.radius = radius
         self.fire_cooldown = fire_cooldown
-        self.intercept_speed = config.DEF_DRONE_INTERCEPT_SPEED * 1.3 * speed_factor
+        self.intercept_speed = (
+            config.DEF_DRONE_INTERCEPT_SPEED * 0.75 * speed_factor
+        )
+        self.optimal_range = optimal_range
         self.state = "idle"
         self.target = None
 
@@ -46,17 +50,15 @@ class AggressiveDefensiveDrone(Drone):
             if isinstance(self.target, object):
                 tx = getattr(self.target, "x", self.owner.x)
                 ty = getattr(self.target, "y", self.owner.y)
-                target_size = getattr(self.target, "size", 0)
             else:
                 tx, ty = self.owner.x, self.owner.y
-                target_size = 0
             dx = tx - self.x
             dy = ty - self.y
             dist = math.hypot(dx, dy) or 1.0
-            self.x += (dx / dist * self.intercept_speed) * dt
-            self.y += (dy / dist * self.intercept_speed) * dt
-            safe = (self.size + target_size) * 0.5
-            if dist <= safe:
+            if dist > self.optimal_range:
+                self.x += (dx / dist * self.intercept_speed) * dt
+                self.y += (dy / dist * self.intercept_speed) * dt
+            else:
                 self.state = "idle"
                 self.target = None
 
