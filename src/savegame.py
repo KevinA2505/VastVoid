@@ -6,6 +6,7 @@ from character import Player, Human, Alien, Robot
 from fraction import FRACTIONS
 from items import ITEMS_BY_NAME
 from ship import SHIP_MODELS, ShipModel
+from tech_tree import ResearchManager
 
 SAVE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "saves")
 
@@ -40,6 +41,26 @@ def _dict_to_model(data: dict | None) -> ShipModel | None:
     return None
 
 
+def _research_to_dict(mgr: ResearchManager | None):
+    """Serialize a :class:`ResearchManager` to a dictionary."""
+    if not mgr:
+        return {"completed": [], "in_progress": {}}
+    return {
+        "completed": sorted(list(mgr.completed)),
+        "in_progress": mgr.in_progress,
+    }
+
+
+def _dict_to_research(data: dict | None) -> ResearchManager:
+    """Reconstruct a :class:`ResearchManager` from ``data``."""
+    mgr = ResearchManager()
+    if not data:
+        return mgr
+    mgr.completed = set(data.get("completed", []))
+    mgr.in_progress = {k: float(v) for k, v in data.get("in_progress", {}).items()}
+    return mgr
+
+
 def save_player(player: Player) -> None:
     """Serialize Player data to JSON inside the saves directory."""
     os.makedirs(SAVE_DIR, exist_ok=True)
@@ -52,6 +73,7 @@ def save_player(player: Player) -> None:
         "inventory": player.inventory,
         "credits": player.credits,
         "ship_model": _model_to_dict(player.ship_model),
+        "research": _research_to_dict(getattr(player, "research", None)),
     }
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
@@ -73,6 +95,7 @@ def load_player(name: str) -> Player:
         fraction,
         ship_model=_dict_to_model(data.get("ship_model")),
         credits=int(data.get("credits", 0)),
+        research=_dict_to_research(data.get("research")),
     )
     inv = {name: 0 for name in ITEMS_BY_NAME}
     inv.update(data.get("inventory", {}))

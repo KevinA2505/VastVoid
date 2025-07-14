@@ -2,6 +2,7 @@ import pygame
 import config
 from fraction import FRACTIONS, Fraction
 from items import ITEMS_BY_NAME
+from tech_tree import ResearchManager
 
 class Alien:
     """Basic Alien species."""
@@ -29,6 +30,7 @@ class Player:
         fraction: Fraction,
         ship_model=None,
         credits: int = 0,
+        research: ResearchManager | None = None,
     ):
         self.name = name
         self.age = age
@@ -38,6 +40,8 @@ class Player:
         self.credits = credits
         # Inventory starts empty but contains an entry for each known item
         self.inventory: dict[str, int] = {name: 0 for name in ITEMS_BY_NAME}
+        # Research manager to track tech progress
+        self.research: ResearchManager = research or ResearchManager()
 
     def add_item(self, item: str, quantity: int = 1) -> None:
         """Add `quantity` of `item` to the inventory."""
