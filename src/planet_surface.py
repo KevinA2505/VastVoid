@@ -148,8 +148,8 @@ class PlanetSurface:
         """Draw a more organic looking patch of terrain."""
         # Randomly choose between an ellipse or an irregular polygon
         if random.random() < 0.5:
-            w = random.randint(40, 120)
-            h = random.randint(30, 80)
+            w = int(random.randint(40, 120) * biome.patch_scale)
+            h = int(random.randint(30, 80) * biome.patch_scale)
             x = random.randint(rect.left, rect.right)
             y = random.randint(rect.top, rect.bottom)
             shape = pygame.Rect(x - w // 2, y - h // 2, w, h)
@@ -251,7 +251,7 @@ class PlanetSurface:
             self.planet.biomes if self.planet.biomes else [self.planet.environment]
         )
         biomes = [
-            BIOMES.get(name, Biome(ENV_COLORS.get(name, (90, 90, 90)), [], 0))
+            BIOMES.get(name, Biome(ENV_COLORS.get(name, (90, 90, 90)), [], 0, 1.0))
             for name in biome_names
         ]
 
