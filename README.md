@@ -83,6 +83,19 @@ and a separate *New Profile* button lets you create a fresh character.
 New profiles are saved automatically once created so they appear on the list
 the next time you run the game.
 
+## Installation
+
+This project targets **Python&nbsp;3.11**. It is recommended to install
+the dependencies inside a virtual environment, although this step is
+optional. Run the following commands from the repository root:
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate       # Windows
+# or: source .venv/bin/activate  # macOS/Linux
+python -m pip install -r requirements.txt
+```
+
 ## Running the game
 
 ```bash
