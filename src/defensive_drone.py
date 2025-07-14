@@ -42,8 +42,11 @@ class DefensiveDrone:
         return None
 
     def update(self, dt: float, objects: list) -> None:
+        """Update the drone state while preserving its orbit angle."""
+        # Advance the orbit angle even when intercepting so spacing is kept
+        self.angle = (self.angle + self.orbit_speed * dt) % (2 * math.pi)
+
         if self.state == "idle":
-            self.angle += self.orbit_speed * dt
             self.x = self.owner.x + math.cos(self.angle) * self.orbit_radius
             self.y = self.owner.y + math.sin(self.angle) * self.orbit_radius
             threat = self._find_threat(objects)

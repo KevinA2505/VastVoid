@@ -35,11 +35,13 @@ class AggressiveDefensiveDrone(Drone):
         self.target = None
 
     def update(self, dt: float, targets: list) -> None:
-        """Intercept nearby threats while shooting rapidly."""
+        """Intercept nearby threats while keeping orbital phase."""
 
         self.lifetime -= dt
+        # Keep moving along the orbit even when intercepting
+        self.angle = (self.angle + self.orbit_speed * dt) % (2 * math.pi)
+
         if self.state == "idle":
-            self.angle += self.orbit_speed * dt
             self.x = self.owner.x + math.cos(self.angle) * self.radius
             self.y = self.owner.y + math.sin(self.angle) * self.radius
             threat = self._find_target(targets)
