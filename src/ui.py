@@ -392,6 +392,7 @@ class SettingsWindow:
         self.editing: str | None = None
         self.row_rects: list[pygame.Rect] = []
         self.zoom_rect = pygame.Rect(0, 0, 0, 0)
+        self.click_rect = pygame.Rect(0, 0, 0, 0)
 
     def handle_event(self, event) -> bool:
         if self.editing:
@@ -411,6 +412,11 @@ class SettingsWindow:
             if self.zoom_rect.collidepoint(event.pos):
                 current = settings.get_setting("zoom_with_wheel")
                 settings.set_setting("zoom_with_wheel", not current)
+                settings.save_settings()
+                return False
+            if self.click_rect.collidepoint(event.pos):
+                current = settings.get_setting("click_to_move")
+                settings.set_setting("click_to_move", not current)
                 settings.save_settings()
                 return False
         if event.type == pygame.KEYDOWN and event.key == controls.get_key("cancel"):
@@ -444,6 +450,14 @@ class SettingsWindow:
         mode = "Rueda" if settings.get_setting("zoom_with_wheel") else "Q/E"
         zoom_txt = font.render(f"Zoom: {mode}", True, (255, 255, 255))
         screen.blit(zoom_txt, (x0 + 5, zoom_y))
+
+        click_y = zoom_y + row_h + 5
+        self.click_rect = pygame.Rect(x0, click_y, col_x - x0 - 10, row_h)
+        pygame.draw.rect(screen, (60, 60, 90), self.click_rect)
+        enabled = settings.get_setting("click_to_move")
+        click_label = "Sí" if enabled else "No"
+        click_txt = font.render(f"Mover con clics: {click_label}", True, (255, 255, 255))
+        screen.blit(click_txt, (x0 + 5, click_y))
 
         pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
         pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
