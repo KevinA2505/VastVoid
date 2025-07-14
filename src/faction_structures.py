@@ -12,6 +12,7 @@ from aggressive_defensive_drone import AggressiveDefensiveDrone
 from station import SpaceStation
 import pygame
 import config
+from tech_tree import ResearchManager
 
 
 @dataclass
@@ -831,10 +832,23 @@ class PlanetOutpost(FactionStructure):
     """Small base used to claim planets or moons."""
 
     capacity: int = 10
+    research_bonus: float = 0.0
 
-    def apply_fraction_traits(self, fraction: Fraction) -> None:
+    def apply_fraction_traits(
+        self,
+        fraction: Fraction,
+        research: "ResearchManager | None" = None,
+        facilities: list[str] | None = None,
+    ) -> None:
         super().apply_fraction_traits(fraction)
-        # Future implementation may provide research or trade perks.
+        facilities = facilities or []
+        self.research_bonus = 0.0
+
+        if research and "deep_space" in research.completed:
+            self.research_bonus += 0.1
+
+        if "Research Labs" in facilities:
+            self.research_bonus += 0.1
 
 
 def spawn_capital_ships(
