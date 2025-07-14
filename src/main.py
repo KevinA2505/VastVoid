@@ -672,8 +672,9 @@ def main():
                         if math.hypot(carrier.x - world_x, carrier.y - world_y) <= carrier.collision_radius:
                             carrier_window = CarrierWindow(carrier)
                             continue
-                        dest = types.SimpleNamespace(x=world_x, y=world_y)
-                        ship.start_autopilot(dest)
+                        if settings.get_setting("click_to_move"):
+                            dest = types.SimpleNamespace(x=world_x, y=world_y)
+                            ship.start_autopilot(dest)
                 elif event.button == 3:
                     camera_dragging = True
                     camera_last = event.pos

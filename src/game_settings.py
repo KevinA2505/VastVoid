@@ -4,6 +4,7 @@ from pathlib import Path
 # Default settings
 DEFAULT_SETTINGS = {
     "zoom_with_wheel": True,
+    "click_to_move": True,
 }
 
 SETTINGS = DEFAULT_SETTINGS.copy()

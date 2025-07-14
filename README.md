@@ -242,6 +242,7 @@ menú, haz clic en una acción y pulsa la nueva tecla para actualizarla. Los
 cambios se escriben de inmediato y estarán disponibles en la siguiente sesión.
 La misma ventana incluye un conmutador para elegir si el zoom se controla con
 la rueda del ratón o con las teclas **Q** y **E**.
+También permite activar o desactivar que la nave se mueva al hacer clic con el ratón.
 
 
 ## License

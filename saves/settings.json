@@ -1,3 +1,4 @@
 {
-  "zoom_with_wheel": false
+  "zoom_with_wheel": false,
+  "click_to_move": true
 }
