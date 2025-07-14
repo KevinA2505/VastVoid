@@ -80,10 +80,20 @@ classification category.
 Saved profiles are presented in a simple table when the game launches.
 Each row lists the player's name alongside **Load** and **Delete** buttons,
 and a separate *New Profile* button lets you create a fresh character.
+
 New profiles are saved automatically once created so they appear on the list
 the next time you run the game.
 
 ## Installation
+
+Install the dependencies listed in `requirements.txt`:
+
+```bash
+pip install -r requirements.txt
+```
+
+Planet terrain generation relies on the `noise` package. If it is missing the
+game will raise an error explaining how to install it.
 
 This project targets **Python&nbsp;3.11**. It is recommended to install
 the dependencies inside a virtual environment, although this step is

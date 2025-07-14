@@ -1,7 +1,13 @@
 import math
 import pygame
 import random
-import noise
+try:
+    import noise
+except ImportError as exc:
+    raise RuntimeError(
+        "The 'noise' package is required. "
+        "Run 'pip install noise' or install all requirements."
+    ) from exc
 import config
 import control_settings as controls
 from biome import BIOMES, Biome
