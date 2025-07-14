@@ -1,14 +1,14 @@
 import math
 import random
 import pickle
-import os
+from pathlib import Path
 from dataclasses import dataclass, field
 
 from defensive_drone import DefensiveDrone
 import config
 
 
-Q_TABLE_PATH = "learning_defensive_drone_q_table.pkl"
+Q_TABLE_PATH = Path(__file__).resolve().parent.parent / "saves" / "drone_q_table.pkl"
 Q_TABLE_VERSION = 1
 
 
@@ -45,10 +45,11 @@ class LearningDefensiveDrone(DefensiveDrone):
             speed_factor=config.NPC_SPEED_FACTOR,
         )
 
-    def load_q_table(self, path: str = Q_TABLE_PATH) -> None:
+    def load_q_table(self, path: Path = Q_TABLE_PATH) -> None:
         """Load the Q-table from disk if present."""
-        if os.path.exists(path):
-            with open(path, "rb") as f:
+        path = Path(path)
+        if path.exists():
+            with path.open("rb") as f:
                 data = pickle.load(f)
             if isinstance(data, dict) and "version" in data:
                 version = data.get("version", 1)
@@ -59,9 +60,11 @@ class LearningDefensiveDrone(DefensiveDrone):
             self.q_table = table
             self.q_table_version = version
 
-    def save_q_table(self, path: str = Q_TABLE_PATH) -> None:
+    def save_q_table(self, path: Path = Q_TABLE_PATH) -> None:
         """Persist the Q-table so learning is retained."""
-        with open(path, "wb") as f:
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("wb") as f:
             data = {"version": self.q_table_version, "q_table": self.q_table}
             pickle.dump(data, f)
 
