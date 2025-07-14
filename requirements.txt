@@ -1,7 +1,4 @@
-pygame
-numpy
-
+pygame==2.5.2
+numpy==1.26.4
 # 2D Perlin noise for terrain generation (required)
-noise
-
-# Optional dependencies for advanced features:
+noise==1.2.2
