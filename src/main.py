@@ -566,14 +566,21 @@ def main():
 
             route_planner.handle_event(event, sectors, (camera_x, camera_y), zoom)
             if ability_bar.handle_event(event, ship):
-                map_objects = [carrier] + extra_ships + capital_ships
-                hyper_map = HyperJumpMap(
-                    ship,
-                    sectors,
-                    world_width,
-                    world_height,
-                    map_objects,
-                )
+                # Hyperjump is unlocked via the "Hyperdrive" research. Only
+                # open the destination map once the feature is available.
+                if "Hyperdrive" in player.features:
+                    map_objects = [carrier] + extra_ships + capital_ships
+                    hyper_map = HyperJumpMap(
+                        ship,
+                        sectors,
+                        world_width,
+                        world_height,
+                        map_objects,
+                    )
+                else:
+                    # Player clicked the Hyper button but lacks the technology.
+                    # Keep the click from doing anything and notify via console.
+                    print("Hyperjump requires the Hyperdrive research.")
 
             if pending_tractor is None:
                 for art in ship.artifacts:
