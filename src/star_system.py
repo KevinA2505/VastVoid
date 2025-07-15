@@ -5,6 +5,7 @@ from star import Star
 from planet import Planet
 from station import SpaceStation
 from names import get_system_name
+from asteroid import Asteroid
 
 class StarSystem:
     """Collection of a star with orbiting planets."""
@@ -37,15 +38,30 @@ class StarSystem:
             )
             station_distance += random.randint(30, 50)
 
+        # Generate a simple asteroid belt between the star and the outer planets
+        self.asteroids: list[Asteroid] = []
+        belt_inner = self.star.radius + 20
+        belt_outer = distance - 20
+        num_asteroids = random.randint(5, 15)
+        for _ in range(num_asteroids):
+            self.asteroids.append(
+                Asteroid.random_near_star(self.star, belt_inner, belt_outer)
+            )
+
     def update(self) -> None:
         for planet in self.planets:
             planet.update()
+        # Remove any depleted asteroids
+        self.asteroids = [a for a in self.asteroids if not a.depleted()]
 
     def collides_with_point(self, x: float, y: float, radius: float) -> bool:
         if math.hypot(self.star.x - x, self.star.y - y) < self.star.radius + radius:
             return True
         for planet in self.planets:
             if math.hypot(planet.x - x, planet.y - y) < planet.radius + radius:
+                return True
+        for asteroid in self.asteroids:
+            if math.hypot(asteroid.x - x, asteroid.y - y) < asteroid.radius + radius:
                 return True
         for station in self.stations:
             if station.collides_with_point(x, y, radius):
@@ -59,6 +75,9 @@ class StarSystem:
         for planet in self.planets:
             if math.hypot(planet.x - x, planet.y - y) < planet.radius + radius:
                 return planet
+        for asteroid in self.asteroids:
+            if math.hypot(asteroid.x - x, asteroid.y - y) < asteroid.radius + radius:
+                return asteroid
         for station in self.stations:
             if math.hypot(station.x - x, station.y - y) < station.radius + radius:
                 return station
@@ -88,3 +107,6 @@ class StarSystem:
 
         for station in self.stations:
             station.draw(screen, offset_x, offset_y, zoom)
+
+        for asteroid in self.asteroids:
+            asteroid.draw(screen, offset_x, offset_y, zoom)
