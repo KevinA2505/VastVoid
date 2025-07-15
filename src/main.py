@@ -38,6 +38,7 @@ from ui import (
     CarrierMoveMap,
     CarrierWindow,
     CrewTransferWindow,
+    ResearchWindow,
     draw_labeled_bar,
 )
 from cbm import CommonBerthingMechanism
@@ -182,7 +183,7 @@ def main():
         10,
         100,
         25,
-        ["Plan Route", "Inventory", "Weapons", "Artifacts", "Ajustes"],
+        ["Plan Route", "Inventory", "Weapons", "Artifacts", "Research", "Ajustes"],
     )
     route_planner = RoutePlanner()
     ability_bar = AbilityBar()
@@ -197,6 +198,7 @@ def main():
     artifact_menu = None
     settings_window = None
     carrier_window = None
+    research_window = None
     current_station = None
     current_surface = None
     approaching_planet = None
@@ -340,6 +342,20 @@ def main():
                     break
             if artifact_menu:
                 artifact_menu.draw(screen, info_font)
+                pygame.display.flip()
+                continue
+
+        if research_window:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+                if research_window.handle_event(event):
+                    research_window = None
+                    break
+            if research_window:
+                research_window.manager.advance(dt * 20)
+                research_window.draw(screen, info_font)
                 pygame.display.flip()
                 continue
 
@@ -533,6 +549,8 @@ def main():
                 weapon_menu = WeaponMenu(ship)
             elif selection == "Artifacts":
                 artifact_menu = ArtifactMenu(ship, ability_bar)
+            elif selection == "Research":
+                research_window = ResearchWindow(player.research)
             elif selection == "Ajustes":
                 settings_window = SettingsWindow()
 

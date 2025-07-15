@@ -209,6 +209,7 @@ Each ship has a single pilot seat and two passenger slots. Press **C** when two 
 ## Árbol de investigación
 
 Ejecuta `python src/tech_ui.py` para abrir la interfaz que muestra las tecnologías disponibles.
+Ahora también puedes acceder al árbol durante la partida seleccionando **Research** en el menú desplegable del juego.
 Cada nodo indica los requisitos y el coste necesario para investigar. Al seleccionar un nodo con el ratón se despliega una breve descripción y, si todos los prerequisitos se cumplen, aparece el botón **Start**. Al pulsarlo el progreso aumenta con el tiempo hasta completar la investigación.
 
 Las tecnologías terminadas otorgan mejoras permanentes, como escudos de energía o el hiperpropulsor, y ciertas estructuras reciben bonificaciones si determinados avances ya están completados. Por ello, avanzar en el árbol amplía tus opciones durante la partida.
