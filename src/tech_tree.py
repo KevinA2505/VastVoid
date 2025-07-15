@@ -64,11 +64,11 @@ class ResearchManager:
             return True
         return False
 
-    def advance(self, dt: float) -> list[str]:
-        """Advance all ongoing research by ``dt`` points."""
+    def advance(self, dt: float, bonus: float = 1.0) -> list[str]:
+        """Advance all ongoing research by ``dt`` points applying ``bonus``."""
         finished: list[str] = []
         for tech_id in list(self.in_progress):
-            progress = self.in_progress[tech_id] + dt
+            progress = self.in_progress[tech_id] + dt * bonus
             cost = TECH_TREE[tech_id].cost
             if progress >= cost:
                 finished.append(tech_id)
