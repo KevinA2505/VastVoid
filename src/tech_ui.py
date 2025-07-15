@@ -3,18 +3,40 @@ from tech_tree import TECH_TREE, ResearchManager
 
 
 def _compute_levels() -> dict[int, list[str]]:
-    """Return a mapping of depth levels to tech IDs."""
+    """Return a mapping of depth levels to tech IDs.
+
+    Raises
+    ------
+    KeyError
+        If a prerequisite references a non-existent technology ID.
+    ValueError
+        If the prerequisites form a cycle.
+    """
+
     cache: dict[str, int] = {}
+    visiting: set[str] = set()
 
     def depth(tid: str) -> int:
         if tid in cache:
             return cache[tid]
-        node = TECH_TREE[tid]
+        if tid in visiting:
+            raise ValueError(f"Cyclic prerequisite detected at '{tid}'")
+        node = TECH_TREE.get(tid)
+        if node is None:
+            raise KeyError(f"Unknown technology id '{tid}'")
+        visiting.add(tid)
         if not node.prerequisites:
             cache[tid] = 0
+            visiting.remove(tid)
             return 0
-        d = 1 + max(depth(p) for p in node.prerequisites)
+        prereq_depths: list[int] = []
+        for p in node.prerequisites:
+            if p not in TECH_TREE:
+                raise KeyError(f"Prerequisite '{p}' for '{tid}' does not exist")
+            prereq_depths.append(depth(p))
+        d = 1 + max(prereq_depths)
         cache[tid] = d
+        visiting.remove(tid)
         return d
 
     levels: dict[int, list[str]] = {}
