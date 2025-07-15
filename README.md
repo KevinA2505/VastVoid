@@ -29,6 +29,7 @@ button to return to space.
   burst from the ship before settling in place, appear 15% larger and are 25%
   more numerous for better visibility.
 * Charge the **Ionized Symbiont** to fire a shot that latches onto enemy hulls and inflicts damage over time.
+* Stations let you exchange items for credits at 75% of their base value (Cosmic Guild members receive 10% extra).
 
 ### Defensive drones
 The Nebula Order flagship deploys a trio of small drones that protect only this
