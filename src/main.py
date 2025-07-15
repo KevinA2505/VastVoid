@@ -29,6 +29,7 @@ from ui import (
     DropdownMenu,
     RoutePlanner,
     InventoryWindow,
+    CraftingWindow,
     MarketWindow,
     AbilityBar,
     WeaponMenu,
@@ -41,6 +42,7 @@ from ui import (
     ResearchWindow,
     draw_labeled_bar,
 )
+from crafting import RECIPES
 from cbm import CommonBerthingMechanism
 from artifact import (
     EMPArtifact,
@@ -204,6 +206,7 @@ def main():
     crew_window = None
     inventory_window = None
     market_window = None
+    crafting_window = None
     weapon_menu = None
     artifact_menu = None
     settings_window = None
@@ -281,7 +284,11 @@ def main():
                     break
                 if inventory_window:
                     if inventory_window.handle_event(event):
+                        open_craft = inventory_window.open_craft
                         inventory_window = None
+                        if open_craft:
+                            crafting_window = CraftingWindow(player, RECIPES)
+                        continue
                     continue
                 if event.type == pygame.KEYDOWN and event.key == controls.get_key("open_inventory"):
                     inventory_window = InventoryWindow(player)
@@ -322,10 +329,26 @@ def main():
                     running = False
                     break
                 if inventory_window.handle_event(event):
+                    open_craft = inventory_window.open_craft
                     inventory_window = None
+                    if open_craft:
+                        crafting_window = CraftingWindow(player, RECIPES)
                     break
             if inventory_window:
                 inventory_window.draw(screen, info_font)
+                pygame.display.flip()
+                continue
+
+        if crafting_window:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+                if crafting_window.handle_event(event):
+                    crafting_window = None
+                    break
+            if crafting_window:
+                crafting_window.draw(screen, info_font)
                 pygame.display.flip()
                 continue
 

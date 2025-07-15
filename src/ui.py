@@ -8,6 +8,7 @@ from artifact import Artifact
 from combat import LaserWeapon
 from tech_tree import ResearchManager
 from tech_ui import draw_tree, draw_info, _compute_levels, _layout_nodes
+from crafting import Recipe
 
 # Default key bindings for common actions. These match the table in the README
 # so they can be displayed in the in-game Ajustes/Settings window.
@@ -146,10 +147,15 @@ class InventoryWindow:
         self.player = player
         self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
         self.item_rects: list[tuple[str, pygame.Rect]] = []
+        self.craft_rect = pygame.Rect(20, config.WINDOW_HEIGHT - 40, 100, 30)
+        self.open_craft = False
 
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.close_rect.collidepoint(event.pos):
+                return True
+            if self.craft_rect.collidepoint(event.pos):
+                self.open_craft = True
                 return True
             for name, rect in self.item_rects:
                 if rect.collidepoint(event.pos):
@@ -188,6 +194,76 @@ class InventoryWindow:
         exit_txt = font.render("Close", True, (255, 255, 255))
         exit_rect = exit_txt.get_rect(center=self.close_rect.center)
         screen.blit(exit_txt, exit_rect)
+
+        pygame.draw.rect(screen, (60, 60, 90), self.craft_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.craft_rect, 1)
+        craft_txt = font.render("Craft", True, (255, 255, 255))
+        craft_rect = craft_txt.get_rect(center=self.craft_rect.center)
+        screen.blit(craft_txt, craft_rect)
+
+
+class CraftingWindow:
+    """Show available recipes and craft items."""
+
+    def __init__(self, player, recipes) -> None:
+        self.player = player
+        self.recipes = recipes
+        self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
+        self.recipe_rects: list[tuple[Recipe, pygame.Rect]] = []
+        self.selected: Recipe | None = None
+        self.craft_rect = pygame.Rect(20, config.WINDOW_HEIGHT - 40, 100, 30)
+
+    def handle_event(self, event) -> bool:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.close_rect.collidepoint(event.pos):
+                return True
+            for recipe, rect in self.recipe_rects:
+                if rect.collidepoint(event.pos):
+                    self.selected = recipe
+                    return False
+            if self.selected and self.craft_rect.collidepoint(event.pos):
+                self.player.craft_item(self.selected)
+                return False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            return True
+        return False
+
+    def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        screen.fill((20, 20, 40))
+        title = font.render("Crafting", True, (255, 255, 255))
+        screen.blit(title, (20, 20))
+
+        self.recipe_rects.clear()
+        x0, y0 = 20, 60
+        w, h = 200, 30
+        for i, recipe in enumerate(self.recipes):
+            rect = pygame.Rect(x0, y0 + i * (h + 5), w, h)
+            self.recipe_rects.append((recipe, rect))
+            color = (80, 80, 120) if recipe is self.selected else (60, 60, 90)
+            pygame.draw.rect(screen, color, rect)
+            pygame.draw.rect(screen, (200, 200, 200), rect, 1)
+            txt = font.render(recipe.result, True, (255, 255, 255))
+            screen.blit(txt, txt.get_rect(center=rect.center))
+
+        if self.selected:
+            x1 = x0 + w + 40
+            y1 = y0
+            for name, qty in self.selected.ingredients.items():
+                have = self.player.inventory.get(name, 0)
+                color = (200, 80, 80) if have < qty else (255, 255, 255)
+                text = font.render(f"{name} x{qty}", True, color)
+                screen.blit(text, (x1, y1))
+                y1 += 20
+
+            pygame.draw.rect(screen, (60, 60, 90), self.craft_rect)
+            pygame.draw.rect(screen, (200, 200, 200), self.craft_rect, 1)
+            craft_txt = font.render("Craft", True, (255, 255, 255))
+            screen.blit(craft_txt, craft_txt.get_rect(center=self.craft_rect.center))
+
+        pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
+        txt = font.render("Close", True, (255, 255, 255))
+        screen.blit(txt, txt.get_rect(center=self.close_rect.center))
 
 
 class MarketWindow:
