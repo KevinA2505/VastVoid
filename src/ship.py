@@ -24,6 +24,7 @@ from light_channeler import Channeler, Battery, StarTurret
 from artifact import (
     Artifact,
     AreaShieldAura,
+    AreaShieldArtifact,
     EMPWave,
     TractorProbe,
     RepairNanobots,
@@ -816,6 +817,11 @@ class Ship:
         """Activate an equipped artifact if possible."""
         if 0 <= index < len(self.artifacts):
             art = self.artifacts[index]
+            # Area shields depend on the Energy Shields research
+            if isinstance(art, AreaShieldArtifact):
+                pilot_feats = getattr(self.pilot, "features", set()) if self.pilot else set()
+                if "Energy Shields" not in pilot_feats:
+                    return
             if art.can_use():
                 art.activate(self, targets)
 
