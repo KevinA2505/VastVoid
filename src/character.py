@@ -57,6 +57,17 @@ class Player:
             return
         self.inventory[item] = max(0, self.inventory[item] - quantity)
 
+    def craft_item(self, recipe: "Recipe") -> bool:
+        """Craft ``recipe.result`` consuming its ingredients if available."""
+        from crafting import can_craft
+
+        if not can_craft(self.inventory, recipe):
+            return False
+        for name, qty in recipe.ingredients.items():
+            self.remove_item(name, qty)
+        self.add_item(recipe.result, 1)
+        return True
+
     def progress_research(self, dt: float, bonus: float = 1.0) -> list[str]:
         """Advance research applying ``bonus`` and unlock completed techs."""
         finished = self.research.advance(dt, bonus)
