@@ -2,7 +2,7 @@ import pygame
 import config
 from fraction import FRACTIONS, Fraction
 from items import ITEMS_BY_NAME
-from tech_tree import ResearchManager
+from tech_tree import ResearchManager, TECH_TREE
 
 class Alien:
     """Basic Alien species."""
@@ -42,6 +42,8 @@ class Player:
         self.inventory: dict[str, int] = {name: 0 for name in ITEMS_BY_NAME}
         # Research manager to track tech progress
         self.research: ResearchManager = research or ResearchManager()
+        # Feature flags unlocked through research
+        self.features: set[str] = set()
 
     def add_item(self, item: str, quantity: int = 1) -> None:
         """Add `quantity` of `item` to the inventory."""
@@ -54,6 +56,15 @@ class Player:
         if item not in self.inventory:
             return
         self.inventory[item] = max(0, self.inventory[item] - quantity)
+
+    def progress_research(self, dt: float) -> list[str]:
+        """Advance research and unlock features for completed techs."""
+        finished = self.research.advance(dt)
+        for tid in finished:
+            node = TECH_TREE.get(tid)
+            if node:
+                self.features.update(node.unlocked_features)
+        return finished
 
 
 def create_player(screen: pygame.Surface) -> Player:

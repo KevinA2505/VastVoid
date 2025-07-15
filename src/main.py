@@ -354,7 +354,7 @@ def main():
                     research_window = None
                     break
             if research_window:
-                research_window.manager.advance(dt * 20)
+                player.progress_research(dt * 20)
                 research_window.draw(screen, info_font)
                 pygame.display.flip()
                 continue
