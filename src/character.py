@@ -152,11 +152,19 @@ def create_player(screen: pygame.Surface) -> Player:
 
 def choose_player(screen: pygame.Surface) -> Player:
     """Let the user pick an existing profile or create/delete one."""
-    from savegame import list_players, load_player, delete_player, save_player
+    from savegame import (
+        list_players,
+        load_player,
+        delete_player,
+        save_player,
+        ensure_admin_profile,
+    )
 
     font = pygame.font.Font(None, 32)
     clock = pygame.time.Clock()
     deleting = False
+    ensure_admin_profile()
+
     while True:
         profiles = list_players()
         for event in pygame.event.get():
@@ -197,13 +205,21 @@ def choose_player(screen: pygame.Surface) -> Player:
 
 def choose_player_table(screen: pygame.Surface) -> Player:
     """GUI with buttons to load or delete a profile."""
-    from savegame import list_players, load_player, delete_player, save_player
+    from savegame import (
+        list_players,
+        load_player,
+        delete_player,
+        save_player,
+        ensure_admin_profile,
+    )
 
     font = pygame.font.Font(None, 32)
     clock = pygame.time.Clock()
     name_w, btn_w, row_h = 200, 100, 40
     spacing = 10
     start_x, start_y = 50, 100
+
+    ensure_admin_profile()
 
     while True:
         profiles = list_players()
