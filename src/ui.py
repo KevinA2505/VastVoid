@@ -5,6 +5,7 @@ import game_settings as settings
 import math
 import types
 from artifact import Artifact
+from combat import LaserWeapon
 from tech_tree import ResearchManager
 from tech_ui import draw_tree, draw_info, _compute_levels, _layout_nodes
 
@@ -272,6 +273,18 @@ class WeaponMenu:
                 return True
             for idx, rect in self.weapon_rects:
                 if rect.collidepoint(event.pos):
+                    weapon = self.ship.weapons[idx]
+                    pilot_feats = (
+                        getattr(self.ship.pilot, "features", set())
+                        if self.ship.pilot
+                        else set()
+                    )
+                    locked = isinstance(weapon, LaserWeapon) and (
+                        "Laser Cannons" not in pilot_feats
+                    )
+                    if locked:
+                        # Weapon is locked; ignore the selection
+                        return False
                     self.ship.set_active_weapon(idx)
                     return True
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -291,6 +304,12 @@ class WeaponMenu:
             pygame.draw.rect(screen, (60, 60, 90), rect)
             pygame.draw.rect(screen, (200, 200, 200), rect, 1)
             name = weapon.name
+            pilot_feats = (
+                getattr(self.ship.pilot, "features", set()) if self.ship.pilot else set()
+            )
+            locked = isinstance(weapon, LaserWeapon) and "Laser Cannons" not in pilot_feats
+            if locked:
+                name = "(Locked) " + name
             if i == self.ship.active_weapon:
                 name = "> " + name
             txt = font.render(name, True, (255, 255, 255))
