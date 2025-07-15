@@ -49,10 +49,33 @@ class ResearchManager:
     # Research control helpers
     # ------------------------------------------------------------------
     def can_start(self, tech_id: str) -> bool:
-        """Return ``True`` if ``tech_id`` can be researched."""
+        """Return ``True`` if ``tech_id`` can be researched.
+
+        Raises
+        ------
+        KeyError
+            If a prerequisite references a non-existent technology ID.
+        ValueError
+            If the prerequisites form a cycle.
+        """
+
+        def check_cycle(curr: str, stack: set[str]) -> None:
+            if curr in stack:
+                raise ValueError(f"Cyclic prerequisite detected at '{curr}'")
+            stack.add(curr)
+            node = TECH_TREE.get(curr)
+            if node is None:
+                raise KeyError(f"Unknown technology id '{curr}'")
+            for pre in node.prerequisites:
+                if pre not in TECH_TREE:
+                    raise KeyError(f"Prerequisite '{pre}' for '{curr}' does not exist")
+                check_cycle(pre, stack)
+            stack.remove(curr)
+
         node = TECH_TREE.get(tech_id)
         if node is None:
             return False
+        check_cycle(tech_id, set())
         if tech_id in self.completed or tech_id in self.in_progress:
             return False
         return all(req in self.completed for req in node.prerequisites)
