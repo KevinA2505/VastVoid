@@ -44,6 +44,8 @@ class Player:
         self.research: ResearchManager = research or ResearchManager()
         # Feature flags unlocked through research
         self.features: set[str] = set()
+        # Collection of additional ships owned by the player
+        self.fleet: list = []
 
     def add_item(self, item: str, quantity: int = 1) -> None:
         """Add `quantity` of `item` to the inventory."""

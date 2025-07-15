@@ -339,6 +339,16 @@ HERRAMIENTAS: List[Item] = [
     Item("guantes de fuerza", "herramienta", 0.8, 45, "Multiplican la fuerza de las manos.", Rarity.RARO),
 ]
 
+# --- Piezas de nave -------------------------------------------------------
+PIEZAS_NAVE: List[Item] = [
+    Item("motor basico", "pieza_nave", 5.0, 50, "Motor espacial de bajo rendimiento.", Rarity.COMUN),
+    Item("motor avanzado", "pieza_nave", 6.0, 120, "Motor eficiente de alta potencia.", Rarity.RARO),
+    Item("casco ligero", "pieza_nave", 4.0, 40, "Estructura externa simple.", Rarity.COMUN),
+    Item("casco reforzado", "pieza_nave", 5.5, 90, "Blindaje mejorado para mayor resistencia.", Rarity.POCO_COMUN),
+    Item("cabina estandar", "pieza_nave", 3.0, 60, "Modulo básico para la tripulación.", Rarity.COMUN),
+    Item("cabina de lujo", "pieza_nave", 3.5, 150, "Espaciosa y confortable para largas travesías.", Rarity.RARO),
+]
+
 # --- Vehiculos ----------------------------------------------------------
 VEHICULOS: List[Item] = [
     Item("boat", "vehiculo", 8.0, 20, "Pequeña embarcación algo quemada pero útil.", Rarity.COMUN),
@@ -355,6 +365,7 @@ ITEMS_BY_TYPE: Dict[str, List[Item]] = {
     "artefacto": ARTEFACTOS,
     "arma": ARMAS,
     "herramienta": HERRAMIENTAS,
+    "pieza_nave": PIEZAS_NAVE,
     "vehiculo": VEHICULOS,
 }
 
