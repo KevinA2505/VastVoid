@@ -57,9 +57,9 @@ class Player:
             return
         self.inventory[item] = max(0, self.inventory[item] - quantity)
 
-    def progress_research(self, dt: float) -> list[str]:
-        """Advance research and unlock features for completed techs."""
-        finished = self.research.advance(dt)
+    def progress_research(self, dt: float, bonus: float = 1.0) -> list[str]:
+        """Advance research applying ``bonus`` and unlock completed techs."""
+        finished = self.research.advance(dt, bonus)
         for tid in finished:
             node = TECH_TREE.get(tid)
             if node:

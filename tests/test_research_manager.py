@@ -51,3 +51,13 @@ def test_player_features_unlock_on_completion():
 
     player.progress_research(TECH_TREE["advanced_energy"].cost / 2)
     assert "Energy Shields" in player.features
+
+
+def test_bonus_speeds_up_research():
+    mgr = ResearchManager()
+    mgr.start("mining")
+
+    # With a 2x bonus, half the cost should finish the tech
+    finished = mgr.advance(TECH_TREE["mining"].cost / 2, bonus=2.0)
+    assert "mining" in finished
+    assert "mining" in mgr.completed

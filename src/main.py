@@ -354,7 +354,17 @@ def main():
                     research_window = None
                     break
             if research_window:
-                player.progress_research(dt * 20)
+                # Gather structures to accumulate any research bonuses
+                structures = []
+                for cap in capital_ships:
+                    structures.append(cap)
+                    structures.extend(cap.city_stations)
+                structures.append(carrier)
+
+                bonus = 1.0
+                for s in structures:
+                    bonus += getattr(s, "research_bonus", 0.0)
+                player.progress_research(dt * 20, bonus)
                 research_window.draw(screen, info_font)
                 pygame.display.flip()
                 continue
