@@ -1,4 +1,5 @@
 import pygame
+import config
 from tech_tree import TECH_TREE, ResearchManager
 
 

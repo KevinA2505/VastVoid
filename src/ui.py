@@ -966,11 +966,14 @@ class ResearchWindow:
         self.rects = _layout_nodes(self.levels, config.WINDOW_WIDTH)
         self.selected: str | None = None
         self._start_rect: pygame.Rect | None = None
+        self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 40, 10, 30, 30)
 
     def handle_event(self, event) -> bool:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             return True
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.close_rect.collidepoint(event.pos):
+                return True
             if self.selected and self._start_rect and self._start_rect.collidepoint(event.pos):
                 self.manager.start(self.selected)
                 return False
@@ -984,4 +987,8 @@ class ResearchWindow:
     def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
         draw_tree(screen, font, self.rects, self.manager)
         self._start_rect = draw_info(screen, font, self.selected, self.manager)
+        pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
+        txt = font.render("X", True, (255, 255, 255))
+        screen.blit(txt, txt.get_rect(center=self.close_rect.center))
 
