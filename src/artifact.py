@@ -397,6 +397,72 @@ class DecoyArtifact(Artifact):
         user.invisible_timer = 5.0
 
 
+class MiningBeam:
+    """Laser that extracts resources from an asteroid over time."""
+
+    RESOURCE_YIELD = {
+        "rocky": "hierro",
+        "metallic": "titanio",
+        "icy": "silicio",
+    }
+
+    def __init__(self, owner, asteroid, duration: float = 5.0, rate: float = 6.0) -> None:
+        self.owner = owner
+        self.asteroid = asteroid
+        self.duration = duration
+        self.rate = rate
+        self.timer = 0.0
+        self._carry = 0.0
+
+    def update(self, dt: float) -> None:
+        self.timer += dt
+        if self.timer <= self.duration and not self.asteroid.depleted():
+            mined = self.rate * dt
+            self.asteroid.mine(mined)
+            self._carry += mined
+            resource = self.RESOURCE_YIELD.get(self.asteroid.kind, "hierro")
+            while self._carry >= 1.0:
+                if self.owner.pilot:
+                    self.owner.pilot.add_item(resource)
+                self._carry -= 1.0
+
+    def expired(self) -> bool:
+        return self.timer >= self.duration or self.asteroid.depleted()
+
+    def draw(self, screen: pygame.Surface, offset_x: float = 0.0, offset_y: float = 0.0, zoom: float = 1.0) -> None:
+        start = (int((self.owner.x - offset_x) * zoom), int((self.owner.y - offset_y) * zoom))
+        end = (int((self.asteroid.x - offset_x) * zoom), int((self.asteroid.y - offset_y) * zoom))
+        width = max(1, int(3 * zoom))
+        surf = pygame.Surface((config.WINDOW_WIDTH, config.WINDOW_HEIGHT), pygame.SRCALPHA)
+        pygame.draw.line(surf, (255, 200, 100, 200), start, end, width)
+        screen.blit(surf, (0, 0))
+
+
+class MiningLaserArtifact(Artifact):
+    """Harvest asteroid resources using a focused laser beam."""
+
+    def __init__(self, range_: float = 300.0) -> None:
+        super().__init__("Laser Miner", cooldown=10.0)
+        self.range = range_
+
+    def activate(self, user, targets: list) -> None:
+        if not self.can_use() or not hasattr(user, "_sectors"):
+            return
+        nearest = None
+        min_d = float("inf")
+        for sec in user._sectors:
+            for system in sec.systems:
+                for ast in getattr(system, "asteroids", []):
+                    d = math.hypot(ast.x - user.x, ast.y - user.y)
+                    if d < min_d:
+                        min_d = d
+                        nearest = ast
+        if nearest is None or min_d > self.range:
+            return
+        self._timer = 0.0
+        user.specials.append(MiningBeam(user, nearest))
+
+
 # Registry of all artifact types available in the game. This is used by the
 # UI to display every artifact even if the player's ship has not equipped it
 # yet.
@@ -406,5 +472,6 @@ AVAILABLE_ARTIFACTS: list[type[Artifact]] = [
     GravityTractorArtifact,
     NanobotArtifact,
     SolarGeneratorArtifact,
+    MiningLaserArtifact,
     DecoyArtifact,
 ]
