@@ -42,7 +42,12 @@ from ui import (
     draw_labeled_bar,
 )
 from cbm import CommonBerthingMechanism
-from artifact import EMPArtifact, AreaShieldArtifact, GravityTractorArtifact
+from artifact import (
+    EMPArtifact,
+    AreaShieldArtifact,
+    GravityTractorArtifact,
+    MiningLaserArtifact,
+)
 from planet_surface import PlanetSurface
 from character import choose_player_table, Robot
 
@@ -159,7 +164,12 @@ def main():
     ])
     for w in ship.weapons:
         w.owner = ship
-    ship.artifacts = [EMPArtifact(), AreaShieldArtifact(), GravityTractorArtifact()]
+    ship.artifacts = [
+        EMPArtifact(),
+        AreaShieldArtifact(),
+        GravityTractorArtifact(),
+        MiningLaserArtifact(),
+    ]
 
     pepe = Robot()
     pepe.name = "PEPE"

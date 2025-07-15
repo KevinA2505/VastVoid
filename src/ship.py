@@ -30,6 +30,7 @@ from artifact import (
     RepairNanobots,
     SolarLink,
     Decoy,
+    MiningBeam,
 )
 from blackhole import TemporaryBlackHole
 
@@ -1028,6 +1029,10 @@ class Ship:
                     self.specials.remove(obj)
             elif isinstance(obj, Decoy):
                 obj.update(dt, targets or [])
+                if obj.expired():
+                    self.specials.remove(obj)
+            elif isinstance(obj, MiningBeam):
+                obj.update(dt)
                 if obj.expired():
                     self.specials.remove(obj)
             elif isinstance(obj, Channeler):
