@@ -126,6 +126,7 @@ class Ship:
         hull: int = 100,
         speed_factor: float = 1.0,
         fraction: Fraction | None = None,
+        fuel: float = 100.0,
     ) -> None:
         self.x = float(x)
         self.y = float(y)
@@ -149,6 +150,8 @@ class Ship:
         self._hyperjump_start = (0.0, 0.0)
         self.boost_charge = 1.0
         self.boost_time = 0.0
+        self.fuel = fuel
+        self.max_fuel = fuel
         self.model = model
         self.name = get_ship_name()
         self.model_name = model.name if model else "Prototype"

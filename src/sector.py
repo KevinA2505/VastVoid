@@ -91,7 +91,7 @@ class Sector:
 
     def update(self, dt: float) -> None:
         for system in self.systems:
-            system.update()
+            system.update(dt)
         for hole in self.blackholes:
             hole.update(dt)
 
