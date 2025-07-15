@@ -1,14 +1,17 @@
+import math
+import types
+
 import pygame
+
 import config
 import control_settings as controls
 import game_settings as settings
-import math
-import types
 from artifact import Artifact
 from combat import LaserWeapon
-from tech_tree import ResearchManager
-from tech_ui import draw_tree, draw_info, _compute_levels, _layout_nodes
 from crafting import Recipe
+from station import EXCHANGE_RATE
+from tech_tree import ResearchManager
+from tech_ui import _compute_levels, _layout_nodes, draw_info, draw_tree
 
 # Default key bindings for common actions. These match the table in the README
 # so they can be displayed in the in-game Ajustes/Settings window.
@@ -29,6 +32,7 @@ DEFAULT_CONTROLS = [
     ("Mover cámara en planificador", "Flechas del teclado"),
     ("Activar/desactivar bote", "B"),
 ]
+
 
 class DropdownMenu:
     """Simple dropdown menu triggered by a button."""
@@ -181,7 +185,9 @@ class InventoryWindow:
                 continue
             col = i % cols
             row = i // cols
-            rect = pygame.Rect(x0 + col * (cell_w + 5), y0 + row * (cell_h + 5), cell_w, cell_h)
+            rect = pygame.Rect(
+                x0 + col * (cell_w + 5), y0 + row * (cell_h + 5), cell_w, cell_h
+            )
             self.item_rects.append((name, rect))
             pygame.draw.rect(screen, (60, 60, 90), rect)
             pygame.draw.rect(screen, (200, 200, 200), rect, 1)
@@ -341,6 +347,7 @@ class MarketWindow:
         self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
         self.buy_rects: list[tuple[str, pygame.Rect]] = []
         self.sell_rects: list[tuple[str, pygame.Rect]] = []
+        self.exchange_rects: list[tuple[str, pygame.Rect]] = []
 
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -353,6 +360,10 @@ class MarketWindow:
             for name, rect in self.sell_rects:
                 if rect.collidepoint(event.pos):
                     self.station.sell_item(self.player, name, 1)
+                    return False
+            for name, rect in self.exchange_rects:
+                if rect.collidepoint(event.pos):
+                    self.station.exchange_for_credits(self.player, name, 1)
                     return False
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             return True
@@ -367,6 +378,7 @@ class MarketWindow:
 
         self.buy_rects.clear()
         self.sell_rects.clear()
+        self.exchange_rects.clear()
         x0, y0 = 20, 60
         w, h = 200, 30
         for i, (name, qty) in enumerate(self.station.market.items()):
@@ -393,6 +405,22 @@ class MarketWindow:
             if self.player.fraction.name == "Cosmic Guild":
                 price = int(price * 1.1)
             txt = font.render(f"Sell {name} ({qty}) +{price}", True, (255, 255, 255))
+            screen.blit(txt, txt.get_rect(center=rect.center))
+
+        x2 = x1 + w + 40
+        for i, (name, qty) in enumerate(sell_items):
+            rect = pygame.Rect(x2, y0 + i * (h + 5), w, h)
+            self.exchange_rects.append((name, rect))
+            pygame.draw.rect(screen, (60, 60, 90), rect)
+            pygame.draw.rect(screen, (200, 200, 200), rect, 1)
+            item = ITEMS_BY_NAME[name]
+            rate = EXCHANGE_RATE
+            if self.player.fraction.name == "Cosmic Guild":
+                rate *= 1.1
+            value = int(item.valor * rate)
+            txt = font.render(
+                f"Exchange {name} ({qty}) +{value}", True, (255, 255, 255)
+            )
             screen.blit(txt, txt.get_rect(center=rect.center))
 
         pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
@@ -447,9 +475,13 @@ class WeaponMenu:
             pygame.draw.rect(screen, (200, 200, 200), rect, 1)
             name = weapon.name
             pilot_feats = (
-                getattr(self.ship.pilot, "features", set()) if self.ship.pilot else set()
+                getattr(self.ship.pilot, "features", set())
+                if self.ship.pilot
+                else set()
             )
-            locked = isinstance(weapon, LaserWeapon) and "Laser Cannons" not in pilot_feats
+            locked = (
+                isinstance(weapon, LaserWeapon) and "Laser Cannons" not in pilot_feats
+            )
             if locked:
                 name = "(Locked) " + name
             if i == self.ship.active_weapon:
@@ -532,9 +564,7 @@ class ArtifactMenu:
             screen.blit(txt, txt.get_rect(center=rect.center))
 
         if self.pending_artifact:
-            prompt = font.render(
-                "Press 1-3 to assign slot", True, (255, 255, 255)
-            )
+            prompt = font.render("Press 1-3 to assign slot", True, (255, 255, 255))
             screen.blit(prompt, (240, 60))
 
         pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
@@ -619,7 +649,9 @@ class SettingsWindow:
         pygame.draw.rect(screen, (60, 60, 90), self.click_rect)
         enabled = settings.get_setting("click_to_move")
         click_label = "Sí" if enabled else "No"
-        click_txt = font.render(f"Mover con clics: {click_label}", True, (255, 255, 255))
+        click_txt = font.render(
+            f"Mover con clics: {click_label}", True, (255, 255, 255)
+        )
         screen.blit(click_txt, (x0 + 5, click_y))
 
         pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
@@ -848,7 +880,9 @@ class CarrierMoveMap:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 if self.move_rect.collidepoint(event.pos) and self.destination:
-                    dest = types.SimpleNamespace(x=self.destination[0], y=self.destination[1])
+                    dest = types.SimpleNamespace(
+                        x=self.destination[0], y=self.destination[1]
+                    )
                     self.carrier.start_autopilot(dest)
                     return True
                 if self.cancel_rect.collidepoint(event.pos):
@@ -972,7 +1006,9 @@ class CarrierWindow:
             pygame.draw.rect(screen, (200, 200, 200), rect, 1)
             if ship:
                 name_txt = font.render(ship.name, True, (255, 255, 255))
-                screen.blit(name_txt, name_txt.get_rect(midleft=(rect.x + 5, rect.centery)))
+                screen.blit(
+                    name_txt, name_txt.get_rect(midleft=(rect.x + 5, rect.centery))
+                )
                 d_rect = pygame.Rect(rect.right + 10, rect.y, 80, h)
                 pygame.draw.rect(screen, (60, 60, 90), d_rect)
                 pygame.draw.rect(screen, (200, 200, 200), d_rect, 1)
@@ -1086,8 +1122,12 @@ class CrewTransferWindow:
         title = font.render("Crew Transfer", True, (255, 255, 255))
         screen.blit(title, (rect.x + 5, rect.y + 5))
 
-        left_title = font.render(getattr(self.ship_a, "name", "Ship A"), True, (255, 255, 255))
-        right_title = font.render(getattr(self.ship_b, "name", "Ship B"), True, (255, 255, 255))
+        left_title = font.render(
+            getattr(self.ship_a, "name", "Ship A"), True, (255, 255, 255)
+        )
+        right_title = font.render(
+            getattr(self.ship_b, "name", "Ship B"), True, (255, 255, 255)
+        )
         screen.blit(left_title, (rect.x + 20, rect.y + 30))
         screen.blit(right_title, (rect.x + width // 2 + 20, rect.y + 30))
 
@@ -1096,7 +1136,9 @@ class CrewTransferWindow:
         y_start = rect.y + 55
         item_h = 25
         for i, member in enumerate(self._crew_for_ship(self.ship_a)):
-            r = pygame.Rect(rect.x + 10, y_start + i * (item_h + 5), width // 2 - 20, item_h)
+            r = pygame.Rect(
+                rect.x + 10, y_start + i * (item_h + 5), width // 2 - 20, item_h
+            )
             pygame.draw.rect(screen, (60, 60, 90), r)
             pygame.draw.rect(screen, (200, 200, 200), r, 1)
             name = getattr(member, "name", member.__class__.__name__)
@@ -1104,7 +1146,12 @@ class CrewTransferWindow:
             screen.blit(txt, txt.get_rect(center=r.center))
             self.left_rects.append((member, r))
         for i, member in enumerate(self._crew_for_ship(self.ship_b)):
-            r = pygame.Rect(rect.x + width // 2 + 10, y_start + i * (item_h + 5), width // 2 - 20, item_h)
+            r = pygame.Rect(
+                rect.x + width // 2 + 10,
+                y_start + i * (item_h + 5),
+                width // 2 - 20,
+                item_h,
+            )
             pygame.draw.rect(screen, (60, 60, 90), r)
             pygame.draw.rect(screen, (200, 200, 200), r, 1)
             name = getattr(member, "name", member.__class__.__name__)
@@ -1135,7 +1182,11 @@ class ResearchWindow:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.close_rect.collidepoint(event.pos):
                 return True
-            if self.selected and self._start_rect and self._start_rect.collidepoint(event.pos):
+            if (
+                self.selected
+                and self._start_rect
+                and self._start_rect.collidepoint(event.pos)
+            ):
                 self.manager.start(self.selected)
                 return False
             self.selected = None
@@ -1152,4 +1203,3 @@ class ResearchWindow:
         pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
         txt = font.render("X", True, (255, 255, 255))
         screen.blit(txt, txt.get_rect(center=self.close_rect.center))
-

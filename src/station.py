@@ -1,9 +1,14 @@
-import pygame
-import random
 import math
+import random
 from dataclasses import dataclass
-from names import get_station_name
+
+import pygame
+
 from items import ITEMS, ITEMS_BY_NAME
+from names import get_station_name
+
+# Exchange rate when converting items directly into credits
+EXCHANGE_RATE = 0.75
 
 
 @dataclass
@@ -23,8 +28,14 @@ class Room:
 class SpaceStation:
     """Simple space station with hangars and recreational rooms."""
 
-    def __init__(self, x: float, y: float, radius: int = 20,
-                 num_hangars: int = 3, num_rooms: int = 2) -> None:
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        radius: int = 20,
+        num_hangars: int = 3,
+        num_rooms: int = 2,
+    ) -> None:
         self.name = get_station_name()
         self.x = x
         self.y = y
@@ -80,6 +91,27 @@ class SpaceStation:
         self.market[item_name] = self.market.get(item_name, 0) + qty
         return True
 
+    def exchange_for_credits(self, player, item_name: str, qty: int = 1) -> int:
+        """Convert ``qty`` of ``item_name`` into credits.
+
+        The base exchange rate is ``EXCHANGE_RATE`` times the item's value.
+        Members of the *Cosmic Guild* receive a 10% bonus on the result.
+
+        Returns the amount of credits gained, or ``0`` if the player lacks
+        sufficient items.
+        """
+
+        if player.inventory.get(item_name, 0) < qty:
+            return 0
+        item = ITEMS_BY_NAME[item_name]
+        rate = EXCHANGE_RATE
+        if getattr(player, "fraction", None) and player.fraction.name == "Cosmic Guild":
+            rate *= 1.1
+        value = int(item.valor * qty * rate)
+        player.remove_item(item_name, qty)
+        player.credits += value
+        return value
+
     def has_free_hangar(self) -> bool:
         return any(not h.occupied for h in self.hangars)
 
@@ -96,8 +128,13 @@ class SpaceStation:
                 hangar.occupied_by = None
                 return
 
-    def draw(self, screen: pygame.Surface, offset_x: float = 0,
-             offset_y: float = 0, zoom: float = 1.0) -> None:
+    def draw(
+        self,
+        screen: pygame.Surface,
+        offset_x: float = 0,
+        offset_y: float = 0,
+        zoom: float = 1.0,
+    ) -> None:
         scaled_radius = max(1, int(self.radius * zoom))
         pygame.draw.circle(
             screen,
