@@ -266,6 +266,72 @@ class CraftingWindow:
         screen.blit(txt, txt.get_rect(center=self.close_rect.center))
 
 
+class ShipAssemblyWindow:
+    """Build ships from blueprints using available parts."""
+
+    def __init__(self, player, blueprints) -> None:
+        self.player = player
+        self.blueprints = blueprints
+        self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
+        self.bp_rects: list[tuple[object, pygame.Rect]] = []
+        self.selected = None
+        self.build_rect = pygame.Rect(20, config.WINDOW_HEIGHT - 40, 100, 30)
+
+    def handle_event(self, event) -> bool:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.close_rect.collidepoint(event.pos):
+                return True
+            for bp, rect in self.bp_rects:
+                if rect.collidepoint(event.pos):
+                    self.selected = bp
+                    return False
+            if self.selected and self.build_rect.collidepoint(event.pos):
+                from ship_building import assemble_ship
+
+                assemble_ship(self.player, self.selected)
+                return False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            return True
+        return False
+
+    def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        screen.fill((20, 20, 40))
+        title = font.render("Assemble Ship", True, (255, 255, 255))
+        screen.blit(title, (20, 20))
+
+        self.bp_rects.clear()
+        x0, y0 = 20, 60
+        w, h = 200, 30
+        for i, bp in enumerate(self.blueprints):
+            rect = pygame.Rect(x0, y0 + i * (h + 5), w, h)
+            self.bp_rects.append((bp, rect))
+            color = (80, 80, 120) if bp is self.selected else (60, 60, 90)
+            pygame.draw.rect(screen, color, rect)
+            pygame.draw.rect(screen, (200, 200, 200), rect, 1)
+            txt = font.render(bp.model.name, True, (255, 255, 255))
+            screen.blit(txt, txt.get_rect(center=rect.center))
+
+        if self.selected:
+            x1 = x0 + w + 40
+            y1 = y0
+            for name, qty in self.selected.parts.items():
+                have = self.player.inventory.get(name, 0)
+                color = (200, 80, 80) if have < qty else (255, 255, 255)
+                txt = font.render(f"{name} x{qty}", True, color)
+                screen.blit(txt, (x1, y1))
+                y1 += 20
+
+            pygame.draw.rect(screen, (60, 60, 90), self.build_rect)
+            pygame.draw.rect(screen, (200, 200, 200), self.build_rect, 1)
+            b_txt = font.render("Assemble", True, (255, 255, 255))
+            screen.blit(b_txt, b_txt.get_rect(center=self.build_rect.center))
+
+        pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
+        pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
+        txt = font.render("Close", True, (255, 255, 255))
+        screen.blit(txt, txt.get_rect(center=self.close_rect.center))
+
+
 class MarketWindow:
     """Trade items between the player and a station."""
 
