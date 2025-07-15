@@ -48,9 +48,11 @@ class StarSystem:
                 Asteroid.random_near_star(self.star, belt_inner, belt_outer)
             )
 
-    def update(self) -> None:
+    def update(self, dt: float = 0.0) -> None:
         for planet in self.planets:
             planet.update()
+        for station in self.stations:
+            station.update(dt)
         # Remove any depleted asteroids
         self.asteroids = [a for a in self.asteroids if not a.depleted()]
 

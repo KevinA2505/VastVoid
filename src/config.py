@@ -164,3 +164,8 @@ STAR_TURRET_PROJECTILE_SPEED = 380
 STAR_TURRET_PROJECTILE_DAMAGE = 6
 # Maximum distance for star turret projectiles (30% shorter than default)
 STAR_TURRET_PROJECTILE_MAX_DISTANCE = PROJECTILE_MAX_DISTANCE * 0.5
+
+# Space station economy settings
+STATION_RESTOCK_TIME = 60.0
+STATION_PRICE_FLUCT = 0.05
+

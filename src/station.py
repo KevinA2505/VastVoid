@@ -43,14 +43,24 @@ class SpaceStation:
         self.hangars = [Hangar() for _ in range(num_hangars)]
         self.rooms = [Room(f"Room {i+1}") for i in range(num_rooms)]
         # Randomly populate the market with items for trade
-        self.market: dict[str, int] = {}
+        # Each entry maps item name -> {"stock": int, "price": int}
+        self.market: dict[str, dict[str, int]] = {}
+        self._restock_timer = 0.0
         self._populate_market()
 
     def _populate_market(self) -> None:
-        """Fill the station market with a selection of random items."""
+        """Fill the station market with a selection of random items.
+
+        Each item receives an initial stock and a price that fluctuates
+        around the base value.
+        """
+
         sample = random.sample(ITEMS, k=min(10, len(ITEMS)))
         for item in sample:
-            self.market[item.nombre] = random.randint(1, 5)
+            self.market[item.nombre] = {
+                "stock": random.randint(1, 5),
+                "price": int(item.valor * random.uniform(0.8, 1.2)),
+            }
 
     @staticmethod
     def random_station(star, distance: float) -> "SpaceStation":
@@ -63,18 +73,18 @@ class SpaceStation:
 
     def buy_item(self, player, item_name: str, qty: int = 1) -> bool:
         """Allow ``player`` to buy ``qty`` of ``item_name`` if available."""
-        if item_name not in self.market or self.market[item_name] < qty:
+        if item_name not in self.market or self.market[item_name]["stock"] < qty:
             return False
         item = ITEMS_BY_NAME[item_name]
-        price = item.valor * qty
+        price = self.market[item_name]["price"] * qty
         if getattr(player, "fraction", None) and player.fraction.name == "Cosmic Guild":
             price = int(price * 0.9)
         if player.credits < price:
             return False
         player.credits -= price
         player.add_item(item_name, qty)
-        self.market[item_name] -= qty
-        if self.market[item_name] <= 0:
+        self.market[item_name]["stock"] -= qty
+        if self.market[item_name]["stock"] <= 0:
             del self.market[item_name]
         return True
 
@@ -88,7 +98,13 @@ class SpaceStation:
             price = int(price * 1.1)
         player.credits += price
         player.remove_item(item_name, qty)
-        self.market[item_name] = self.market.get(item_name, 0) + qty
+        if item_name in self.market:
+            self.market[item_name]["stock"] += qty
+        else:
+            self.market[item_name] = {
+                "stock": qty,
+                "price": int(item.valor * random.uniform(0.8, 1.2)),
+            }
         return True
 
     def exchange_for_credits(self, player, item_name: str, qty: int = 1) -> int:
@@ -111,6 +127,34 @@ class SpaceStation:
         player.remove_item(item_name, qty)
         player.credits += value
         return value
+
+    def update(self, dt: float) -> None:
+        """Update market prices and restock items over time."""
+        import config
+
+        self._restock_timer += dt
+        if self._restock_timer >= config.STATION_RESTOCK_TIME:
+            self._restock_timer = 0.0
+            self._restock()
+
+        for data in self.market.values():
+            fluct = random.uniform(1 - config.STATION_PRICE_FLUCT, 1 + config.STATION_PRICE_FLUCT)
+            data["price"] = max(1, int(data["price"] * fluct))
+
+    def _restock(self) -> None:
+        """Increase stock of existing items and occasionally add new ones."""
+
+        for data in self.market.values():
+            data["stock"] += random.randint(1, 3)
+
+        if len(self.market) < 10:
+            available = [it for it in ITEMS if it.nombre not in self.market]
+            if available:
+                item = random.choice(available)
+                self.market[item.nombre] = {
+                    "stock": random.randint(1, 5),
+                    "price": int(item.valor * random.uniform(0.8, 1.2)),
+                }
 
     def has_free_hangar(self) -> bool:
         return any(not h.occupied for h in self.hangars)

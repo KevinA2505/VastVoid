@@ -167,8 +167,15 @@ class InventoryWindow:
                         self.player.remove_item(name, 1)
                         print(f"Used {name}")
                     return False
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            return True
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                return True
+            if event.key == pygame.K_n:
+                self.sort_key = "name"
+            if event.key == pygame.K_d:
+                self.sort_key = "damage"
+            if event.key == pygame.K_f:
+                self.sort_key = "fuel"
         return False
 
     def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
@@ -963,6 +970,7 @@ class CarrierWindow:
         self.deploy_rects: list[tuple[int, pygame.Rect]] = []
         self.deployed_ship = None
         self.request_move = False
+        self.sort_key = "name"
 
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -998,17 +1006,28 @@ class CarrierWindow:
         screen.blit(speed_txt, (20, 70))
 
         self.deploy_rects.clear()
-        x0, y0 = 20, 110
-        w, h = 200, 30
-        for i, ship in enumerate(self.carrier.hangars):
-            rect = pygame.Rect(x0, y0 + i * (h + 5), w, h)
+        x0, y0 = 20, 130
+        w, h = 260, 30
+
+        indexed = list(enumerate(self.carrier.hangars))
+        if self.sort_key == "name":
+            indexed.sort(key=lambda t: t[1].name if t[1] else "")
+        elif self.sort_key == "damage":
+            indexed.sort(key=lambda t: (t[1].max_hull - t[1].hull) if t[1] else 0, reverse=True)
+        elif self.sort_key == "fuel":
+            indexed.sort(key=lambda t: getattr(t[1], "fuel", 0), reverse=True)
+
+        info_txt = font.render("N-Name D-Damage F-Fuel", True, (255, 255, 255))
+        screen.blit(info_txt, (20, 110))
+
+        for row, (i, ship) in enumerate(indexed):
+            rect = pygame.Rect(x0, y0 + row * (h + 5), w, h)
             pygame.draw.rect(screen, (60, 60, 90), rect)
             pygame.draw.rect(screen, (200, 200, 200), rect, 1)
             if ship:
-                name_txt = font.render(ship.name, True, (255, 255, 255))
-                screen.blit(
-                    name_txt, name_txt.get_rect(midleft=(rect.x + 5, rect.centery))
-                )
+                info = f"{ship.name} | {ship.hull}/{ship.max_hull} | {getattr(ship, 'fuel', 0)}"
+                name_txt = font.render(info, True, (255, 255, 255))
+                screen.blit(name_txt, name_txt.get_rect(midleft=(rect.x + 5, rect.centery)))
                 d_rect = pygame.Rect(rect.right + 10, rect.y, 80, h)
                 pygame.draw.rect(screen, (60, 60, 90), d_rect)
                 pygame.draw.rect(screen, (200, 200, 200), d_rect, 1)

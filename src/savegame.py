@@ -5,7 +5,8 @@ from typing import List
 from character import Player, Human, Alien, Robot
 from fraction import FRACTIONS
 from items import ITEMS_BY_NAME
-from ship import SHIP_MODELS, ShipModel
+from ship import SHIP_MODELS, ShipModel, Ship
+from station import SpaceStation
 from tech_tree import ResearchManager, TECH_TREE
 
 SAVE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "saves")
@@ -39,6 +40,28 @@ def _dict_to_model(data: dict | None) -> ShipModel | None:
             if m.classification == classification and m.brand == brand:
                 return m
     return None
+
+
+def _ship_to_dict(ship: Ship | None):
+    if not ship:
+        return None
+    return {
+        "model": _model_to_dict(ship.model),
+        "name": ship.name,
+        "hull": ship.hull,
+        "fuel": getattr(ship, "fuel", 0),
+    }
+
+
+def _dict_to_ship(data: dict | None) -> Ship | None:
+    if not data:
+        return None
+    model = _dict_to_model(data.get("model"))
+    ship = Ship(0, 0, model=model, hull=int(data.get("hull", 100)), fuel=float(data.get("fuel", 100)))
+    ship.name = data.get("name", ship.name)
+    if hasattr(ship, "fuel"):
+        ship.fuel = data.get("fuel", ship.fuel)
+    return ship
 
 
 def _research_to_dict(mgr: ResearchManager | None):
@@ -154,3 +177,31 @@ def ensure_admin_profile() -> None:
         player.features.update(node.unlocked_features)
 
     save_player(player)
+
+
+def save_station_hangars(stations: List[SpaceStation]) -> None:
+    """Persist hangar contents for each station."""
+    os.makedirs(SAVE_DIR, exist_ok=True)
+    path = os.path.join(SAVE_DIR, "stations.json")
+    data = {}
+    for st in stations:
+        slots = [_ship_to_dict(h.occupied_by) for h in st.hangars]
+        data[st.name] = slots
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+
+
+def load_station_hangars(stations: List[SpaceStation]) -> None:
+    """Load hangar contents from disk into existing stations."""
+    path = os.path.join(SAVE_DIR, "stations.json")
+    if not os.path.exists(path):
+        return
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    mapping = {st.name: st for st in stations}
+    for name, slots in data.items():
+        station = mapping.get(name)
+        if not station:
+            continue
+        for hangar, saved in zip(station.hangars, slots):
+            hangar.occupied_by = _dict_to_ship(saved)
