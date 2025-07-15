@@ -6,7 +6,7 @@ from character import Player, Human, Alien, Robot
 from fraction import FRACTIONS
 from items import ITEMS_BY_NAME
 from ship import SHIP_MODELS, ShipModel
-from tech_tree import ResearchManager
+from tech_tree import ResearchManager, TECH_TREE
 
 SAVE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "saves")
 
@@ -100,6 +100,13 @@ def load_player(name: str) -> Player:
     inv = {name: 0 for name in ITEMS_BY_NAME}
     inv.update(data.get("inventory", {}))
     player.inventory = inv
+
+    # Rebuild feature flags from completed research
+    for tech_id in player.research.completed:
+        node = TECH_TREE.get(tech_id)
+        if node:
+            player.features.update(node.unlocked_features)
+
     return player
 
 
@@ -119,3 +126,31 @@ def delete_player(name: str) -> None:
     path = os.path.join(SAVE_DIR, f"{name}.json")
     if os.path.exists(path):
         os.remove(path)
+
+
+def ensure_admin_profile() -> None:
+    """Create a developer profile named ``admin`` with everything unlocked."""
+    admin_path = os.path.join(SAVE_DIR, "admin.json")
+    if os.path.exists(admin_path):
+        return
+
+    research = ResearchManager()
+    for tid in TECH_TREE:
+        research.completed.add(tid)
+
+    player = Player(
+        name="admin",
+        age=30,
+        species=Human(),
+        fraction=FRACTIONS[0],
+        credits=999999,
+        research=research,
+    )
+
+    for item in ITEMS_BY_NAME:
+        player.inventory[item] = 1
+
+    for node in TECH_TREE.values():
+        player.features.update(node.unlocked_features)
+
+    save_player(player)

@@ -84,6 +84,10 @@ and a separate *New Profile* button lets you create a fresh character.
 New profiles are saved automatically once created so they appear on the list
 the next time you run the game.
 
+A special developer profile named **admin** is created automatically if it does
+not already exist. It includes all research, one unit of every item and plenty
+of credits so you can test the entire game without restrictions.
+
 ## Installation
 
 Install the dependencies listed in `requirements.txt`:
