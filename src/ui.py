@@ -153,6 +153,7 @@ class InventoryWindow:
         self.item_rects: list[tuple[str, pygame.Rect]] = []
         self.craft_rect = pygame.Rect(20, config.WINDOW_HEIGHT - 40, 100, 30)
         self.open_craft = False
+        self.sort_key = "name"
 
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -186,10 +187,22 @@ class InventoryWindow:
         x0, y0 = 20, 60
         cell_w, cell_h = 120, 40
         cols = 4
-        i = 0
-        for name, qty in self.player.inventory.items():
-            if qty <= 0:
-                continue
+        items = [(n, q) for n, q in self.player.inventory.items() if q > 0]
+        from items import ITEMS_BY_NAME
+        if self.sort_key == "name":
+            items.sort(key=lambda t: t[0])
+        elif self.sort_key == "damage":
+            items.sort(
+                key=lambda t: getattr(ITEMS_BY_NAME.get(t[0], None), "damage", 0),
+                reverse=True,
+            )
+        elif self.sort_key == "fuel":
+            items.sort(
+                key=lambda t: getattr(ITEMS_BY_NAME.get(t[0], None), "fuel", 0),
+                reverse=True,
+            )
+
+        for i, (name, qty) in enumerate(items):
             col = i % cols
             row = i // cols
             rect = pygame.Rect(
@@ -201,7 +214,6 @@ class InventoryWindow:
             txt = font.render(f"{name} ({qty})", True, (255, 255, 255))
             txt_rect = txt.get_rect(center=rect.center)
             screen.blit(txt, txt_rect)
-            i += 1
         pygame.draw.rect(screen, (60, 60, 90), self.close_rect)
         pygame.draw.rect(screen, (200, 200, 200), self.close_rect, 1)
         exit_txt = font.render("Close", True, (255, 255, 255))
