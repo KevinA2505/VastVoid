@@ -70,6 +70,19 @@ class Player:
         self.add_item(recipe.result, 1)
         return True
 
+    def refine_item(self, recipe: "RefineryRecipe") -> bool:
+        """Refine materials if the player knows ``Ore Processing``."""
+        from refinery import can_refine
+
+        if "Ore Processing" not in self.features:
+            return False
+        if not can_refine(self.inventory, recipe):
+            return False
+        for inp, out in recipe.mapping.items():
+            self.remove_item(inp)
+            self.add_item(out)
+        return True
+
     def progress_research(self, dt: float, bonus: float = 1.0) -> list[str]:
         """Advance research applying ``bonus`` and unlock completed techs."""
         finished = self.research.advance(dt, bonus)

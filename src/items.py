@@ -75,6 +75,8 @@ MATERIA_PRIMA: List[Item] = [
     Item("cromo", "materia_prima", 1.5, 15, "Metal brillante, resistente a la oxidación.", Rarity.COMUN),
     Item("vanadio", "materia_prima", 1.8, 25, "Metal de alta resistencia.", Rarity.POCO_COMUN),
     Item("molibdeno", "materia_prima", 2.0, 35, "Metal con alto punto de fusión.", Rarity.POCO_COMUN),
+    Item("lingote de hierro", "materia_prima", 2.5, 12, "Barra de hierro purificado.", Rarity.COMUN),
+    Item("placa de titanio", "materia_prima", 3.0, 25, "Lamina resistente de titanio procesado.", Rarity.POCO_COMUN),
 ]
 
 # --- Combustibles ----------------------------------------------------------
