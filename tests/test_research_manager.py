@@ -7,6 +7,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
 from tech_tree import ResearchManager, TECH_TREE
 from character import Player, Human
 from fraction import FRACTIONS
+from refinery import RECIPES, refine_item
 
 
 def test_can_start_respects_prerequisites():
@@ -61,3 +62,20 @@ def test_bonus_speeds_up_research():
     finished = mgr.advance(TECH_TREE["mining"].cost / 2, bonus=2.0)
     assert "mining" in finished
     assert "mining" in mgr.completed
+
+
+def test_refinery_locked_until_research_completed():
+    player = Player("Test", 20, Human(), FRACTIONS[0])
+    recipe = RECIPES[0]
+
+    for inp in recipe.mapping:
+        player.add_item(inp, 1)
+
+    # Refining should fail before unlocking Ore Processing
+    assert not refine_item(player, recipe)
+
+    player.research.start("mining")
+    player.progress_research(TECH_TREE["mining"].cost)
+
+    # After completing the research, the helper should work
+    assert refine_item(player, recipe)
