@@ -366,7 +366,7 @@ class MarketWindow:
         self.close_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
         self.buy_rects: list[tuple[str, pygame.Rect]] = []
         self.sell_rects: list[tuple[str, pygame.Rect]] = []
-        self.exchange_rects: list[tuple[str, pygame.Rect]] = []
+        self.exchange_rects: list[tuple[str, int, pygame.Rect]] = []
 
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -380,9 +380,9 @@ class MarketWindow:
                 if rect.collidepoint(event.pos):
                     self.station.sell_item(self.player, name, 1)
                     return False
-            for name, rect in self.exchange_rects:
+            for name, qty, rect in self.exchange_rects:
                 if rect.collidepoint(event.pos):
-                    self.station.exchange_for_credits(self.player, name, 1)
+                    self.station.exchange_for_credits(self.player, name, qty)
                     return False
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             return True
@@ -400,16 +400,16 @@ class MarketWindow:
         self.exchange_rects.clear()
         x0, y0 = 20, 60
         w, h = 200, 30
-        for i, (name, qty) in enumerate(self.station.market.items()):
+        for i, (name, data) in enumerate(self.station.market.items()):
             rect = pygame.Rect(x0, y0 + i * (h + 5), w, h)
             self.buy_rects.append((name, rect))
             pygame.draw.rect(screen, (60, 60, 90), rect)
             pygame.draw.rect(screen, (200, 200, 200), rect, 1)
-            item = ITEMS_BY_NAME[name]
-            price = item.valor
+            stock = data["stock"]
+            price = data["price"]
             if self.player.fraction.name == "Cosmic Guild":
                 price = int(price * 0.9)
-            txt = font.render(f"Buy {name} ({qty}) - {price}", True, (255, 255, 255))
+            txt = font.render(f"Buy {name} ({stock}) - {price}", True, (255, 255, 255))
             screen.blit(txt, txt.get_rect(center=rect.center))
 
         x1 = x0 + w + 40
@@ -429,14 +429,14 @@ class MarketWindow:
         x2 = x1 + w + 40
         for i, (name, qty) in enumerate(sell_items):
             rect = pygame.Rect(x2, y0 + i * (h + 5), w, h)
-            self.exchange_rects.append((name, rect))
+            self.exchange_rects.append((name, qty, rect))
             pygame.draw.rect(screen, (60, 60, 90), rect)
             pygame.draw.rect(screen, (200, 200, 200), rect, 1)
             item = ITEMS_BY_NAME[name]
             rate = EXCHANGE_RATE
             if self.player.fraction.name == "Cosmic Guild":
                 rate *= 1.1
-            value = int(item.valor * rate)
+            value = int(qty * item.valor * rate)
             txt = font.render(
                 f"Exchange {name} ({qty}) +{value}", True, (255, 255, 255)
             )
