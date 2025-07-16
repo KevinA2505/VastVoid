@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from typing import Dict
+from pathlib import Path
+from typing import Dict, List
+import json
 
 from items import ITEMS_BY_NAME
 
@@ -20,13 +22,26 @@ class RefineryRecipe:
                 raise ValueError(f"Unknown output item: {out}")
 
 
-RECIPES = [
-    RefineryRecipe({"hierro": "lingote de hierro"}),
-    RefineryRecipe({"titanio": "placa de titanio"}),
-]
+DATA_FILE = Path(__file__).resolve().parents[1] / "data" / "refinery_recipes.json"
 
-for r in RECIPES:
-    r.validate()
+
+def _load_recipes() -> List[RefineryRecipe]:
+    with DATA_FILE.open(encoding="utf-8") as fh:
+        data = json.load(fh)
+
+    recipes: List[RefineryRecipe] = []
+    for entry in data:
+        recipe = RefineryRecipe(
+            {k: v for k, v in entry["mapping"].items()},
+            entry.get("time", 0.0),
+            entry.get("energy", 0.0),
+        )
+        recipe.validate()
+        recipes.append(recipe)
+    return recipes
+
+
+RECIPES: List[RefineryRecipe] = _load_recipes()
 
 
 def can_refine(inventory: Dict[str, int], recipe: RefineryRecipe) -> bool:

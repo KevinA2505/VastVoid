@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, List
+import json
 
 from items import ITEMS_BY_NAME
 
@@ -10,6 +12,8 @@ class Recipe:
 
     result: str
     ingredients: Dict[str, int]
+    time: float = 0.0
+    energy: float = 0.0
 
     def validate(self) -> None:
         if self.result not in ITEMS_BY_NAME:
@@ -19,18 +23,27 @@ class Recipe:
                 raise ValueError(f"Unknown ingredient: {name}")
 
 
-RECIPES: List[Recipe] = [
-    Recipe("rifle de plasma", {"pistola laser": 1, "combustible ionico": 2}),
-    Recipe("lanzallamas", {"taladro": 1, "combustible de fusion": 1}),
-    Recipe(
-        "moto antigravitatoria",
-        {"buggy lunar": 1, "bateria portatil": 2, "pico laser": 1},
-    ),
-    Recipe("generador de escudo", {"bateria portatil": 2, "cortador laser": 1}),
-]
+DATA_FILE = Path(__file__).resolve().parents[1] / "data" / "crafting_recipes.json"
 
-for r in RECIPES:
-    r.validate()
+
+def _load_recipes() -> List[Recipe]:
+    with DATA_FILE.open(encoding="utf-8") as fh:
+        data = json.load(fh)
+
+    recipes: List[Recipe] = []
+    for entry in data:
+        recipe = Recipe(
+            entry["result"],
+            {k: int(v) for k, v in entry["ingredients"].items()},
+            entry.get("time", 0.0),
+            entry.get("energy", 0.0),
+        )
+        recipe.validate()
+        recipes.append(recipe)
+    return recipes
+
+
+RECIPES: List[Recipe] = _load_recipes()
 
 
 def can_craft(inventory: Dict[str, int], recipe: Recipe) -> bool:

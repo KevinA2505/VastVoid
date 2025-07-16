@@ -1,0 +1,39 @@
+[
+  {
+    "result": "rifle de plasma",
+    "ingredients": {
+      "pistola laser": 1,
+      "combustible ionico": 2
+    },
+    "time": 0,
+    "energy": 0
+  },
+  {
+    "result": "lanzallamas",
+    "ingredients": {
+      "taladro": 1,
+      "combustible de fusion": 1
+    },
+    "time": 0,
+    "energy": 0
+  },
+  {
+    "result": "moto antigravitatoria",
+    "ingredients": {
+      "buggy lunar": 1,
+      "bateria portatil": 2,
+      "pico laser": 1
+    },
+    "time": 0,
+    "energy": 0
+  },
+  {
+    "result": "generador de escudo",
+    "ingredients": {
+      "bateria portatil": 2,
+      "cortador laser": 1
+    },
+    "time": 0,
+    "energy": 0
+  }
+]
