@@ -30,6 +30,7 @@ button to return to space.
   more numerous for better visibility.
 * Charge the **Ionized Symbiont** to fire a shot that latches onto enemy hulls and inflicts damage over time.
 * Stations let you exchange items for credits at 75% of their base value (Cosmic Guild members receive 10% extra).
+* Refine ores into improved materials after researching **Ore Processing**.
 
 ### Defensive drones
 The Nebula Order flagship deploys a trio of small drones that protect only this
@@ -68,6 +69,12 @@ turret that fires spore bursts at enemies. The device only functions when a
 star is close enough for the Channeler to make contact. Connected turrets fire
 roughly once every 0.6&nbsp;seconds (around 100 shots per minute), but the rate
 drops to one shot every two seconds if the link is lost.
+
+### Refinery
+Researching the **Ore Processing** technology unlocks small refineries. These
+devices convert basic ores into refined components such as *lingote de hierro*
+and *placa de titanio*. Refining consumes the raw materials from your inventory
+and produces the improved goods.
 
 ## Character creation
 
