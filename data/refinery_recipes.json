@@ -1,0 +1,16 @@
+[
+  {
+    "mapping": {
+      "hierro": "lingote de hierro"
+    },
+    "time": 0.0,
+    "energy": 0.0
+  },
+  {
+    "mapping": {
+      "titanio": "placa de titanio"
+    },
+    "time": 0.0,
+    "energy": 0.0
+  }
+]

@@ -1,0 +1,1378 @@
+{
+  "materia_prima": [
+    {
+      "nombre": "hierro",
+      "tipo": "materia_prima",
+      "peso": 3.0,
+      "valor": 5,
+      "descripcion": "Metal común para construcción.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "cobre",
+      "tipo": "materia_prima",
+      "peso": 2.0,
+      "valor": 8,
+      "descripcion": "Buen conductor eléctrico.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "silicio",
+      "tipo": "materia_prima",
+      "peso": 1.5,
+      "valor": 6,
+      "descripcion": "Mineral utilizado en componentes electrónicos.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "titanio",
+      "tipo": "materia_prima",
+      "peso": 3.5,
+      "valor": 15,
+      "descripcion": "Metal muy resistente y ligero.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "litio",
+      "tipo": "materia_prima",
+      "peso": 0.5,
+      "valor": 12,
+      "descripcion": "Elemento clave para baterías.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "oro",
+      "tipo": "materia_prima",
+      "peso": 4.0,
+      "valor": 50,
+      "descripcion": "Metal precioso, muy valorado.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "plata",
+      "tipo": "materia_prima",
+      "peso": 3.8,
+      "valor": 30,
+      "descripcion": "Metal precioso, buen conductor.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "aluminio",
+      "tipo": "materia_prima",
+      "peso": 1.0,
+      "valor": 4,
+      "descripcion": "Metal ligero y resistente a la corrosión.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "diamante",
+      "tipo": "materia_prima",
+      "peso": 0.1,
+      "valor": 100,
+      "descripcion": "El mineral más duro y valioso.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "cuarzo",
+      "tipo": "materia_prima",
+      "peso": 1.0,
+      "valor": 7,
+      "descripcion": "Cristal común usado en electrónica.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "grafeno",
+      "tipo": "materia_prima",
+      "peso": 0.05,
+      "valor": 70,
+      "descripcion": "Material bidimensional extremadamente resistente.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "platino",
+      "tipo": "materia_prima",
+      "peso": 4.5,
+      "valor": 60,
+      "descripcion": "Metal noble, muy raro y resistente.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "cobalto",
+      "tipo": "materia_prima",
+      "peso": 2.5,
+      "valor": 18,
+      "descripcion": "Metal ferromagnético, usado en aleaciones.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "tungsteno",
+      "tipo": "materia_prima",
+      "peso": 3.2,
+      "valor": 22,
+      "descripcion": "Metal con alto punto de fusión.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "neodimio",
+      "tipo": "materia_prima",
+      "peso": 1.7,
+      "valor": 28,
+      "descripcion": "Elemento de tierras raras para imanes potentes.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "iridio",
+      "tipo": "materia_prima",
+      "peso": 2.0,
+      "valor": 40,
+      "descripcion": "Metal denso usado en catalizadores.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "magnesio",
+      "tipo": "materia_prima",
+      "peso": 1.2,
+      "valor": 6,
+      "descripcion": "Metal ligero de reactividad moderada.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "uranio",
+      "tipo": "materia_prima",
+      "peso": 3.8,
+      "valor": 55,
+      "descripcion": "Elemento radiactivo de alto valor.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "rubidio",
+      "tipo": "materia_prima",
+      "peso": 1.0,
+      "valor": 20,
+      "descripcion": "Metal alcalino de baja abundancia.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "perla negra",
+      "tipo": "materia_prima",
+      "peso": 0.2,
+      "valor": 75,
+      "descripcion": "Gema oscura de gran valor.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "obsidiana",
+      "tipo": "materia_prima",
+      "peso": 1.5,
+      "valor": 10,
+      "descripcion": "Vidrio volcánico oscuro.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "permafrost",
+      "tipo": "materia_prima",
+      "peso": 1.0,
+      "valor": 12,
+      "descripcion": "Hielo eterno, útil en experimentos.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "mercurio",
+      "tipo": "materia_prima",
+      "peso": 2.0,
+      "valor": 18,
+      "descripcion": "Metal líquido tóxico.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "palladium",
+      "tipo": "materia_prima",
+      "peso": 2.5,
+      "valor": 45,
+      "descripcion": "Metal precioso resistente a la corrosión.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "berilio",
+      "tipo": "materia_prima",
+      "peso": 2.0,
+      "valor": 30,
+      "descripcion": "Metal ligero de alta rigidez.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "zinc",
+      "tipo": "materia_prima",
+      "peso": 2.0,
+      "valor": 8,
+      "descripcion": "Metal común usado en aleaciones.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "niquel",
+      "tipo": "materia_prima",
+      "peso": 2.0,
+      "valor": 12,
+      "descripcion": "Metal común resistente a la corrosión.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "zafiro",
+      "tipo": "materia_prima",
+      "peso": 0.1,
+      "valor": 80,
+      "descripcion": "Piedra preciosa azul.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "esmeralda",
+      "tipo": "materia_prima",
+      "peso": 0.1,
+      "valor": 70,
+      "descripcion": "Piedra preciosa verde.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "rubi",
+      "tipo": "materia_prima",
+      "peso": 0.1,
+      "valor": 75,
+      "descripcion": "Piedra preciosa roja.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "kryptonita",
+      "tipo": "materia_prima",
+      "peso": 1.5,
+      "valor": 90,
+      "descripcion": "Mineral ficticio de poder extremo.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "adamantita",
+      "tipo": "materia_prima",
+      "peso": 3.0,
+      "valor": 85,
+      "descripcion": "Metal mítico casi indestructible.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "cromo",
+      "tipo": "materia_prima",
+      "peso": 1.5,
+      "valor": 15,
+      "descripcion": "Metal brillante, resistente a la oxidación.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "vanadio",
+      "tipo": "materia_prima",
+      "peso": 1.8,
+      "valor": 25,
+      "descripcion": "Metal de alta resistencia.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "molibdeno",
+      "tipo": "materia_prima",
+      "peso": 2.0,
+      "valor": 35,
+      "descripcion": "Metal con alto punto de fusión.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "lingote de hierro",
+      "tipo": "materia_prima",
+      "peso": 2.5,
+      "valor": 12,
+      "descripcion": "Barra de hierro purificado.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "placa de titanio",
+      "tipo": "materia_prima",
+      "peso": 3.0,
+      "valor": 25,
+      "descripcion": "Lamina resistente de titanio procesado.",
+      "rareza": "poco_comun"
+    }
+  ],
+  "combustibles": [
+    {
+      "nombre": "gasolina",
+      "tipo": "combustible",
+      "peso": 1.0,
+      "valor": 10,
+      "descripcion": "Combustible fósil refinado.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "materia oscura",
+      "tipo": "combustible",
+      "peso": 0.2,
+      "valor": 50,
+      "descripcion": "Fuente de energía extremadamente poderosa.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "combustible ionico",
+      "tipo": "combustible",
+      "peso": 0.8,
+      "valor": 20,
+      "descripcion": "Gas ionizado para motores espaciales.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "antimateria",
+      "tipo": "combustible",
+      "peso": 0.1,
+      "valor": 100,
+      "descripcion": "La energía más potente.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "deuterio",
+      "tipo": "combustible",
+      "peso": 1.2,
+      "valor": 25,
+      "descripcion": "Isótopo de hidrógeno para reactores.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "hidrogeno liquido",
+      "tipo": "combustible",
+      "peso": 0.3,
+      "valor": 15,
+      "descripcion": "Combustible criogénico para cohetes.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "helio-3",
+      "tipo": "combustible",
+      "peso": 0.05,
+      "valor": 80,
+      "descripcion": "Isótopo ligero para fusión nuclear.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "plutonio",
+      "tipo": "combustible",
+      "peso": 2.0,
+      "valor": 90,
+      "descripcion": "Elemento radiactivo para energía nuclear.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "biocombustible",
+      "tipo": "combustible",
+      "peso": 1.5,
+      "valor": 12,
+      "descripcion": "Combustible ecológico de origen orgánico.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "metano",
+      "tipo": "combustible",
+      "peso": 0.7,
+      "valor": 8,
+      "descripcion": "Gas natural, combustible común.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "cristal de energia",
+      "tipo": "combustible",
+      "peso": 0.4,
+      "valor": 60,
+      "descripcion": "Cristal que emite energía constante.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "combustible de fusion",
+      "tipo": "combustible",
+      "peso": 0.9,
+      "valor": 75,
+      "descripcion": "Mezcla avanzada para reactores de fusión.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "carbon",
+      "tipo": "combustible",
+      "peso": 2.5,
+      "valor": 3,
+      "descripcion": "Combustible fósil sólido.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "petroleo crudo",
+      "tipo": "combustible",
+      "peso": 1.8,
+      "valor": 7,
+      "descripcion": "Combustible fósil sin refinar.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "vapor condensado",
+      "tipo": "combustible",
+      "peso": 0.6,
+      "valor": 18,
+      "descripcion": "Vapor de alta presión, fuente de energía.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "hidrazina",
+      "tipo": "combustible",
+      "peso": 1.0,
+      "valor": 40,
+      "descripcion": "Combustible de cohetes altamente reactivo.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "etanol",
+      "tipo": "combustible",
+      "peso": 0.8,
+      "valor": 6,
+      "descripcion": "Combustible orgánico común.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "cristal energizado",
+      "tipo": "combustible",
+      "peso": 0.3,
+      "valor": 65,
+      "descripcion": "Cristal cargado que libera energía.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "aceite vegetal",
+      "tipo": "combustible",
+      "peso": 1.2,
+      "valor": 5,
+      "descripcion": "Combustible alternativo sencillo.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "gas de lunas",
+      "tipo": "combustible",
+      "peso": 0.7,
+      "valor": 30,
+      "descripcion": "Mezcla de gases recolectada de lunas distantes.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "nitrometano",
+      "tipo": "combustible",
+      "peso": 0.9,
+      "valor": 25,
+      "descripcion": "Combustible para motores de alto rendimiento.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "fusion gel",
+      "tipo": "combustible",
+      "peso": 0.2,
+      "valor": 85,
+      "descripcion": "Gel energético para reactores de fusión.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "turboplasma",
+      "tipo": "combustible",
+      "peso": 0.4,
+      "valor": 95,
+      "descripcion": "Plasma estabilizado para armamento.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "oxigeno liquido",
+      "tipo": "combustible",
+      "peso": 1.1,
+      "valor": 14,
+      "descripcion": "Agente oxidante criogénico.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "particulas exoticas",
+      "tipo": "combustible",
+      "peso": 0.05,
+      "valor": 120,
+      "descripcion": "Fuente de energía inestable.",
+      "rareza": "epico"
+    }
+  ],
+  "objetos_raros": [
+    {
+      "nombre": "cristal quantico",
+      "tipo": "objeto_raro",
+      "peso": 0.3,
+      "valor": 80,
+      "descripcion": "Cristal capaz de alterar la realidad.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "fragmento de meteorito",
+      "tipo": "objeto_raro",
+      "peso": 2.5,
+      "valor": 30,
+      "descripcion": "Roca espacial de origen desconocido.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "calavera cristal",
+      "tipo": "objeto_raro",
+      "peso": 1.0,
+      "valor": 70,
+      "descripcion": "Artefacto antiguo de culturas perdidas.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "reliquia antigua",
+      "tipo": "objeto_raro",
+      "peso": 1.5,
+      "valor": 60,
+      "descripcion": "Objeto venerado por civilizaciones pasadas.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "cubo misterioso",
+      "tipo": "objeto_raro",
+      "peso": 0.7,
+      "valor": 90,
+      "descripcion": "Dispositivo de función desconocida.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "ojo de gorgon",
+      "tipo": "objeto_raro",
+      "peso": 0.8,
+      "valor": 120,
+      "descripcion": "Reliquia que petrifica al contacto.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "gema de alma",
+      "tipo": "objeto_raro",
+      "peso": 0.2,
+      "valor": 150,
+      "descripcion": "Gema que contiene una esencia vital.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "pluma de fenix",
+      "tipo": "objeto_raro",
+      "peso": 0.1,
+      "valor": 110,
+      "descripcion": "Pluma que otorga resurrección.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "mapa estelar antiguo",
+      "tipo": "objeto_raro",
+      "peso": 0.5,
+      "valor": 95,
+      "descripcion": "Mapa que muestra rutas galácticas ocultas.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "huevo de dragon",
+      "tipo": "objeto_raro",
+      "peso": 5.0,
+      "valor": 200,
+      "descripcion": "Un huevo de una criatura mítica.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "arena del tiempo",
+      "tipo": "objeto_raro",
+      "peso": 0.1,
+      "valor": 130,
+      "descripcion": "Arena que manipula el flujo temporal.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "lagrima de sirena",
+      "tipo": "objeto_raro",
+      "peso": 0.05,
+      "valor": 105,
+      "descripcion": "Lágrima que cura cualquier enfermedad.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "corazon de estrella",
+      "tipo": "objeto_raro",
+      "peso": 3.0,
+      "valor": 180,
+      "descripcion": "Núcleo de una estrella en miniatura.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "espejo de los deseos",
+      "tipo": "objeto_raro",
+      "peso": 1.0,
+      "valor": 140,
+      "descripcion": "Espejo que muestra los deseos más profundos.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "flor eterea",
+      "tipo": "objeto_raro",
+      "peso": 0.02,
+      "valor": 160,
+      "descripcion": "Una flor que solo crece en dimensiones alternativas.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "reliquia galactica",
+      "tipo": "objeto_raro",
+      "peso": 1.0,
+      "valor": 100,
+      "descripcion": "Tesoro ancestral de civilizaciones estelares.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "anillo cosmico",
+      "tipo": "objeto_raro",
+      "peso": 0.1,
+      "valor": 130,
+      "descripcion": "Joya que refleja las estrellas.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "piedra de la eternidad",
+      "tipo": "objeto_raro",
+      "peso": 0.5,
+      "valor": 150,
+      "descripcion": "Roca que detiene el envejecimiento.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "cuerno de unicornio",
+      "tipo": "objeto_raro",
+      "peso": 0.7,
+      "valor": 140,
+      "descripcion": "Símbolo de pureza y poder curativo.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "hoja fantasma",
+      "tipo": "objeto_raro",
+      "peso": 0.3,
+      "valor": 120,
+      "descripcion": "Arma etérea que atraviesa la materia.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "fragmento del vacio",
+      "tipo": "objeto_raro",
+      "peso": 0.2,
+      "valor": 160,
+      "descripcion": "Trozo de oscuridad absoluta.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "mascara perdida",
+      "tipo": "objeto_raro",
+      "peso": 1.2,
+      "valor": 90,
+      "descripcion": "Máscara ritual con poderes ocultos.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "orbe del caos",
+      "tipo": "objeto_raro",
+      "peso": 0.6,
+      "valor": 155,
+      "descripcion": "Esfera impredecible de energía.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "llave dimensional",
+      "tipo": "objeto_raro",
+      "peso": 0.3,
+      "valor": 110,
+      "descripcion": "Abre portales a lugares extraños.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "cristal armonico",
+      "tipo": "objeto_raro",
+      "peso": 0.4,
+      "valor": 115,
+      "descripcion": "Resuena con melodías del universo.",
+      "rareza": "raro"
+    }
+  ],
+  "artefactos": [
+    {
+      "nombre": "amuleto de poder",
+      "tipo": "artefacto",
+      "peso": 0.2,
+      "valor": 40,
+      "descripcion": "Se dice que otorga fuerza a su portador.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "antiguo chip",
+      "tipo": "artefacto",
+      "peso": 0.1,
+      "valor": 50,
+      "descripcion": "Tecnología olvidada.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "esfera luminosa",
+      "tipo": "artefacto",
+      "peso": 0.4,
+      "valor": 55,
+      "descripcion": "Esfera que emite luz inagotable.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "libro prohibido",
+      "tipo": "artefacto",
+      "peso": 1.0,
+      "valor": 75,
+      "descripcion": "Contiene conocimientos peligrosos.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "estatua alienigena",
+      "tipo": "artefacto",
+      "peso": 3.0,
+      "valor": 45,
+      "descripcion": "Representación de un dios extraterrestre.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "disco de navegacion",
+      "tipo": "artefacto",
+      "peso": 0.6,
+      "valor": 65,
+      "descripcion": "Dispositivo para trazar rutas espaciales.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "generador de escudo",
+      "tipo": "artefacto",
+      "peso": 2.0,
+      "valor": 85,
+      "descripcion": "Crea un campo de fuerza protector.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "traductor universal",
+      "tipo": "artefacto",
+      "peso": 0.3,
+      "valor": 70,
+      "descripcion": "Permite entender cualquier idioma.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "globo terraqueo holografico",
+      "tipo": "artefacto",
+      "peso": 1.2,
+      "valor": 90,
+      "descripcion": "Proyecta mapas interactivos del universo.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "reloj de bolsillo temporal",
+      "tipo": "artefacto",
+      "peso": 0.1,
+      "valor": 100,
+      "descripcion": "Permite breves saltos en el tiempo.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "anillo de levitacion",
+      "tipo": "artefacto",
+      "peso": 0.05,
+      "valor": 80,
+      "descripcion": "Anillo que permite al portador flotar.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "matriz de teletransporte",
+      "tipo": "artefacto",
+      "peso": 4.0,
+      "valor": 120,
+      "descripcion": "Dispositivo para reubicación instantánea.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "modulador de voz",
+      "tipo": "artefacto",
+      "peso": 0.2,
+      "valor": 35,
+      "descripcion": "Cambia la voz del usuario.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "brazalete de fuerza",
+      "tipo": "artefacto",
+      "peso": 0.7,
+      "valor": 60,
+      "descripcion": "Aumenta la fuerza física del portador.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "proyector de camuflaje",
+      "tipo": "artefacto",
+      "peso": 1.5,
+      "valor": 95,
+      "descripcion": "Genera un campo de invisibilidad.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "simbolo ancestral",
+      "tipo": "artefacto",
+      "peso": 0.3,
+      "valor": 50,
+      "descripcion": "Representa la sabiduría de los ancestros.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "estatuilla sagrada",
+      "tipo": "artefacto",
+      "peso": 1.4,
+      "valor": 70,
+      "descripcion": "Figurilla venerada por culturas remotas.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "medallon estelar",
+      "tipo": "artefacto",
+      "peso": 0.2,
+      "valor": 90,
+      "descripcion": "Vincula a su portador con las constelaciones.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "reloj infinito",
+      "tipo": "artefacto",
+      "peso": 0.6,
+      "valor": 130,
+      "descripcion": "Marca el tiempo de universos paralelos.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "tomo arcano",
+      "tipo": "artefacto",
+      "peso": 1.1,
+      "valor": 95,
+      "descripcion": "Libro lleno de hechizos olvidados.",
+      "rareza": "raro"
+    }
+  ],
+  "armas": [
+    {
+      "nombre": "pistola laser",
+      "tipo": "arma",
+      "peso": 1.2,
+      "valor": 35,
+      "descripcion": "Arma de mano que dispara pulsos de energía.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "rifle de plasma",
+      "tipo": "arma",
+      "peso": 3.0,
+      "valor": 60,
+      "descripcion": "Dispara proyectiles supercalientes.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "cañon gauss",
+      "tipo": "arma",
+      "peso": 5.0,
+      "valor": 80,
+      "descripcion": "Lanza proyectiles a gran velocidad.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "espada de energia",
+      "tipo": "arma",
+      "peso": 2.5,
+      "valor": 50,
+      "descripcion": "Hoja de energía pura.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "granada",
+      "tipo": "arma",
+      "peso": 0.5,
+      "valor": 15,
+      "descripcion": "Explosivo portátil de un solo uso.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "arco de energia",
+      "tipo": "arma",
+      "peso": 1.5,
+      "valor": 45,
+      "descripcion": "Arco que dispara flechas de energía.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "lanzallamas",
+      "tipo": "arma",
+      "peso": 4.0,
+      "valor": 55,
+      "descripcion": "Arroja un chorro de fuego.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "mina de proximidad",
+      "tipo": "arma",
+      "peso": 0.8,
+      "valor": 20,
+      "descripcion": "Explosivo que detona al acercarse al objetivo.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "cuchillo de combate",
+      "tipo": "arma",
+      "peso": 0.7,
+      "valor": 10,
+      "descripcion": "Arma blanca básica.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "lanzamisiles",
+      "tipo": "arma",
+      "peso": 8.0,
+      "valor": 150,
+      "descripcion": "Arma pesada que dispara misiles explosivos.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "blaster sónico",
+      "tipo": "arma",
+      "peso": 1.0,
+      "valor": 40,
+      "descripcion": "Arma que aturde con ondas de sonido.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "escopeta de iones",
+      "tipo": "arma",
+      "peso": 3.5,
+      "valor": 70,
+      "descripcion": "Dispara una ráfaga de iones paralizantes.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "flagelador de partículas",
+      "tipo": "arma",
+      "peso": 6.0,
+      "valor": 110,
+      "descripcion": "Arma devastadora que desintegra molecularmente.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "hacha de batalla",
+      "tipo": "arma",
+      "peso": 2.8,
+      "valor": 25,
+      "descripcion": "Hacha pesada para combate cuerpo a cuerpo.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "cerbatana toxica",
+      "tipo": "arma",
+      "peso": 0.4,
+      "valor": 12,
+      "descripcion": "Dispara dardos con veneno paralizante.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "laser de rafaga",
+      "tipo": "arma",
+      "peso": 4.0,
+      "valor": 70,
+      "descripcion": "Haz continuo de alta energia de tres segundos.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "mina temporizada",
+      "tipo": "arma",
+      "peso": 1.0,
+      "valor": 20,
+      "descripcion": "Explosivo que detona tras unos segundos.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "dron asistente",
+      "tipo": "arma",
+      "peso": 2.0,
+      "valor": 120,
+      "descripcion": "Pequena nave que orbita y dispara.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "misil hiperguiado",
+      "tipo": "arma",
+      "peso": 3.5,
+      "valor": 90,
+      "descripcion": "Proyectil pesado con guiado extremo.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "arma generica",
+      "tipo": "arma",
+      "peso": 1.0,
+      "valor": 20,
+      "descripcion": "Arma básica de poco poder.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "arco gravitatorio",
+      "tipo": "arma",
+      "peso": 1.3,
+      "valor": 60,
+      "descripcion": "Arco que utiliza la gravedad para lanzar proyectiles.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "pistola electrica",
+      "tipo": "arma",
+      "peso": 1.1,
+      "valor": 25,
+      "descripcion": "Arma que descarga electricidad paralizante.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "martillo de choque",
+      "tipo": "arma",
+      "peso": 3.0,
+      "valor": 50,
+      "descripcion": "Arma pesada que libera pulsos eléctricos.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "rifle antimateria",
+      "tipo": "arma",
+      "peso": 4.5,
+      "valor": 140,
+      "descripcion": "Desintegra a los enemigos con antimateria.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "shuriken de plasma",
+      "tipo": "arma",
+      "peso": 0.2,
+      "valor": 35,
+      "descripcion": "Arrojadizas de energía concentrada.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "lanzador de redes",
+      "tipo": "arma",
+      "peso": 2.2,
+      "valor": 30,
+      "descripcion": "Dispara redes para capturar objetivos.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "cañon de gravitones",
+      "tipo": "arma",
+      "peso": 6.0,
+      "valor": 120,
+      "descripcion": "Manipula la gravedad para aplastar.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "sable magnetico",
+      "tipo": "arma",
+      "peso": 2.0,
+      "valor": 55,
+      "descripcion": "Espada que se extiende con magnetismo.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "baston psiquico",
+      "tipo": "arma",
+      "peso": 1.5,
+      "valor": 85,
+      "descripcion": "Canaliza energía mental en ataques.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "daga espectral",
+      "tipo": "arma",
+      "peso": 0.3,
+      "valor": 45,
+      "descripcion": "Arma ligera que penetra armaduras.",
+      "rareza": "poco_comun"
+    }
+  ],
+  "herramientas": [
+    {
+      "nombre": "martillo",
+      "tipo": "herramienta",
+      "peso": 1.0,
+      "valor": 10,
+      "descripcion": "Básico para construcción.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "destornillador",
+      "tipo": "herramienta",
+      "peso": 0.3,
+      "valor": 5,
+      "descripcion": "Para tornillos y ajustes.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "taladro",
+      "tipo": "herramienta",
+      "peso": 2.0,
+      "valor": 25,
+      "descripcion": "Perfora casi cualquier superficie.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "cortador laser",
+      "tipo": "herramienta",
+      "peso": 1.8,
+      "valor": 45,
+      "descripcion": "Herramienta de corte de alta precisión.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "kit de reparaciones",
+      "tipo": "herramienta",
+      "peso": 3.0,
+      "valor": 30,
+      "descripcion": "Conjunto para arreglos rápidos.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "llave inglesa",
+      "tipo": "herramienta",
+      "peso": 0.8,
+      "valor": 8,
+      "descripcion": "Para ajustar tuercas y pernos.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "soldador",
+      "tipo": "herramienta",
+      "peso": 1.5,
+      "valor": 20,
+      "descripcion": "Para unir metales.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "escáner de minerales",
+      "tipo": "herramienta",
+      "peso": 0.6,
+      "valor": 50,
+      "descripcion": "Detecta depósitos de minerales cercanos.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "analizador de datos",
+      "tipo": "herramienta",
+      "peso": 0.4,
+      "valor": 35,
+      "descripcion": "Decodifica información compleja.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "cable de anclaje",
+      "tipo": "herramienta",
+      "peso": 2.5,
+      "valor": 18,
+      "descripcion": "Permite asegurar objetos pesados.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "multipico",
+      "tipo": "herramienta",
+      "peso": 1.2,
+      "valor": 28,
+      "descripcion": "Herramienta versátil para minería y excavación.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "bateria portatil",
+      "tipo": "herramienta",
+      "peso": 1.0,
+      "valor": 15,
+      "descripcion": "Fuente de energía para dispositivos.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "botiquin de primeros auxilios",
+      "tipo": "herramienta",
+      "peso": 0.9,
+      "valor": 22,
+      "descripcion": "Contiene vendajes y medicinas básicas.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "dispensador de agua",
+      "tipo": "herramienta",
+      "peso": 0.5,
+      "valor": 10,
+      "descripcion": "Provee agua potable purificada.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "comunicador interestelar",
+      "tipo": "herramienta",
+      "peso": 0.7,
+      "valor": 60,
+      "descripcion": "Permite la comunicación a través de grandes distancias.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "impresora 3d",
+      "tipo": "herramienta",
+      "peso": 1.5,
+      "valor": 75,
+      "descripcion": "Crea objetos a partir de planos digitales.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "nanoensamblador",
+      "tipo": "herramienta",
+      "peso": 2.0,
+      "valor": 90,
+      "descripcion": "Construye estructuras a nivel molecular.",
+      "rareza": "epico"
+    },
+    {
+      "nombre": "pico laser",
+      "tipo": "herramienta",
+      "peso": 1.3,
+      "valor": 40,
+      "descripcion": "Excava usando un rayo concentrado.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "maletin medico avanzado",
+      "tipo": "herramienta",
+      "peso": 1.0,
+      "valor": 55,
+      "descripcion": "Contiene equipo de emergencia de alta tecnología.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "sensor climatico",
+      "tipo": "herramienta",
+      "peso": 0.5,
+      "valor": 20,
+      "descripcion": "Predice cambios atmosféricos.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "torno portatil",
+      "tipo": "herramienta",
+      "peso": 2.2,
+      "valor": 32,
+      "descripcion": "Herramienta para dar forma a piezas.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "gafas de vision termica",
+      "tipo": "herramienta",
+      "peso": 0.2,
+      "valor": 30,
+      "descripcion": "Permiten ver fuentes de calor.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "guantes de fuerza",
+      "tipo": "herramienta",
+      "peso": 0.8,
+      "valor": 45,
+      "descripcion": "Multiplican la fuerza de las manos.",
+      "rareza": "raro"
+    }
+  ],
+  "piezas_nave": [
+    {
+      "nombre": "motor basico",
+      "tipo": "pieza_nave",
+      "peso": 5.0,
+      "valor": 50,
+      "descripcion": "Motor espacial de bajo rendimiento.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "motor avanzado",
+      "tipo": "pieza_nave",
+      "peso": 6.0,
+      "valor": 120,
+      "descripcion": "Motor eficiente de alta potencia.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "casco ligero",
+      "tipo": "pieza_nave",
+      "peso": 4.0,
+      "valor": 40,
+      "descripcion": "Estructura externa simple.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "casco reforzado",
+      "tipo": "pieza_nave",
+      "peso": 5.5,
+      "valor": 90,
+      "descripcion": "Blindaje mejorado para mayor resistencia.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "cabina estandar",
+      "tipo": "pieza_nave",
+      "peso": 3.0,
+      "valor": 60,
+      "descripcion": "Modulo básico para la tripulación.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "cabina de lujo",
+      "tipo": "pieza_nave",
+      "peso": 3.5,
+      "valor": 150,
+      "descripcion": "Espaciosa y confortable para largas travesías.",
+      "rareza": "raro"
+    }
+  ],
+  "vehiculos": [
+    {
+      "nombre": "boat",
+      "tipo": "vehiculo",
+      "peso": 8.0,
+      "valor": 20,
+      "descripcion": "Pequeña embarcación algo quemada pero útil.",
+      "rareza": "comun"
+    },
+    {
+      "nombre": "buggy lunar",
+      "tipo": "vehiculo",
+      "peso": 6.0,
+      "valor": 250,
+      "descripcion": "Vehículo para explorar superficies lunares.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "moto antigravitatoria",
+      "tipo": "vehiculo",
+      "peso": 3.5,
+      "valor": 320,
+      "descripcion": "Moto que flota sin ruedas.",
+      "rareza": "raro"
+    },
+    {
+      "nombre": "submarino ligero",
+      "tipo": "vehiculo",
+      "peso": 10.0,
+      "valor": 300,
+      "descripcion": "Submarino para exploraciones oceánicas.",
+      "rareza": "raro"
+    }
+  ]
+}
