@@ -168,4 +168,9 @@ STAR_TURRET_PROJECTILE_MAX_DISTANCE = PROJECTILE_MAX_DISTANCE * 0.5
 # Space station economy settings
 STATION_RESTOCK_TIME = 60.0
 STATION_PRICE_FLUCT = 0.05
+# Prices are updated roughly once per second
+STATION_PRICE_UPDATE_PERIOD = 1.0
+# Clamp how far prices may deviate from the base item value
+STATION_MIN_PRICE_MULT = 0.5
+STATION_MAX_PRICE_MULT = 1.5
 

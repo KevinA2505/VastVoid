@@ -46,6 +46,7 @@ class SpaceStation:
         # Each entry maps item name -> {"stock": int, "price": int}
         self.market: dict[str, dict[str, int]] = {}
         self._restock_timer = 0.0
+        self._price_timer = 0.0
         self._populate_market()
 
     def _populate_market(self) -> None:
@@ -133,13 +134,14 @@ class SpaceStation:
         import config
 
         self._restock_timer += dt
+        self._price_timer += dt
         if self._restock_timer >= config.STATION_RESTOCK_TIME:
             self._restock_timer = 0.0
             self._restock()
 
-        for data in self.market.values():
-            fluct = random.uniform(1 - config.STATION_PRICE_FLUCT, 1 + config.STATION_PRICE_FLUCT)
-            data["price"] = max(1, int(data["price"] * fluct))
+        if self._price_timer >= config.STATION_PRICE_UPDATE_PERIOD:
+            self._price_timer = 0.0
+            self._update_prices()
 
     def _restock(self) -> None:
         """Increase stock of existing items and occasionally add new ones."""
@@ -155,6 +157,22 @@ class SpaceStation:
                     "stock": random.randint(1, 5),
                     "price": int(item.valor * random.uniform(0.8, 1.2)),
                 }
+
+    def _update_prices(self) -> None:
+        """Apply periodic price fluctuations with clamping."""
+        import config
+
+        for name, data in self.market.items():
+            base = ITEMS_BY_NAME[name].valor
+            fluct = random.uniform(
+                1 - config.STATION_PRICE_FLUCT,
+                1 + config.STATION_PRICE_FLUCT,
+            )
+            new_price = data["price"] * fluct
+            min_price = base * config.STATION_MIN_PRICE_MULT
+            max_price = base * config.STATION_MAX_PRICE_MULT
+            new_price = max(min_price, min(max_price, new_price))
+            data["price"] = max(1, int(new_price))
 
     def has_free_hangar(self) -> bool:
         return any(not h.occupied for h in self.hangars)
