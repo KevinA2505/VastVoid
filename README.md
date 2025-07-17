@@ -76,6 +76,12 @@ devices convert basic ores into refined components such as *lingote de hierro*
 and *placa de titanio*. Refining consumes the raw materials from your inventory
 and produces the improved goods.
 
+### Crafting
+All weapons and artifacts must be built from refined components rather than
+raw ores. The full list of crafting recipes lives in
+`data/crafting_recipes.json` and you can check them in-game by opening your
+inventory (**I** by default) and clicking the **Craft** button.
+
 ## Character creation
 
 When starting the game you can personalise the player by entering a name,
