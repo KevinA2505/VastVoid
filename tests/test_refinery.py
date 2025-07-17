@@ -22,7 +22,7 @@ def test_refine_success():
     assert player.refine_item(recipe)
     for inp, out in recipe.mapping.items():
         assert player.inventory[inp] == 0
-        assert player.inventory[out] == 1
+        assert player.inventory[out] == recipe.quantity
 
 
 def test_refine_missing():
