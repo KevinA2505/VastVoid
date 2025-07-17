@@ -79,3 +79,6 @@ def test_refinery_locked_until_research_completed():
 
     # After completing the research, the helper should work
     assert refine_item(player, recipe)
+    for inp, out in recipe.mapping.items():
+        assert player.inventory[inp] == 0
+        assert player.inventory[out] == recipe.quantity

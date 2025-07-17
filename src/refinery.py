@@ -13,6 +13,7 @@ class RefineryRecipe:
     mapping: Dict[str, str]
     time: float = 0.0
     energy: float = 0.0
+    quantity: int = 1
 
     def validate(self) -> None:
         for inp, out in self.mapping.items():
@@ -35,6 +36,7 @@ def _load_recipes() -> List[RefineryRecipe]:
             {k: v for k, v in entry["mapping"].items()},
             entry.get("time", 0.0),
             entry.get("energy", 0.0),
+            entry.get("quantity", 1),
         )
         recipe.validate()
         recipes.append(recipe)
@@ -64,5 +66,5 @@ def refine_item(player: "Player", recipe: RefineryRecipe) -> bool:
         return False
     for inp, out in recipe.mapping.items():
         player.remove_item(inp)
-        player.add_item(out)
+        player.add_item(out, recipe.quantity)
     return True

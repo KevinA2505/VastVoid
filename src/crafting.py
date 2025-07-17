@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Set
 import json
 
 from items import ITEMS_BY_NAME
@@ -14,6 +14,8 @@ class Recipe:
     ingredients: Dict[str, int]
     time: float = 0.0
     energy: float = 0.0
+    quantity: int = 1
+    research: str | None = None
 
     def validate(self) -> None:
         if self.result not in ITEMS_BY_NAME:
@@ -37,6 +39,8 @@ def _load_recipes() -> List[Recipe]:
             {k: int(v) for k, v in entry["ingredients"].items()},
             entry.get("time", 0.0),
             entry.get("energy", 0.0),
+            entry.get("quantity", 1),
+            entry.get("research"),
         )
         recipe.validate()
         recipes.append(recipe)
@@ -46,6 +50,12 @@ def _load_recipes() -> List[Recipe]:
 RECIPES: List[Recipe] = _load_recipes()
 
 
-def can_craft(inventory: Dict[str, int], recipe: Recipe) -> bool:
-    """Return ``True`` if ``inventory`` has enough ingredients for ``recipe``."""
+def can_craft(
+    inventory: Dict[str, int], recipe: Recipe, features: Set[str] | None = None
+) -> bool:
+    """Return ``True`` if the requirements for ``recipe`` are met."""
+
+    if recipe.research and (not features or recipe.research not in features):
+        return False
+
     return all(inventory.get(name, 0) >= qty for name, qty in recipe.ingredients.items())

@@ -63,11 +63,11 @@ class Player:
         """Craft ``recipe.result`` consuming its ingredients if available."""
         from crafting import can_craft
 
-        if not can_craft(self.inventory, recipe):
+        if not can_craft(self.inventory, recipe, self.features):
             return False
         for name, qty in recipe.ingredients.items():
             self.remove_item(name, qty)
-        self.add_item(recipe.result, 1)
+        self.add_item(recipe.result, recipe.quantity)
         return True
 
     def refine_item(self, recipe: "RefineryRecipe") -> bool:

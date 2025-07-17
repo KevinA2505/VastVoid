@@ -6,7 +6,9 @@
       "combustible ionico": 2
     },
     "time": 0,
-    "energy": 0
+    "energy": 0,
+    "quantity": 2,
+    "research": "Laser Cannons"
   },
   {
     "result": "lanzallamas",
@@ -15,7 +17,9 @@
       "combustible de fusion": 1
     },
     "time": 0,
-    "energy": 0
+    "energy": 0,
+    "quantity": 1,
+    "research": null
   },
   {
     "result": "moto antigravitatoria",
@@ -25,7 +29,9 @@
       "pico laser": 1
     },
     "time": 0,
-    "energy": 0
+    "energy": 0,
+    "quantity": 1,
+    "research": null
   },
   {
     "result": "generador de escudo",
@@ -34,6 +40,8 @@
       "cortador laser": 1
     },
     "time": 0,
-    "energy": 0
+    "energy": 0,
+    "quantity": 1,
+    "research": "Energy Shields"
   }
 ]
