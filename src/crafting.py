@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, List, Set
 import json
 
-from items import ITEMS_BY_NAME
+from items import ITEMS_BY_NAME, ItemType
 
 
 @dataclass
@@ -20,9 +20,19 @@ class Recipe:
     def validate(self) -> None:
         if self.result not in ITEMS_BY_NAME:
             raise ValueError(f"Unknown result item: {self.result}")
+
+        result_type = ITEMS_BY_NAME[self.result].tipo
+
         for name in self.ingredients:
             if name not in ITEMS_BY_NAME:
                 raise ValueError(f"Unknown ingredient: {name}")
+            if (
+                result_type in (ItemType.ARMA, ItemType.ARTEFACTO)
+                and ITEMS_BY_NAME[name].tipo is ItemType.MATERIA_PRIMA
+            ):
+                raise ValueError(
+                    "Recipes for armas or artefactos cannot use materia prima"
+                )
 
 
 DATA_FILE = Path(__file__).resolve().parents[1] / "data" / "crafting_recipes.json"
