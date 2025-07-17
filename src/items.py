@@ -14,12 +14,25 @@ class Rarity(Enum):
     EPICO = "epico"
 
 
+class ItemType(Enum):
+    """Categories for items."""
+
+    MATERIA_PRIMA = "materia_prima"
+    COMBUSTIBLE = "combustible"
+    OBJETO_RARO = "objeto_raro"
+    ARTEFACTO = "artefacto"
+    ARMA = "arma"
+    HERRAMIENTA = "herramienta"
+    PIEZA_NAVE = "pieza_nave"
+    VEHICULO = "vehiculo"
+
+
 @dataclass
 class Item:
     """Small container for item data."""
 
     nombre: str
-    tipo: str
+    tipo: ItemType
     peso: float
     valor: int
     descripcion: str
@@ -40,7 +53,7 @@ def _load_items() -> Dict[str, List[Item]]:
             group.append(
                 Item(
                     itm["nombre"],
-                    itm["tipo"],
+                    ItemType(itm["tipo"]),
                     itm["peso"],
                     itm["valor"],
                     itm["descripcion"],
