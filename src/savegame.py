@@ -5,6 +5,7 @@ from typing import List
 from character import Player, Human, Alien, Robot
 from fraction import FRACTIONS
 from items import ITEMS_BY_NAME
+from inventory import Inventory
 from ship import SHIP_MODELS, ShipModel, Ship
 from station import SpaceStation
 from tech_tree import ResearchManager, TECH_TREE
@@ -93,7 +94,7 @@ def save_player(player: Player) -> None:
         "age": player.age,
         "species": player.species.species,
         "fraction": player.fraction.name,
-        "inventory": player.inventory,
+        "inventory": player.inventory.to_dict(),
         "credits": player.credits,
         "ship_model": _model_to_dict(player.ship_model),
         "research": _research_to_dict(getattr(player, "research", None)),
@@ -122,7 +123,7 @@ def load_player(name: str) -> Player:
     )
     inv = {name: 0 for name in ITEMS_BY_NAME}
     inv.update(data.get("inventory", {}))
-    player.inventory = inv
+    player.inventory = Inventory(inv)
 
     # Rebuild feature flags from completed research
     for tech_id in player.research.completed:
@@ -171,7 +172,7 @@ def ensure_admin_profile() -> None:
     )
 
     for item in ITEMS_BY_NAME:
-        player.inventory[item] = 1
+        player.inventory.add(item, 1)
 
     for node in TECH_TREE.values():
         player.features.update(node.unlocked_features)

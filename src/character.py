@@ -3,6 +3,7 @@ import config
 from fraction import FRACTIONS, Fraction
 from items import ITEMS_BY_NAME
 from tech_tree import ResearchManager, TECH_TREE
+from inventory import Inventory
 
 class Alien:
     """Basic Alien species."""
@@ -39,7 +40,7 @@ class Player:
         self.ship_model = ship_model
         self.credits = credits
         # Inventory starts empty but contains an entry for each known item
-        self.inventory: dict[str, int] = {name: 0 for name in ITEMS_BY_NAME}
+        self.inventory: Inventory = Inventory()
         # Research manager to track tech progress
         self.research: ResearchManager = research or ResearchManager()
         # Feature flags unlocked through research
@@ -48,16 +49,12 @@ class Player:
         self.fleet: list = []
 
     def add_item(self, item: str, quantity: int = 1) -> None:
-        """Add `quantity` of `item` to the inventory."""
-        if item not in self.inventory:
-            self.inventory[item] = 0
-        self.inventory[item] += quantity
+        """Add ``quantity`` of ``item`` to the inventory."""
+        self.inventory.add(item, quantity)
 
     def remove_item(self, item: str, quantity: int = 1) -> None:
-        """Remove up to `quantity` of `item` from the inventory."""
-        if item not in self.inventory:
-            return
-        self.inventory[item] = max(0, self.inventory[item] - quantity)
+        """Remove up to ``quantity`` of ``item`` from the inventory."""
+        self.inventory.remove(item, quantity)
 
     def craft_item(self, recipe: "Recipe") -> bool:
         """Craft ``recipe.result`` consuming its ingredients if available."""
