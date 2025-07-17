@@ -24,7 +24,7 @@ class DummyFont:
 def test_market_text(monkeypatch):
     player = Player("Test", 20, Human(), FRACTIONS[0])
     player.inventory.clear()
-    player.inventory["hierro"] = 2
+    player.inventory.add("hierro", 2)
     station = SpaceStation(0, 0)
     station.market = {"hierro": {"stock": 3, "price": 6}}
     market = MarketWindow(station, player)
