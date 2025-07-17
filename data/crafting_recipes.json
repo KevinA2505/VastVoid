@@ -43,5 +43,522 @@
     "energy": 0,
     "quantity": 1,
     "research": "Energy Shields"
+  },
+  {
+    "result": "pistola laser",
+    "ingredients": {
+      "baston psiquico": 1,
+      "escáner de minerales": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "cañon gauss",
+    "ingredients": {
+      "cristal de energia": 1,
+      "estatuilla sagrada": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "espada de energia",
+    "ingredients": {
+      "buggy lunar": 1,
+      "motor avanzado": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "granada",
+    "ingredients": {
+      "cortador laser": 1,
+      "mina de proximidad": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "arco de energia",
+    "ingredients": {
+      "guantes de fuerza": 1,
+      "pistola electrica": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "mina de proximidad",
+    "ingredients": {
+      "disco de navegacion": 1,
+      "boat": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "cuchillo de combate",
+    "ingredients": {
+      "arena del tiempo": 1,
+      "cañon gauss": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "lanzamisiles",
+    "ingredients": {
+      "arena del tiempo": 1,
+      "particulas exoticas": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "blaster sónico",
+    "ingredients": {
+      "proyector de camuflaje": 1,
+      "corazon de estrella": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "escopeta de iones",
+    "ingredients": {
+      "lanzamisiles": 1,
+      "cristal quantico": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "flagelador de partículas",
+    "ingredients": {
+      "aceite vegetal": 1,
+      "cerbatana toxica": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "hacha de batalla",
+    "ingredients": {
+      "torno portatil": 1,
+      "cristal quantico": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "cerbatana toxica",
+    "ingredients": {
+      "arco gravitatorio": 1,
+      "bateria portatil": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "laser de rafaga",
+    "ingredients": {
+      "blaster sónico": 1,
+      "esfera luminosa": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "mina temporizada",
+    "ingredients": {
+      "guantes de fuerza": 1,
+      "dispensador de agua": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "dron asistente",
+    "ingredients": {
+      "estatuilla sagrada": 1,
+      "hidrazina": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "misil hiperguiado",
+    "ingredients": {
+      "antimateria": 1,
+      "oxigeno liquido": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "arma generica",
+    "ingredients": {
+      "taladro": 1,
+      "gasolina": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "arco gravitatorio",
+    "ingredients": {
+      "casco reforzado": 1,
+      "laser de rafaga": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "pistola electrica",
+    "ingredients": {
+      "modulador de voz": 1,
+      "hacha de batalla": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "martillo de choque",
+    "ingredients": {
+      "etanol": 1,
+      "llave dimensional": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "rifle antimateria",
+    "ingredients": {
+      "generador de escudo": 1,
+      "matriz de teletransporte": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "shuriken de plasma",
+    "ingredients": {
+      "lagrima de sirena": 1,
+      "comunicador interestelar": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "lanzador de redes",
+    "ingredients": {
+      "oxigeno liquido": 1,
+      "nitrometano": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "cañon de gravitones",
+    "ingredients": {
+      "escopeta de iones": 1,
+      "buggy lunar": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "sable magnetico",
+    "ingredients": {
+      "casco ligero": 1,
+      "calavera cristal": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "baston psiquico",
+    "ingredients": {
+      "mina de proximidad": 1,
+      "granada": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "daga espectral",
+    "ingredients": {
+      "gema de alma": 1,
+      "laser de rafaga": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "amuleto de poder",
+    "ingredients": {
+      "esfera luminosa": 1,
+      "espada de energia": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "antiguo chip",
+    "ingredients": {
+      "dispensador de agua": 1,
+      "oxigeno liquido": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "esfera luminosa",
+    "ingredients": {
+      "baston psiquico": 1,
+      "escopeta de iones": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "libro prohibido",
+    "ingredients": {
+      "matriz de teletransporte": 1,
+      "granada": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "estatua alienigena",
+    "ingredients": {
+      "orbe del caos": 1,
+      "llave dimensional": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "disco de navegacion",
+    "ingredients": {
+      "orbe del caos": 1,
+      "biocombustible": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "traductor universal",
+    "ingredients": {
+      "estatuilla sagrada": 1,
+      "gafas de vision termica": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "globo terraqueo holografico",
+    "ingredients": {
+      "cristal energizado": 1,
+      "turboplasma": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "reloj de bolsillo temporal",
+    "ingredients": {
+      "mapa estelar antiguo": 1,
+      "espejo de los deseos": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "anillo de levitacion",
+    "ingredients": {
+      "metano": 1,
+      "nitrometano": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "matriz de teletransporte",
+    "ingredients": {
+      "martillo": 1,
+      "pistola laser": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "modulador de voz",
+    "ingredients": {
+      "anillo de levitacion": 1,
+      "disco de navegacion": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "brazalete de fuerza",
+    "ingredients": {
+      "escáner de minerales": 1,
+      "pistola laser": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "proyector de camuflaje",
+    "ingredients": {
+      "impresora 3d": 1,
+      "casco reforzado": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "simbolo ancestral",
+    "ingredients": {
+      "pistola electrica": 1,
+      "fusion gel": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "estatuilla sagrada",
+    "ingredients": {
+      "hacha de batalla": 1,
+      "cubo misterioso": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "medallon estelar",
+    "ingredients": {
+      "motor avanzado": 1,
+      "laser de rafaga": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "reloj infinito",
+    "ingredients": {
+      "llave dimensional": 1,
+      "modulador de voz": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
+  },
+  {
+    "result": "tomo arcano",
+    "ingredients": {
+      "deuterio": 1,
+      "cubo misterioso": 1
+    },
+    "time": 0,
+    "energy": 0,
+    "quantity": 1,
+    "research": null
   }
 ]
