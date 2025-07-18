@@ -13,10 +13,10 @@ SHIP_FRICTION = 0.96  # velocity retained each frame
 # Bounce velocity multiplier when colliding with objects
 BOUNCE_FACTOR = 1.0
 # Maximum travel speed for manual control
-SHIP_MAX_SPEED = 100
+SHIP_MAX_SPEED = 80  # reduced by 20% for slower travel
 # Slightly slower autopilot speed to keep movement moderate
-AUTOPILOT_SPEED = 80  # pixels per second when auto moving
-PLANET_LANDING_SPEED = 80  # slower speed when approaching a planet
+AUTOPILOT_SPEED = 64  # pixels per second when auto moving
+PLANET_LANDING_SPEED = 64  # slower speed when approaching a planet
 
 # --- Hull settings -----------------------------------------------------------
 # Maximum hull value for the player's ship
@@ -24,7 +24,7 @@ PLAYER_MAX_HULL = 120
 
 # --- Explorer/Boat movement -------------------------------------------------
 # Reduced 25% from previous value to slow down on-foot movement
-EXPLORER_SPEED = 112  # base walking speed on a planet surface
+EXPLORER_SPEED = 95  # 15% slower walking speed on a planet surface
 BOAT_SPEED_LAND = 60  # slow boat speed when on land
 BOAT_SPEED_WATER = 200  # slightly faster than walking when on water
 
