@@ -180,8 +180,9 @@ class PlanetSurface:
 
     def _draw_tree(self, x: int, y: int, r: int) -> None:
         """Draw a tree made of a small trunk and a round canopy."""
-        # Trees are scaled up slightly for a denser look
-        r = int(r * 1.38 * 1.15 * 1.2)
+        # Trees are scaled up slightly for a denser look and then increased by
+        # an additional 10% as requested
+        r = int(r * 1.38 * 1.15 * 1.2 * 1.10)
         canopy_color = (20, 70, 20)
         trunk_color = (80, 50, 20)
         trunk_width = max(2, r // 2)
@@ -193,8 +194,12 @@ class PlanetSurface:
             trunk_height,
         )
         pygame.draw.rect(self.surface, trunk_color, trunk_rect)
-        # Add collision only for the trunk so canopies don't block movement
-        pygame.draw.rect(self.collision_surface, (255, 255, 255), trunk_rect)
+        # Add collision only for the lower half of the trunk so canopies do not
+        # block movement and only the bottom portion collides
+        collision_rect = trunk_rect.copy()
+        collision_rect.height //= 2
+        collision_rect.top += trunk_height // 2
+        pygame.draw.rect(self.collision_surface, (255, 255, 255), collision_rect)
         pygame.draw.circle(self.surface, canopy_color, (x, y), r)
 
     def _draw_river(self) -> None:
@@ -226,6 +231,7 @@ class PlanetSurface:
             self.collision_surface, (255, 255, 255), False, points, width
         )
         self.rivers.append((points, width))
+        self._plant_trees_along_river(points, width)
 
     def _draw_river_in_area(self, rect: pygame.Rect) -> None:
         """Draw a short river that flows through the given rectangle."""
@@ -248,6 +254,7 @@ class PlanetSurface:
             self.collision_surface, (255, 255, 255), False, points, width
         )
         self.rivers.append((points, width))
+        self._plant_trees_along_river(points, width)
 
     def _distance_to_segment(
         self, x: float, y: float, p1: tuple[int, int], p2: tuple[int, int]
@@ -272,6 +279,33 @@ class PlanetSurface:
                 if self._distance_to_segment(x, y, points[i], points[i + 1]) <= half:
                     return True
         return False
+
+    def _plant_trees_along_river(self, points: list[tuple[int, int]], width: int) -> None:
+        """Plant trees along both sides of a river without covering the water."""
+        spacing = 60
+        for i in range(len(points) - 1):
+            p1 = points[i]
+            p2 = points[i + 1]
+            dx = p2[0] - p1[0]
+            dy = p2[1] - p1[1]
+            seg_len = math.hypot(dx, dy)
+            if seg_len == 0:
+                continue
+            steps = max(1, int(seg_len // spacing))
+            for _ in range(steps):
+                t = random.random()
+                px = p1[0] + dx * t
+                py = p1[1] + dy * t
+                norm_x = -dy / seg_len
+                norm_y = dx / seg_len
+                offset = width / 2 + random.randint(10, 20)
+                for side in (-1, 1):
+                    tx = px + norm_x * offset * side
+                    ty = py + norm_y * offset * side
+                    if self._point_near_river(tx, ty, 0):
+                        continue
+                    r = random.randint(3, 8)
+                    self._draw_tree(int(tx), int(ty), r)
 
     def _draw_forest(self) -> None:
         """Draw a cluster of trees to represent a forested area."""
