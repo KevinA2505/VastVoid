@@ -24,9 +24,10 @@ PLAYER_MAX_HULL = 120
 
 # --- Explorer/Boat movement -------------------------------------------------
 # Reduced 25% from previous value to slow down on-foot movement
-EXPLORER_SPEED = 95  # 15% slower walking speed on a planet surface
-BOAT_SPEED_LAND = 60  # slow boat speed when on land
-BOAT_SPEED_WATER = 200  # slightly faster than walking when on water
+# Speeds reduced by 20% for a more relaxed pace
+EXPLORER_SPEED = 76  # walking speed on a planet surface
+BOAT_SPEED_LAND = 48  # slow boat speed when on land
+BOAT_SPEED_WATER = 160  # slightly faster than walking when on water
 
 ORBIT_SPEED_FACTOR = 0.005  # base factor used to calculate orbital speed
 SHIP_ORBIT_SPEED = 1.5      # angular speed for attack orbits (radians per second)
