@@ -178,10 +178,26 @@ class PlanetSurface:
                 points,
             )
 
+    def _draw_tree(self, x: int, y: int, r: int) -> None:
+        """Draw a tree made of a small trunk and a round canopy."""
+        canopy_color = (20, 70, 20)
+        trunk_color = (80, 50, 20)
+        trunk_width = max(2, r // 2)
+        trunk_height = r * 2
+        trunk_rect = pygame.Rect(
+            x - trunk_width // 2,
+            y,
+            trunk_width,
+            trunk_height,
+        )
+        pygame.draw.rect(self.surface, trunk_color, trunk_rect)
+        pygame.draw.circle(self.surface, canopy_color, (x, y), r)
+
     def _draw_river(self) -> None:
         """Draw a wavy blue line representing a river."""
         length = random.randint(self.height // 2, self.height)
-        width = random.randint(24, 40)
+        # Rivers are drawn slightly thicker for better visibility
+        width = int(random.randint(24, 40) * 1.1)
         start_side = random.choice(["top", "bottom", "left", "right"])
         if start_side == "top":
             x, y, angle = random.randint(0, self.width), 0, math.pi / 2
@@ -242,7 +258,8 @@ class PlanetSurface:
         # overlaps. Use a slightly larger margin than the default for a more
         # natural look.
         margin = 30.0
-        for _ in range(150):
+        tree_count = 250
+        for _ in range(tree_count):
             tx = random.randint(area.left, area.right)
             ty = random.randint(area.top, area.bottom)
             # If this point is too close to a river, try a few times to find a
@@ -255,7 +272,16 @@ class PlanetSurface:
             else:
                 continue
             r = random.randint(3, 8)
-            pygame.draw.circle(self.surface, (20, 70, 20), (tx, ty), r)
+            self._draw_tree(tx, ty, r)
+
+        # Scatter some small stones throughout the forest
+        for _ in range(30):
+            sx = random.randint(area.left, area.right)
+            sy = random.randint(area.top, area.bottom)
+            if self._point_near_river(sx, sy, margin):
+                continue
+            sr = random.randint(2, 5)
+            pygame.draw.circle(self.surface, (80, 80, 80), (sx, sy), sr)
 
     def _generate_map(self) -> None:
         """Create a map using 2D noise to assign biomes."""
