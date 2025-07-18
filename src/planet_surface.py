@@ -181,7 +181,7 @@ class PlanetSurface:
     def _draw_tree(self, x: int, y: int, r: int) -> None:
         """Draw a tree made of a small trunk and a round canopy."""
         # Trees are scaled up slightly for a denser look
-        r = int(r * 1.38)
+        r = int(r * 1.38 * 1.15)
         canopy_color = (20, 70, 20)
         trunk_color = (80, 50, 20)
         trunk_width = max(2, r // 2)
@@ -201,7 +201,7 @@ class PlanetSurface:
         """Draw a wavy blue line representing a river."""
         length = random.randint(self.height // 2, self.height)
         # Rivers are drawn slightly thicker for better visibility
-        width = int(random.randint(24, 40) * 1.21)
+        width = int(random.randint(24, 40) * 1.21 * 1.1)
         start_side = random.choice(["top", "bottom", "left", "right"])
         if start_side == "top":
             x, y, angle = random.randint(0, self.width), 0, math.pi / 2
@@ -230,7 +230,7 @@ class PlanetSurface:
     def _draw_river_in_area(self, rect: pygame.Rect) -> None:
         """Draw a short river that flows through the given rectangle."""
         length = rect.height
-        width = int(random.randint(24, 40) * 1.21)
+        width = int(random.randint(24, 40) * 1.21 * 1.1)
         x = random.randint(rect.left, rect.right)
         y = rect.top
         angle = math.pi / 2
@@ -275,12 +275,12 @@ class PlanetSurface:
 
     def _draw_forest(self) -> None:
         """Draw a cluster of trees to represent a forested area."""
-        w = int(random.randint(200, 400) * 1.1)
-        h = int(random.randint(200, 400) * 1.1)
+        w = int(random.randint(200, 400) * 1.32)
+        h = int(random.randint(200, 400) * 1.32)
         x = random.randint(0, self.width - w)
         y = random.randint(0, self.height - h)
         area = pygame.Rect(x, y, w, h)
-        has_river = random.random() < 0.1
+        has_river = random.random() < 0.2
         if has_river:
             self._draw_river_in_area(area)
         margin = 0.0
