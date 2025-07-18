@@ -25,6 +25,7 @@ from portal import Portal, spawn_explorer_portals
 from star import Star
 from planet import Planet
 from station import SpaceStation
+from asteroid import Asteroid
 from ui import (
     DropdownMenu,
     RoutePlanner,
@@ -953,12 +954,20 @@ def main():
                     f"Environment: {selected_object.environment}",
                     f"Radius: {selected_object.radius}",
                 ]
-            else:
+            elif isinstance(selected_object, SpaceStation):
                 lines = [
                     f"Name: {selected_object.name}",
                     "Type: Station",
                     f"Hangars: {len(selected_object.hangars)}",
                 ]
+            elif isinstance(selected_object, Asteroid):
+                lines = [
+                    f"Name: {selected_object.name}",
+                    "Type: Asteroid",
+                    f"Resources: {selected_object.resources}",
+                ]
+            else:
+                lines = [f"Object"]
 
             panel_width = 180
             line_height = 20
