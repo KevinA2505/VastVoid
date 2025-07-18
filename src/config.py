@@ -23,7 +23,8 @@ PLANET_LANDING_SPEED = 80  # slower speed when approaching a planet
 PLAYER_MAX_HULL = 120
 
 # --- Explorer/Boat movement -------------------------------------------------
-EXPLORER_SPEED = 150  # base walking speed on a planet surface
+# Reduced 25% from previous value to slow down on-foot movement
+EXPLORER_SPEED = 112  # base walking speed on a planet surface
 BOAT_SPEED_LAND = 60  # slow boat speed when on land
 BOAT_SPEED_WATER = 200  # slightly faster than walking when on water
 

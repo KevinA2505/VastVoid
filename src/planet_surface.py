@@ -180,6 +180,8 @@ class PlanetSurface:
 
     def _draw_tree(self, x: int, y: int, r: int) -> None:
         """Draw a tree made of a small trunk and a round canopy."""
+        # Trees are scaled up slightly for a denser look
+        r = int(r * 1.2)
         canopy_color = (20, 70, 20)
         trunk_color = (80, 50, 20)
         trunk_width = max(2, r // 2)
@@ -191,7 +193,10 @@ class PlanetSurface:
             trunk_height,
         )
         pygame.draw.rect(self.surface, trunk_color, trunk_rect)
+        # Add collision so the player can't walk through trees
+        pygame.draw.rect(self.collision_surface, (255, 255, 255), trunk_rect)
         pygame.draw.circle(self.surface, canopy_color, (x, y), r)
+        pygame.draw.circle(self.collision_surface, (255, 255, 255), (x, y), r)
 
     def _draw_river(self) -> None:
         """Draw a wavy blue line representing a river."""
@@ -282,6 +287,7 @@ class PlanetSurface:
                 continue
             sr = random.randint(2, 5)
             pygame.draw.circle(self.surface, (80, 80, 80), (sx, sy), sr)
+            pygame.draw.circle(self.collision_surface, (255, 255, 255), (sx, sy), sr)
 
     def _generate_map(self) -> None:
         """Create a map using 2D noise to assign biomes."""

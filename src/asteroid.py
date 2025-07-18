@@ -12,6 +12,8 @@ ASTEROID_TYPES = {
 class Asteroid:
     """Small asteroid that can contain extractable resources."""
 
+    _id_counter = 1
+
     def __init__(
         self,
         x: float,
@@ -20,6 +22,8 @@ class Asteroid:
         kind: str = "rocky",
         resources: int | None = None,
     ) -> None:
+        self.name = f"Asteroid {Asteroid._id_counter}"
+        Asteroid._id_counter += 1
         self.x = x
         self.y = y
         self.radius = radius
