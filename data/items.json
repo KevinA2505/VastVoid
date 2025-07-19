@@ -597,6 +597,14 @@
       "rareza": "epico"
     },
     {
+      "nombre": "perla abisal",
+      "tipo": "objeto_raro",
+      "peso": 0.4,
+      "valor": 120,
+      "descripcion": "Perla que brilla en la oscuridad de las profundidades.",
+      "rareza": "epico"
+    },
+    {
       "nombre": "corazon de estrella",
       "tipo": "objeto_raro",
       "peso": 3.0,

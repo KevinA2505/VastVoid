@@ -360,6 +360,20 @@ class PlanetSurface:
                     canopy, trunk = self._forest_palette(base_color)
                     self._draw_tree(ix, iy, r, canopy, trunk)
 
+    def _point_in_polygon(self, x: int, y: int, poly: list[tuple[int, int]]) -> bool:
+        """Return ``True`` if ``(x, y)`` lies inside polygon ``poly``."""
+        inside = False
+        j = len(poly) - 1
+        for i in range(len(poly)):
+            xi, yi = poly[i]
+            xj, yj = poly[j]
+            if ((yi > y) != (yj > y)) and (
+                x < (xj - xi) * (y - yi) / (yj - yi + 1e-9) + xi
+            ):
+                inside = not inside
+            j = i
+        return inside
+
     def _draw_forest(self, extra_dense: bool = False) -> None:
         """Draw a cluster of trees to represent a forested area."""
         w = int(random.randint(200, 400) * 1.32 * 1.2)
@@ -469,6 +483,48 @@ class PlanetSurface:
             pygame.draw.circle(self.surface, (190, 190, 190), (x, y), r)
             self.platforms.append(FloatingPlatform(x, y, r))
 
+    def _draw_islands(self) -> None:
+        """Overlay irregular land masses on an ocean planet."""
+        num = random.randint(4, 7)
+        land_color = ENV_COLORS.get("rocky", (120, 120, 80))
+        for _ in range(num):
+            r = random.randint(80, 160)
+            cx = random.randint(r, self.width - r)
+            cy = random.randint(r, self.height - r)
+            steps = random.randint(5, 8)
+            pts: list[tuple[int, int]] = []
+            for i in range(steps):
+                ang = 2 * math.pi * i / steps
+                rad = r + random.randint(-r // 3, r // 3)
+                pts.append((int(cx + math.cos(ang) * rad), int(cy + math.sin(ang) * rad)))
+            pygame.draw.polygon(self.surface, land_color, pts)
+            pygame.draw.polygon(self.collision_surface, (0, 0, 0, 0), pts)
+            min_x = min(p[0] for p in pts)
+            max_x = max(p[0] for p in pts)
+            min_y = min(p[1] for p in pts)
+            max_y = max(p[1] for p in pts)
+            for i in range(min_x // self.cell, max_x // self.cell + 1):
+                for j in range(min_y // self.cell, max_y // self.cell + 1):
+                    if 0 <= i < self.cols and 0 <= j < self.rows:
+                        cx_cell = i * self.cell + self.cell // 2
+                        cy_cell = j * self.cell + self.cell // 2
+                        if self._point_in_polygon(cx_cell, cy_cell, pts):
+                            self.blocked[j][i] = False
+
+    def _spawn_underwater_pickups(self) -> None:
+        """Place special collectibles in blocked water cells."""
+        items = ["perla abisal"]
+        num = random.randint(10, 20)
+        for _ in range(num):
+            for _ in range(100):
+                x = random.randint(0, self.width - 1)
+                y = random.randint(0, self.height - 1)
+                cx = x // self.cell
+                cy = y // self.cell
+                if 0 <= cx < self.cols and 0 <= cy < self.rows and self.blocked[cy][cx]:
+                    self.pickups.append(ItemPickup(random.choice(items), x, y))
+                    break
+
     def _generate_map(self) -> None:
         """Create a map using 2D noise to assign biomes."""
         cell = self.cell
@@ -519,6 +575,10 @@ class PlanetSurface:
                             px = random.randint(rect.left, rect.right)
                             py = random.randint(rect.top, rect.bottom)
                             self.pickups.append(ItemPickup(name, px, py))
+
+        if is_ocean_planet:
+            self._draw_islands()
+            self._spawn_underwater_pickups()
 
         for _ in range(random.randint(1, 3)):
             self._draw_river()
