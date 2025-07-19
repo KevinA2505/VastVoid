@@ -289,12 +289,28 @@
       "rareza": "comun"
     },
     {
-      "nombre": "placa de titanio",
-      "tipo": "materia_prima",
-      "peso": 3.0,
-      "valor": 25,
-      "descripcion": "Lamina resistente de titanio procesado.",
-      "rareza": "poco_comun"
+        "nombre": "placa de titanio",
+        "tipo": "materia_prima",
+        "peso": 3.0,
+        "valor": 25,
+        "descripcion": "Lamina resistente de titanio procesado.",
+        "rareza": "poco_comun"
+    },
+    {
+        "nombre": "hierba curativa",
+        "tipo": "materia_prima",
+        "peso": 0.2,
+        "valor": 5,
+        "descripcion": "Planta medicinal que restaura la salud.",
+        "rareza": "comun"
+    },
+    {
+        "nombre": "flor luminosa",
+        "tipo": "materia_prima",
+        "peso": 0.1,
+        "valor": 12,
+        "descripcion": "Flor que brilla en la oscuridad.",
+        "rareza": "poco_comun"
     }
   ],
   "combustibles": [

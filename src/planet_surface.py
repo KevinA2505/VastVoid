@@ -120,6 +120,85 @@ class Boat:
         pygame.draw.rect(screen, (180, 120, 60), rect)
 
 
+class Creature:
+    """Simple creature that may wander or chase the explorer."""
+
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        world_w: int,
+        world_h: int,
+        *,
+        hostile: bool = False,
+    ) -> None:
+        self.x = x
+        self.y = y
+        self.world_w = world_w
+        self.world_h = world_h
+        self.size = 10
+        self.hostile = hostile
+        self.color = (180, 60, 60) if hostile else (60, 180, 80)
+        self.speed = 40.0
+        self.vx = 0.0
+        self.vy = 0.0
+
+    def update(self, target_x: float, target_y: float, dt: float) -> None:
+        if self.hostile:
+            dx = target_x - self.x
+            dy = target_y - self.y
+            dist = math.hypot(dx, dy)
+            if dist < 200 and dist > 0:
+                self.vx = (dx / dist) * self.speed
+                self.vy = (dy / dist) * self.speed
+            else:
+                self.vx *= 0.9
+                self.vy *= 0.9
+        else:
+            if random.random() < 0.02:
+                ang = random.uniform(0, 2 * math.pi)
+                self.vx = math.cos(ang) * self.speed
+                self.vy = math.sin(ang) * self.speed
+            self.vx *= 0.98
+            self.vy *= 0.98
+
+        self.x += self.vx * dt
+        self.y += self.vy * dt
+        self.x = max(0, min(self.world_w - 1, self.x))
+        self.y = max(0, min(self.world_h - 1, self.y))
+
+    def draw(self, screen: pygame.Surface, off_x: float, off_y: float) -> None:
+        rect = pygame.Rect(
+            int(self.x - off_x - self.size / 2),
+            int(self.y - off_y - self.size / 2),
+            self.size,
+            self.size,
+        )
+        pygame.draw.rect(screen, self.color, rect)
+
+
+class HealingPlant:
+    """Plant that restores health when touched."""
+
+    def __init__(self, x: float, y: float, amount: float = 20.0) -> None:
+        self.x = x
+        self.y = y
+        self.amount = amount
+        self.radius = 8
+
+    def interact(self, explorer: "Explorer") -> None:
+        explorer.health = min(explorer.max_health, explorer.health + self.amount)
+
+    def draw(self, screen: pygame.Surface, off_x: float, off_y: float) -> None:
+        rect = pygame.Rect(
+            int(self.x - off_x - self.radius),
+            int(self.y - off_y - self.radius),
+            self.radius * 2,
+            self.radius * 2,
+        )
+        pygame.draw.ellipse(screen, (100, 220, 100), rect)
+
+
 class FloatingPlatform:
     """Small solid platform hovering within a gas giant."""
 
@@ -169,6 +248,8 @@ class PlanetSurface:
             config.DESERT_STORM_INTERVAL_MIN, config.DESERT_STORM_INTERVAL_MAX
         )
         self.pickups: list[ItemPickup] = []
+        self.healing_plants: list[HealingPlant] = []
+        self.creatures: list[Creature] = []
         self.platforms: list[FloatingPlatform] = []
         # grid resolution used for walkable map
         self.cell = 60
@@ -181,6 +262,8 @@ class PlanetSurface:
         self.boat_active = False
         self.boat: Boat | None = None
         self._generate_map()
+        self._spawn_unique_plants()
+        self._spawn_creatures()
         if self.planet.environment == "lava":
             self._spawn_lava_geysers()
         self.ship_pos = (self.width // 2, self.height // 2)
@@ -529,6 +612,28 @@ class PlanetSurface:
             pygame.draw.circle(self.surface, (190, 190, 190), (x, y), r)
             self.platforms.append(FloatingPlatform(x, y, r))
 
+    def _spawn_unique_plants(self) -> None:
+        """Scatter healing plants and luminous flowers around the map."""
+        for _ in range(random.randint(4, 8)):
+            x = random.randint(0, self.width - 1)
+            y = random.randint(0, self.height - 1)
+            self.healing_plants.append(HealingPlant(x, y))
+        for _ in range(random.randint(2, 5)):
+            x = random.randint(0, self.width - 1)
+            y = random.randint(0, self.height - 1)
+            self.pickups.append(ItemPickup("flor luminosa", x, y))
+
+    def _spawn_creatures(self) -> None:
+        """Create a few passive and hostile creatures."""
+        num = random.randint(5, 10)
+        for _ in range(num):
+            x = random.randint(0, self.width - 1)
+            y = random.randint(0, self.height - 1)
+            hostile = random.random() < 0.5
+            self.creatures.append(
+                Creature(x, y, self.width, self.height, hostile=hostile)
+            )
+
     def _draw_islands(self) -> None:
         """Overlay irregular land masses on an ocean planet."""
         num = random.randint(4, 7)
@@ -850,6 +955,18 @@ class PlanetSurface:
             self.explorer.x, self.explorer.y = old_x, old_y
         self.camera_x = self.explorer.x
         self.camera_y = self.explorer.y
+        for creature in self.creatures:
+            creature.update(self.explorer.x, self.explorer.y, dt)
+            if creature.hostile and math.hypot(
+                creature.x - self.explorer.x, creature.y - self.explorer.y
+            ) < creature.size + self.explorer.size:
+                self.explorer.take_damage(20 * dt)
+        for plant in self.healing_plants[:]:
+            if math.hypot(
+                plant.x - self.explorer.x, plant.y - self.explorer.y
+            ) < plant.radius + self.explorer.size:
+                plant.interact(self.explorer)
+                self.healing_plants.remove(plant)
         for pickup in self.pickups[:]:
             if (
                 abs(self.explorer.x - pickup.x) < 10
@@ -867,6 +984,10 @@ class PlanetSurface:
         screen.blit(self.lava_surface, (-offset_x, -offset_y))
         for platform in self.platforms:
             platform.draw(screen, offset_x, offset_y)
+        for plant in self.healing_plants:
+            plant.draw(screen, offset_x, offset_y)
+        for creature in self.creatures:
+            creature.draw(screen, offset_x, offset_y)
         for pickup in self.pickups:
             show = (
                 abs(self.explorer.x - pickup.x) < 40
