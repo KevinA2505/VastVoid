@@ -373,6 +373,59 @@ class PlanetSurface:
             pygame.draw.circle(self.surface, (80, 80, 80), (sx, sy), sr)
             pygame.draw.circle(self.collision_surface, (255, 255, 255), (sx, sy), sr)
 
+    def _draw_crater_field(self) -> None:
+        """Draw several irregular craters that may contain rare minerals."""
+        minerals = ["platino", "diamante", "iridio", "uranio", "palladium"]
+        num_craters = random.randint(5, 10)
+        for _ in range(num_craters):
+            r = random.randint(20, 60)
+            x = random.randint(r, self.width - r)
+            y = random.randint(r, self.height - r)
+            steps = random.randint(8, 12)
+            points: list[tuple[int, int]] = []
+            for i in range(steps):
+                ang = 2 * math.pi * i / steps
+                rad = r + random.randint(-r // 3, r // 3)
+                px = int(x + math.cos(ang) * rad)
+                py = int(y + math.sin(ang) * rad)
+                points.append((px, py))
+            pygame.draw.polygon(self.surface, (80, 80, 80), points)
+            pygame.draw.polygon(self.collision_surface, (255, 255, 255), points)
+            rect = pygame.Rect(x - r, y - r, r * 2, r * 2)
+            for i in range(rect.left // self.cell, rect.right // self.cell + 1):
+                for j in range(rect.top // self.cell, rect.bottom // self.cell + 1):
+                    if 0 <= i < self.cols and 0 <= j < self.rows:
+                        self.blocked[j][i] = True
+            if random.random() < 0.3:
+                self.pickups.append(ItemPickup(random.choice(minerals), x, y))
+
+    def _draw_mountains(self) -> None:
+        """Draw mountain ranges that block movement on the grid."""
+        num_ranges = random.randint(2, 4)
+        for _ in range(num_ranges):
+            width = random.randint(60, 100)
+            segs = random.randint(4, 7)
+            x = random.randint(0, self.width)
+            y = random.randint(0, self.height)
+            angle = random.uniform(0, 2 * math.pi)
+            points = [(int(x), int(y))]
+            for _ in range(segs):
+                step = random.randint(80, 120)
+                x += step * math.cos(angle) + random.randint(-30, 30)
+                y += step * math.sin(angle) + random.randint(-30, 30)
+                angle += random.uniform(-0.4, 0.4)
+                points.append((int(x), int(y)))
+            pygame.draw.lines(self.surface, (120, 120, 120), False, points, width)
+            pygame.draw.lines(self.collision_surface, (255, 255, 255), False, points, width)
+            min_x = min(p[0] for p in points) - width // 2
+            max_x = max(p[0] for p in points) + width // 2
+            min_y = min(p[1] for p in points) - width // 2
+            max_y = max(p[1] for p in points) + width // 2
+            for i in range(min_x // self.cell, max_x // self.cell + 1):
+                for j in range(min_y // self.cell, max_y // self.cell + 1):
+                    if 0 <= i < self.cols and 0 <= j < self.rows:
+                        self.blocked[j][i] = True
+
     def _generate_map(self) -> None:
         """Create a map using 2D noise to assign biomes."""
         cell = self.cell
@@ -433,6 +486,10 @@ class PlanetSurface:
             extra_dense = True
         for _ in range(random.randint(*forest_range)):
             self._draw_forest(extra_dense)
+
+        if self.planet.environment == "rocky":
+            self._draw_crater_field()
+            self._draw_mountains()
 
         self.collision_mask = pygame.mask.from_surface(self.collision_surface)
 
