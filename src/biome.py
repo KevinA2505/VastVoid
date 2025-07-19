@@ -28,7 +28,7 @@ BIOMES: dict[str, Biome] = {
     # Frozen plains with valuable energy sources
     "ice world": Biome(
         (220, 235, 245),
-        ["helio-3", "cristal quantico", "huevo de dragon"],
+        ["helio-3", "cristal quantico", "huevo de dragon", "cristal de energia"],
         0.15,
         1.0,
     ),

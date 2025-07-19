@@ -147,8 +147,11 @@ class PlanetSurface:
         self.collision_surface.fill((0, 0, 0, 0))
         self.storm_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         self.storm_surface.fill((0, 0, 0, 0))
+        self.ice_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        self.ice_surface.fill((0, 0, 0, 0))
         self.collision_mask: pygame.mask.Mask | None = None
         self.storm_mask: pygame.mask.Mask | None = None
+        self.ice_mask: pygame.mask.Mask | None = None
         self.pickups: list[ItemPickup] = []
         self.platforms: list[FloatingPlatform] = []
         # grid resolution used for walkable map
@@ -525,6 +528,28 @@ class PlanetSurface:
                     self.pickups.append(ItemPickup(random.choice(items), x, y))
                     break
 
+    def _draw_ice_fields(self) -> None:
+        """Overlay semi-transparent ice zones that affect movement."""
+        num = random.randint(4, 8)
+        for _ in range(num):
+            w = random.randint(120, 250)
+            h = random.randint(100, 200)
+            x = random.randint(0, self.width - w)
+            y = random.randint(0, self.height - h)
+            rect = pygame.Rect(x, y, w, h)
+            pygame.draw.ellipse(self.ice_surface, config.ICE_COLOR, rect)
+
+    def _draw_ice_caves(self) -> None:
+        """Place cave entrances on the map with energy crystals inside."""
+        num = random.randint(3, 6)
+        for _ in range(num):
+            r = random.randint(20, 40)
+            x = random.randint(r, self.width - r)
+            y = random.randint(r, self.height - r)
+            rect = pygame.Rect(x - r, y - r // 2, r * 2, r)
+            pygame.draw.ellipse(self.surface, (140, 150, 160), rect)
+            self.pickups.append(ItemPickup("cristal de energia", x, y))
+
     def _generate_map(self) -> None:
         """Create a map using 2D noise to assign biomes."""
         cell = self.cell
@@ -593,12 +618,18 @@ class PlanetSurface:
         if self.planet.environment == "rocky":
             self._draw_crater_field()
             self._draw_mountains()
+        if self.planet.environment == "ice world":
+            self._draw_ice_fields()
+            self._draw_ice_caves()
         if self.planet.environment == "gas giant":
             self._draw_storms()
             self._spawn_platforms()
 
         if self.storm_surface.get_width():
             self.storm_mask = pygame.mask.from_surface(self.storm_surface)
+
+        if self.ice_surface.get_width():
+            self.ice_mask = pygame.mask.from_surface(self.ice_surface)
 
         self.collision_mask = pygame.mask.from_surface(self.collision_surface)
 
@@ -632,6 +663,14 @@ class PlanetSurface:
             return False
         return bool(self.storm_mask and self.storm_mask.get_at((ix, iy)))
 
+    def is_on_ice(self, x: float, y: float) -> bool:
+        """Return ``True`` if ``(x, y)`` lies within an icy area."""
+        ix = int(x)
+        iy = int(y)
+        if not (0 <= ix < self.width and 0 <= iy < self.height):
+            return False
+        return bool(self.ice_mask and self.ice_mask.get_at((ix, iy)))
+
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.exit_rect.collidepoint(event.pos):
@@ -662,6 +701,8 @@ class PlanetSurface:
                 self.boat.y = self.explorer.y
         if self.is_in_storm(self.explorer.x, self.explorer.y):
             speed *= config.STORM_SLOW_FACTOR
+        if self.is_on_ice(self.explorer.x, self.explorer.y):
+            speed *= config.ICE_SLOW_FACTOR
         self.explorer.update(keys, dt, self.width, self.height, speed)
         if not self.is_walkable(self.explorer.x, self.explorer.y):
             self.explorer.x, self.explorer.y = old_x, old_y
@@ -680,6 +721,7 @@ class PlanetSurface:
         offset_y = self.camera_y - config.WINDOW_HEIGHT / 2
         screen.blit(self.surface, (-offset_x, -offset_y))
         screen.blit(self.storm_surface, (-offset_x, -offset_y))
+        screen.blit(self.ice_surface, (-offset_x, -offset_y))
         for platform in self.platforms:
             platform.draw(screen, offset_x, offset_y)
         for pickup in self.pickups:
