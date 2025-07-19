@@ -1022,6 +1022,12 @@ class PlanetSurface:
     def update(self, keys: pygame.key.ScancodeWrapper, dt: float) -> None:
         old_x, old_y = self.explorer.x, self.explorer.y
         speed = config.EXPLORER_SPEED
+        wind_dx = 0.0
+        if (
+            self.planet.environment == "gas giant"
+            and self.is_in_storm(self.explorer.x, self.explorer.y)
+        ):
+            wind_dx = config.STORM_WIND_STRENGTH * dt
         on_water = self.is_water(self.explorer.x, self.explorer.y)
         if self.boat_active:
             if on_water:
@@ -1065,6 +1071,18 @@ class PlanetSurface:
         self.explorer.update(keys, dt, self.width, self.height, speed, in_gas, has_suit)
         if not self.is_walkable(self.explorer.x, self.explorer.y):
             self.explorer.x, self.explorer.y = old_x, old_y
+        if wind_dx:
+            new_x = max(0, min(self.width - 1, self.explorer.x + wind_dx))
+            if self.is_walkable(new_x, self.explorer.y):
+                self.explorer.x = new_x
+            if self.boat_active and self.boat:
+                self.boat.x = self.explorer.x
+            for platform in self.platforms:
+                if self.is_in_storm(platform.x, platform.y):
+                    platform.x = max(
+                        platform.radius,
+                        min(self.width - platform.radius, platform.x + wind_dx),
+                    )
         self.camera_x = self.explorer.x
         self.camera_y = self.explorer.y
         for creature in self.creatures:
