@@ -178,13 +178,39 @@ class PlanetSurface:
                 points,
             )
 
-    def _draw_tree(self, x: int, y: int, r: int) -> None:
+    def _forest_palette(
+        self, base: tuple[int, int, int]
+    ) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+        """Return canopy and trunk colours based on the given biome colour."""
+        r, g, b = base
+        canopy = (
+            max(0, min(255, int(r * 0.3 + 20))),
+            max(0, min(255, int(g * 0.7 + 60))),
+            max(0, min(255, int(b * 0.3 + 20))),
+        )
+        trunk = (
+            max(0, min(255, int(r * 0.5 + 40))),
+            max(0, min(255, int(g * 0.3 + 30))),
+            max(0, min(255, int(b * 0.1 + 20))),
+        )
+        return canopy, trunk
+
+    def _draw_tree(
+        self,
+        x: int,
+        y: int,
+        r: int,
+        canopy_color: tuple[int, int, int] | None = None,
+        trunk_color: tuple[int, int, int] | None = None,
+    ) -> None:
         """Draw a tree made of a small trunk and a round canopy."""
         # Trees are scaled up slightly for a denser look and then increased by
         # an additional 10% as requested
         r = int(r * 1.38 * 1.15 * 1.2 * 1.10)
-        canopy_color = (20, 70, 20)
-        trunk_color = (80, 50, 20)
+        if canopy_color is None:
+            canopy_color = (20, 70, 20)
+        if trunk_color is None:
+            trunk_color = (80, 50, 20)
         trunk_width = max(2, r // 2)
         trunk_height = r * 2
         trunk_rect = pygame.Rect(
@@ -305,9 +331,11 @@ class PlanetSurface:
                     if self._point_near_river(tx, ty, 0):
                         continue
                     r = random.randint(3, 8)
-                    self._draw_tree(int(tx), int(ty), r)
+                    base_color = self.surface.get_at((int(tx), int(ty)))[:3]
+                    canopy, trunk = self._forest_palette(base_color)
+                    self._draw_tree(int(tx), int(ty), r, canopy, trunk)
 
-    def _draw_forest(self) -> None:
+    def _draw_forest(self, extra_dense: bool = False) -> None:
         """Draw a cluster of trees to represent a forested area."""
         w = int(random.randint(200, 400) * 1.32 * 1.2)
         h = int(random.randint(200, 400) * 1.32 * 1.2)
@@ -320,13 +348,17 @@ class PlanetSurface:
                 self._draw_river_in_area(area)
         margin = 0.0
         tree_count = 250
+        if extra_dense:
+            tree_count = int(tree_count * 1.5)
+        base_color = self.surface.get_at(area.center)[:3]
+        canopy_color, trunk_color = self._forest_palette(base_color)
         for _ in range(tree_count):
             tx = random.randint(area.left, area.right)
             ty = random.randint(area.top, area.bottom)
             if self._point_near_river(tx, ty, margin):
                 continue
             r = random.randint(3, 8)
-            self._draw_tree(tx, ty, r)
+            self._draw_tree(tx, ty, r, canopy_color, trunk_color)
 
         # Scatter some small stones throughout the forest
         for _ in range(30):
@@ -391,8 +423,13 @@ class PlanetSurface:
 
         for _ in range(random.randint(1, 3)):
             self._draw_river()
-        for _ in range(random.randint(2, 4)):
-            self._draw_forest()
+        forest_range = (2, 4)
+        extra_dense = False
+        if self.planet.environment == "forest":
+            forest_range = (4, 7)
+            extra_dense = True
+        for _ in range(random.randint(*forest_range)):
+            self._draw_forest(extra_dense)
 
         self.collision_mask = pygame.mask.from_surface(self.collision_surface)
 

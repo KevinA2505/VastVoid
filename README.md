@@ -136,6 +136,10 @@ Biomes now create irregular terrain patches instead of simple circles and
 generate multiple item pickups. Approach an item to see its name displayed on
 screen and know exactly what you are collecting.
 
+Forest planets now contain more wooded regions. Tree clusters adopt colours
+influenced by their surrounding biome so forests look distinct in deserts,
+icy areas or lush worlds.
+
 The original example scripts (`black_plane.py`, `nave.py`, `space_objects.py`
 and `colliding_star_systems.py`) remain in the `src` directory for reference.
 
