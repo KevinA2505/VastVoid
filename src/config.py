@@ -38,6 +38,12 @@ DESERT_STORM_MIN_TIME = 5.0   # minimum duration for a desert storm
 DESERT_STORM_MAX_TIME = 10.0  # maximum duration for a desert storm
 DESERT_STORM_INTERVAL_MIN = 15.0  # minimum time between sandstorms
 DESERT_STORM_INTERVAL_MAX = 30.0  # maximum time between sandstorms
+EXPLORER_MAX_HEALTH = 100  # maximum health for the on-foot explorer
+LAVA_DAMAGE_RATE = 25      # damage per second when standing in lava
+LAVA_GEYSER_INTERVAL_MIN = 4.0  # minimum seconds between geyser eruptions
+LAVA_GEYSER_INTERVAL_MAX = 8.0  # maximum seconds between geyser eruptions
+LAVA_GEYSER_DURATION = 1.5       # duration of an eruption in seconds
+LAVA_GEYSER_DAMAGE = 40          # damage per second from erupting geysers
 
 ORBIT_SPEED_FACTOR = 0.005  # base factor used to calculate orbital speed
 SHIP_ORBIT_SPEED = 1.5      # angular speed for attack orbits (radians per second)

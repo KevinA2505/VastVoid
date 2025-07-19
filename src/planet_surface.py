@@ -64,6 +64,12 @@ class Explorer:
         self.y = y
         self.size = 8
         self.color = (255, 255, 255)
+        self.max_health = config.EXPLORER_MAX_HEALTH
+        self.health = config.EXPLORER_MAX_HEALTH
+
+    def take_damage(self, amount: float) -> None:
+        """Reduce health by ``amount`` without dropping below zero."""
+        self.health = max(0, self.health - amount)
 
     def update(
         self,
@@ -151,9 +157,12 @@ class PlanetSurface:
         self.ice_surface.fill((0, 0, 0, 0))
         self.desert_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         self.desert_surface.fill((0, 0, 0, 0))
+        self.lava_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        self.lava_surface.fill((0, 0, 0, 0))
         self.collision_mask: pygame.mask.Mask | None = None
         self.storm_mask: pygame.mask.Mask | None = None
         self.ice_mask: pygame.mask.Mask | None = None
+        self.lava_mask: pygame.mask.Mask | None = None
         self.desert_storm_active = False
         self.desert_storm_time = 0.0
         self.desert_storm_cooldown = random.uniform(
@@ -168,9 +177,12 @@ class PlanetSurface:
         self.blocked: list[list[bool]] = []
         # Store river segments along with their drawn width
         self.rivers: list[tuple[list[tuple[int, int]], int]] = []
+        self.lava_geysers: list[dict] = []
         self.boat_active = False
         self.boat: Boat | None = None
         self._generate_map()
+        if self.planet.environment == "lava":
+            self._spawn_lava_geysers()
         self.ship_pos = (self.width // 2, self.height // 2)
         self.explorer = Explorer(*self.ship_pos)
         self.camera_x = self.explorer.x
@@ -260,8 +272,13 @@ class PlanetSurface:
         pygame.draw.rect(self.collision_surface, (255, 255, 255), collision_rect)
         pygame.draw.circle(self.surface, canopy_color, (x, y), r)
 
-    def _draw_river(self) -> None:
-        """Draw a wavy blue line representing a river."""
+    def _draw_river(
+        self,
+        color: tuple[int, int, int] = (50, 100, 200),
+        damage: bool = False,
+        block: bool = True,
+    ) -> None:
+        """Draw a wavy line representing a river or lava flow."""
         length = random.randint(self.height // 2, self.height)
         # Rivers are drawn slightly thicker for better visibility
         width = int(random.randint(24, 40) * 1.21 * 1.1)
@@ -284,14 +301,25 @@ class PlanetSurface:
             points.append((int(x), int(y)))
             if x < 0 or x > self.width or y < 0 or y > self.height:
                 break
-        pygame.draw.lines(self.surface, (50, 100, 200), False, points, width)
-        pygame.draw.lines(
-            self.collision_surface, (255, 255, 255), False, points, width
-        )
+        pygame.draw.lines(self.surface, color, False, points, width)
+        if block:
+            pygame.draw.lines(
+                self.collision_surface, (255, 255, 255), False, points, width
+            )
+        if damage:
+            pygame.draw.lines(
+                self.lava_surface, (200, 60, 60, 180), False, points, width
+            )
         self.rivers.append((points, width))
         self._plant_trees_along_river(points, width)
 
-    def _draw_river_in_area(self, rect: pygame.Rect) -> None:
+    def _draw_river_in_area(
+        self,
+        rect: pygame.Rect,
+        color: tuple[int, int, int] = (50, 100, 200),
+        damage: bool = False,
+        block: bool = True,
+    ) -> None:
         """Draw a short river that flows through the given rectangle."""
         length = random.randint(self.height // 2, self.height)
         width = int(random.randint(24, 40) * 1.21 * 1.1)
@@ -307,10 +335,15 @@ class PlanetSurface:
             points.append((int(x), int(y)))
             if x < 0 or x > self.width or y < 0 or y > self.height:
                 break
-        pygame.draw.lines(self.surface, (50, 100, 200), False, points, width)
-        pygame.draw.lines(
-            self.collision_surface, (255, 255, 255), False, points, width
-        )
+        pygame.draw.lines(self.surface, color, False, points, width)
+        if block:
+            pygame.draw.lines(
+                self.collision_surface, (255, 255, 255), False, points, width
+            )
+        if damage:
+            pygame.draw.lines(
+                self.lava_surface, (200, 60, 60, 180), False, points, width
+            )
         self.rivers.append((points, width))
         self._plant_trees_along_river(points, width)
 
@@ -394,7 +427,10 @@ class PlanetSurface:
         has_river = random.random() < 0.3
         if has_river:
             for _ in range(random.randint(1, 2)):
-                self._draw_river_in_area(area)
+                if self.planet.environment == "lava":
+                    self._draw_river_in_area(area, color=(180, 40, 40), damage=True)
+                else:
+                    self._draw_river_in_area(area)
         margin = 0.0
         tree_count = 250
         if extra_dense:
@@ -535,6 +571,53 @@ class PlanetSurface:
                     self.pickups.append(ItemPickup(random.choice(items), x, y))
                     break
 
+    def _spawn_lava_geysers(self) -> None:
+        """Create lava geysers that erupt periodically."""
+        count = random.randint(3, 6)
+        for _ in range(count):
+            r = random.randint(20, 30)
+            x = random.randint(r, self.width - r)
+            y = random.randint(r, self.height - r)
+            self.lava_geysers.append(
+                {
+                    "x": x,
+                    "y": y,
+                    "radius": r,
+                    "timer": random.uniform(
+                        config.LAVA_GEYSER_INTERVAL_MIN, config.LAVA_GEYSER_INTERVAL_MAX
+                    ),
+                    "erupt": False,
+                }
+            )
+
+    def _update_lava_geysers(self, dt: float) -> None:
+        """Advance timers, erupt geysers and apply damage."""
+        self.lava_surface.fill((0, 0, 0, 0))
+        for geyser in self.lava_geysers:
+            geyser["timer"] -= dt
+            if geyser["erupt"]:
+                if geyser["timer"] <= 0:
+                    geyser["erupt"] = False
+                    geyser["timer"] = random.uniform(
+                        config.LAVA_GEYSER_INTERVAL_MIN, config.LAVA_GEYSER_INTERVAL_MAX
+                    )
+                else:
+                    pygame.draw.circle(
+                        self.lava_surface,
+                        (200, 60, 60, 180),
+                        (geyser["x"], geyser["y"]),
+                        int(geyser["radius"] * 1.5),
+                    )
+                    if (
+                        math.hypot(self.explorer.x - geyser["x"], self.explorer.y - geyser["y"])
+                        < geyser["radius"] * 1.5
+                    ):
+                        self.explorer.take_damage(config.LAVA_GEYSER_DAMAGE * dt)
+            else:
+                if geyser["timer"] <= 0:
+                    geyser["erupt"] = True
+                    geyser["timer"] = config.LAVA_GEYSER_DURATION
+
     def _draw_ice_fields(self) -> None:
         """Overlay semi-transparent ice zones that affect movement."""
         num = random.randint(4, 8)
@@ -626,7 +709,10 @@ class PlanetSurface:
             self._spawn_underwater_pickups()
 
         for _ in range(random.randint(1, 3)):
-            self._draw_river()
+            if self.planet.environment == "lava":
+                self._draw_river(color=(180, 40, 40), damage=True)
+            else:
+                self._draw_river()
         forest_range = (2, 4)
         extra_dense = False
         if self.planet.environment == "forest":
@@ -652,6 +738,9 @@ class PlanetSurface:
 
         if self.ice_surface.get_width():
             self.ice_mask = pygame.mask.from_surface(self.ice_surface)
+
+        if self.lava_surface.get_width():
+            self.lava_mask = pygame.mask.from_surface(self.lava_surface)
 
         self.collision_mask = pygame.mask.from_surface(self.collision_surface)
 
@@ -693,6 +782,14 @@ class PlanetSurface:
             return False
         return bool(self.ice_mask and self.ice_mask.get_at((ix, iy)))
 
+    def is_in_lava(self, x: float, y: float) -> bool:
+        """Return ``True`` if ``(x, y)`` falls within a lava zone."""
+        ix = int(x)
+        iy = int(y)
+        if not (0 <= ix < self.width and 0 <= iy < self.height):
+            return False
+        return bool(self.lava_mask and self.lava_mask.get_at((ix, iy)))
+
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.exit_rect.collidepoint(event.pos):
@@ -725,6 +822,10 @@ class PlanetSurface:
             speed *= config.STORM_SLOW_FACTOR
         if self.is_on_ice(self.explorer.x, self.explorer.y):
             speed *= config.ICE_SLOW_FACTOR
+        if self.planet.environment == "lava":
+            self._update_lava_geysers(dt)
+            if self.is_in_lava(self.explorer.x, self.explorer.y):
+                self.explorer.take_damage(config.LAVA_DAMAGE_RATE * dt)
         if self.planet.environment == "desert":
             if self.desert_storm_active:
                 self.desert_storm_time -= dt
@@ -763,6 +864,7 @@ class PlanetSurface:
         screen.blit(self.surface, (-offset_x, -offset_y))
         screen.blit(self.storm_surface, (-offset_x, -offset_y))
         screen.blit(self.ice_surface, (-offset_x, -offset_y))
+        screen.blit(self.lava_surface, (-offset_x, -offset_y))
         for platform in self.platforms:
             platform.draw(screen, offset_x, offset_y)
         for pickup in self.pickups:
