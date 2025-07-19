@@ -44,6 +44,9 @@ LAVA_GEYSER_INTERVAL_MIN = 4.0  # minimum seconds between geyser eruptions
 LAVA_GEYSER_INTERVAL_MAX = 8.0  # maximum seconds between geyser eruptions
 LAVA_GEYSER_DURATION = 1.5       # duration of an eruption in seconds
 LAVA_GEYSER_DAMAGE = 40          # damage per second from erupting geysers
+TOXIC_GAS_COLOR = (100, 150, 80, 150)  # RGBA colour for poisonous clouds
+TOXIC_GAS_DAMAGE = 15            # damage per second inside toxic gas
+RESIDUE_EXTRACTION_DAMAGE = 10   # health lost when harvesting toxic waste
 
 ORBIT_SPEED_FACTOR = 0.005  # base factor used to calculate orbital speed
 SHIP_ORBIT_SPEED = 1.5      # angular speed for attack orbits (radians per second)
