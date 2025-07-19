@@ -731,6 +731,14 @@
       "valor": 115,
       "descripcion": "Resuena con melodías del universo.",
       "rareza": "raro"
+    },
+    {
+      "nombre": "coral brillante",
+      "tipo": "objeto_raro",
+      "peso": 0.2,
+      "valor": 90,
+      "descripcion": "Fragmento vivo de arrecife que emite luz.",
+      "rareza": "poco_comun"
     }
   ],
   "artefactos": [
@@ -1328,6 +1336,14 @@
       "peso": 5.0,
       "valor": 150,
       "descripcion": "Protege al usuario de gases venenosos.",
+      "rareza": "poco_comun"
+    },
+    {
+      "nombre": "traje de buceo",
+      "tipo": "herramienta",
+      "peso": 5.5,
+      "valor": 160,
+      "descripcion": "Permite explorar bajo el agua con comodidad.",
       "rareza": "poco_comun"
     }
   ],
