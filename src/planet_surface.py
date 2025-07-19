@@ -114,6 +114,24 @@ class Boat:
         pygame.draw.rect(screen, (180, 120, 60), rect)
 
 
+class FloatingPlatform:
+    """Small solid platform hovering within a gas giant."""
+
+    def __init__(self, x: float, y: float, radius: int) -> None:
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.color = (200, 200, 200)
+
+    def draw(self, screen: pygame.Surface, offset_x: float, offset_y: float) -> None:
+        pygame.draw.circle(
+            screen,
+            self.color,
+            (int(self.x - offset_x), int(self.y - offset_y)),
+            self.radius,
+        )
+
+
 class PlanetSurface:
     """Procedurally generated 2D map tied to a specific planet."""
 
@@ -127,8 +145,12 @@ class PlanetSurface:
             (self.width, self.height), pygame.SRCALPHA
         )
         self.collision_surface.fill((0, 0, 0, 0))
+        self.storm_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        self.storm_surface.fill((0, 0, 0, 0))
         self.collision_mask: pygame.mask.Mask | None = None
+        self.storm_mask: pygame.mask.Mask | None = None
         self.pickups: list[ItemPickup] = []
+        self.platforms: list[FloatingPlatform] = []
         # grid resolution used for walkable map
         self.cell = 60
         self.cols = self.width // self.cell
@@ -426,6 +448,27 @@ class PlanetSurface:
                     if 0 <= i < self.cols and 0 <= j < self.rows:
                         self.blocked[j][i] = True
 
+    def _draw_storms(self) -> None:
+        """Overlay semi-transparent storm clouds that slow movement."""
+        num = random.randint(5, 10)
+        for _ in range(num):
+            w = random.randint(200, 400)
+            h = random.randint(150, 300)
+            x = random.randint(0, self.width - w)
+            y = random.randint(0, self.height - h)
+            rect = pygame.Rect(x, y, w, h)
+            pygame.draw.ellipse(self.storm_surface, config.STORM_COLOR, rect)
+
+    def _spawn_platforms(self) -> None:
+        """Create small floating platforms containing optional items."""
+        num = random.randint(3, 6)
+        for _ in range(num):
+            r = random.randint(20, 40)
+            x = random.randint(r, self.width - r)
+            y = random.randint(r, self.height - r)
+            pygame.draw.circle(self.surface, (190, 190, 190), (x, y), r)
+            self.platforms.append(FloatingPlatform(x, y, r))
+
     def _generate_map(self) -> None:
         """Create a map using 2D noise to assign biomes."""
         cell = self.cell
@@ -490,6 +533,12 @@ class PlanetSurface:
         if self.planet.environment == "rocky":
             self._draw_crater_field()
             self._draw_mountains()
+        if self.planet.environment == "gas giant":
+            self._draw_storms()
+            self._spawn_platforms()
+
+        if self.storm_surface.get_width():
+            self.storm_mask = pygame.mask.from_surface(self.storm_surface)
 
         self.collision_mask = pygame.mask.from_surface(self.collision_surface)
 
@@ -514,6 +563,14 @@ class PlanetSurface:
         if not (0 <= ix < self.width and 0 <= iy < self.height):
             return False
         return bool(self.collision_mask and self.collision_mask.get_at((ix, iy)))
+
+    def is_in_storm(self, x: float, y: float) -> bool:
+        """Return ``True`` if ``(x, y)`` falls inside a storm zone."""
+        ix = int(x)
+        iy = int(y)
+        if not (0 <= ix < self.width and 0 <= iy < self.height):
+            return False
+        return bool(self.storm_mask and self.storm_mask.get_at((ix, iy)))
 
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -543,6 +600,8 @@ class PlanetSurface:
             if self.boat:
                 self.boat.x = self.explorer.x
                 self.boat.y = self.explorer.y
+        if self.is_in_storm(self.explorer.x, self.explorer.y):
+            speed *= config.STORM_SLOW_FACTOR
         self.explorer.update(keys, dt, self.width, self.height, speed)
         if not self.is_walkable(self.explorer.x, self.explorer.y):
             self.explorer.x, self.explorer.y = old_x, old_y
@@ -560,6 +619,9 @@ class PlanetSurface:
         offset_x = self.camera_x - config.WINDOW_WIDTH / 2
         offset_y = self.camera_y - config.WINDOW_HEIGHT / 2
         screen.blit(self.surface, (-offset_x, -offset_y))
+        screen.blit(self.storm_surface, (-offset_x, -offset_y))
+        for platform in self.platforms:
+            platform.draw(screen, offset_x, offset_y)
         for pickup in self.pickups:
             show = (
                 abs(self.explorer.x - pickup.x) < 40
