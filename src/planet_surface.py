@@ -330,10 +330,13 @@ class PlanetSurface:
                     ty = py + norm_y * offset * side
                     if self._point_near_river(tx, ty, 0):
                         continue
+                    ix, iy = int(tx), int(ty)
+                    if not (0 <= ix < self.width and 0 <= iy < self.height):
+                        continue
                     r = random.randint(3, 8)
-                    base_color = self.surface.get_at((int(tx), int(ty)))[:3]
+                    base_color = self.surface.get_at((ix, iy))[:3]
                     canopy, trunk = self._forest_palette(base_color)
-                    self._draw_tree(int(tx), int(ty), r, canopy, trunk)
+                    self._draw_tree(ix, iy, r, canopy, trunk)
 
     def _draw_forest(self, extra_dense: bool = False) -> None:
         """Draw a cluster of trees to represent a forested area."""
