@@ -289,6 +289,8 @@ class PlanetSurface:
         self._generate_map()
         self._spawn_unique_plants()
         self._spawn_creatures()
+        if self.planet.environment == "ocean world":
+            self._spawn_underwater_creatures()
         if self.planet.environment == "lava":
             self._spawn_lava_geysers()
         self.ship_pos = (self.width // 2, self.height // 2)
@@ -729,6 +731,20 @@ class PlanetSurface:
                 Creature(x, y, self.width, self.height, hostile=hostile)
             )
 
+    def _spawn_underwater_creatures(self) -> None:
+        """Populate ocean planets with additional aquatic creatures."""
+        count = random.randint(4, 8)
+        for _ in range(count):
+            for _ in range(100):
+                x = random.randint(0, self.width - 1)
+                y = random.randint(0, self.height - 1)
+                if self.is_water(x, y):
+                    hostile = random.random() < 0.5
+                    creature = Creature(x, y, self.width, self.height, hostile=hostile)
+                    creature.color = (80, 120, 200) if hostile else (60, 180, 190)
+                    self.creatures.append(creature)
+                    break
+
     def _draw_islands(self) -> None:
         """Overlay irregular land masses on an ocean planet."""
         num = random.randint(4, 7)
@@ -757,9 +773,30 @@ class PlanetSurface:
                         if self._point_in_polygon(cx_cell, cy_cell, pts):
                             self.blocked[j][i] = False
 
+    def _draw_underwater_biomes(self) -> None:
+        """Create colourful patches representing underwater biomes."""
+        num = random.randint(4, 8)
+        for _ in range(num):
+            w = random.randint(80, 160)
+            h = random.randint(60, 120)
+            x = random.randint(0, self.width - w)
+            y = random.randint(0, self.height - h)
+            cx = x + w // 2
+            cy = y + h // 2
+            if not self.blocked[cy // self.cell][cx // self.cell]:
+                continue
+            biome = random.choice([BIOMES["coral reef"], BIOMES["deep sea"]])
+            rect = pygame.Rect(x, y, w, h)
+            pygame.draw.ellipse(self.surface, biome.color, rect)
+            for _ in range(random.randint(1, 3)):
+                if random.random() < biome.spawn_rate:
+                    px = random.randint(rect.left, rect.right)
+                    py = random.randint(rect.top, rect.bottom)
+                    self.pickups.append(ItemPickup(random.choice(biome.spawn_items), px, py))
+
     def _spawn_underwater_pickups(self) -> None:
         """Place special collectibles in blocked water cells."""
-        items = ["perla abisal"]
+        items = ["perla abisal", "coral brillante"]
         num = random.randint(10, 20)
         for _ in range(num):
             for _ in range(100):
@@ -906,6 +943,7 @@ class PlanetSurface:
 
         if is_ocean_planet:
             self._draw_islands()
+            self._draw_underwater_biomes()
             self._spawn_underwater_pickups()
 
         for _ in range(random.randint(1, 3)):
@@ -956,7 +994,11 @@ class PlanetSurface:
         if not (0 <= ix < self.width and 0 <= iy < self.height):
             return False
         if self.collision_mask and self.collision_mask.get_at((ix, iy)):
-            return self.boat_active
+            if self.boat_active:
+                return True
+            if self.player.inventory.get("traje de buceo", 0) > 0:
+                return True
+            return False
         cx = ix // self.cell
         cy = iy // self.cell
         if 0 <= cx < self.cols and 0 <= cy < self.rows:

@@ -46,6 +46,20 @@ BIOMES: dict[str, Biome] = {
         0.15,
         1.3,
     ),
+    # Colourful reefs hiding unique resources
+    "coral reef": Biome(
+        (80, 150, 200),
+        ["coral brillante", "perla abisal"],
+        0.2,
+        1.1,
+    ),
+    # Darker deep sea trenches
+    "deep sea": Biome(
+        (20, 40, 90),
+        ["cristal de energia", "lagrima de sirena"],
+        0.12,
+        1.3,
+    ),
     # Default rocky surfaces
     "rocky": Biome(
         (110, 110, 110),
