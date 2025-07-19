@@ -311,6 +311,14 @@
         "valor": 12,
         "descripcion": "Flor que brilla en la oscuridad.",
         "rareza": "poco_comun"
+    },
+    {
+        "nombre": "residuo toxico",
+        "tipo": "materia_prima",
+        "peso": 0.5,
+        "valor": 18,
+        "descripcion": "Desecho peligroso recolectado en zonas toxicas.",
+        "rareza": "poco_comun"
     }
   ],
   "combustibles": [
@@ -1313,6 +1321,14 @@
       "valor": 45,
       "descripcion": "Multiplican la fuerza de las manos.",
       "rareza": "raro"
+    },
+    {
+      "nombre": "traje aislante",
+      "tipo": "herramienta",
+      "peso": 5.0,
+      "valor": 150,
+      "descripcion": "Protege al usuario de gases venenosos.",
+      "rareza": "poco_comun"
     }
   ],
   "piezas_nave": [

@@ -78,6 +78,8 @@ class Explorer:
         width: int,
         height: int,
         speed: float = config.EXPLORER_SPEED,
+        in_gas: bool = False,
+        has_suit: bool = False,
     ) -> None:
         if keys[controls.get_key("move_up")]:
             self.y -= speed * dt
@@ -90,6 +92,8 @@ class Explorer:
         # Clamp position so mask lookups stay within bounds
         self.x = max(0, min(width - 1, self.x))
         self.y = max(0, min(height - 1, self.y))
+        if in_gas and not has_suit:
+            self.take_damage(config.TOXIC_GAS_DAMAGE * dt)
 
     def draw(self, screen: pygame.Surface, offset_x: float, offset_y: float) -> None:
         rect = pygame.Rect(
@@ -217,6 +221,23 @@ class FloatingPlatform:
         )
 
 
+class WasteDeposit:
+    """Toxic residue that can be collected at a health cost."""
+
+    def __init__(self, x: float, y: float, radius: int) -> None:
+        self.x = x
+        self.y = y
+        self.radius = radius
+
+    def draw(self, screen: pygame.Surface, off_x: float, off_y: float) -> None:
+        pygame.draw.circle(
+            screen,
+            (120, 140, 60),
+            (int(self.x - off_x), int(self.y - off_y)),
+            self.radius,
+        )
+
+
 class PlanetSurface:
     """Procedurally generated 2D map tied to a specific planet."""
 
@@ -238,10 +259,13 @@ class PlanetSurface:
         self.desert_surface.fill((0, 0, 0, 0))
         self.lava_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         self.lava_surface.fill((0, 0, 0, 0))
+        self.gas_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        self.gas_surface.fill((0, 0, 0, 0))
         self.collision_mask: pygame.mask.Mask | None = None
         self.storm_mask: pygame.mask.Mask | None = None
         self.ice_mask: pygame.mask.Mask | None = None
         self.lava_mask: pygame.mask.Mask | None = None
+        self.gas_mask: pygame.mask.Mask | None = None
         self.desert_storm_active = False
         self.desert_storm_time = 0.0
         self.desert_storm_cooldown = random.uniform(
@@ -251,6 +275,7 @@ class PlanetSurface:
         self.healing_plants: list[HealingPlant] = []
         self.creatures: list[Creature] = []
         self.platforms: list[FloatingPlatform] = []
+        self.waste_deposits: list[WasteDeposit] = []
         # grid resolution used for walkable map
         self.cell = 60
         self.cols = self.width // self.cell
@@ -612,6 +637,26 @@ class PlanetSurface:
             pygame.draw.circle(self.surface, (190, 190, 190), (x, y), r)
             self.platforms.append(FloatingPlatform(x, y, r))
 
+    def _draw_gas_clouds(self) -> None:
+        """Overlay poisonous clouds for toxic planets."""
+        num = random.randint(5, 10)
+        for _ in range(num):
+            w = random.randint(150, 300)
+            h = random.randint(120, 240)
+            x = random.randint(0, self.width - w)
+            y = random.randint(0, self.height - h)
+            rect = pygame.Rect(x, y, w, h)
+            pygame.draw.ellipse(self.gas_surface, config.TOXIC_GAS_COLOR, rect)
+
+    def _spawn_waste_deposits(self) -> None:
+        """Place hazardous waste that damages when collected."""
+        num = random.randint(4, 8)
+        for _ in range(num):
+            r = random.randint(12, 20)
+            x = random.randint(r, self.width - r)
+            y = random.randint(r, self.height - r)
+            self.waste_deposits.append(WasteDeposit(x, y, r))
+
     def _spawn_unique_plants(self) -> None:
         """Scatter healing plants and luminous flowers around the map."""
         for _ in range(random.randint(4, 8)):
@@ -837,6 +882,9 @@ class PlanetSurface:
         if self.planet.environment == "gas giant":
             self._draw_storms()
             self._spawn_platforms()
+        if self.planet.environment == "toxic":
+            self._draw_gas_clouds()
+            self._spawn_waste_deposits()
 
         if self.storm_surface.get_width():
             self.storm_mask = pygame.mask.from_surface(self.storm_surface)
@@ -846,6 +894,8 @@ class PlanetSurface:
 
         if self.lava_surface.get_width():
             self.lava_mask = pygame.mask.from_surface(self.lava_surface)
+        if self.gas_surface.get_width():
+            self.gas_mask = pygame.mask.from_surface(self.gas_surface)
 
         self.collision_mask = pygame.mask.from_surface(self.collision_surface)
 
@@ -894,6 +944,14 @@ class PlanetSurface:
         if not (0 <= ix < self.width and 0 <= iy < self.height):
             return False
         return bool(self.lava_mask and self.lava_mask.get_at((ix, iy)))
+
+    def is_in_gas(self, x: float, y: float) -> bool:
+        """Return ``True`` if ``(x, y)`` lies inside a toxic cloud."""
+        ix = int(x)
+        iy = int(y)
+        if not (0 <= ix < self.width and 0 <= iy < self.height):
+            return False
+        return bool(self.gas_mask and self.gas_mask.get_at((ix, iy)))
 
     def handle_event(self, event) -> bool:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -950,7 +1008,11 @@ class PlanetSurface:
                         config.DESERT_STORM_MAX_TIME,
                     )
                     self.desert_surface.fill(config.DESERT_FILTER_COLOR)
-        self.explorer.update(keys, dt, self.width, self.height, speed)
+        in_gas = False
+        has_suit = self.player.inventory.get("traje aislante", 0) > 0
+        if self.planet.environment == "toxic":
+            in_gas = self.is_in_gas(self.explorer.x, self.explorer.y)
+        self.explorer.update(keys, dt, self.width, self.height, speed, in_gas, has_suit)
         if not self.is_walkable(self.explorer.x, self.explorer.y):
             self.explorer.x, self.explorer.y = old_x, old_y
         self.camera_x = self.explorer.x
@@ -974,6 +1036,11 @@ class PlanetSurface:
             ):
                 self.player.add_item(pickup.name)
                 self.pickups.remove(pickup)
+        for deposit in self.waste_deposits[:]:
+            if math.hypot(self.explorer.x - deposit.x, self.explorer.y - deposit.y) < deposit.radius + self.explorer.size:
+                self.player.add_item("residuo toxico")
+                self.explorer.take_damage(config.RESIDUE_EXTRACTION_DAMAGE)
+                self.waste_deposits.remove(deposit)
 
     def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
         offset_x = self.camera_x - config.WINDOW_WIDTH / 2
@@ -982,10 +1049,13 @@ class PlanetSurface:
         screen.blit(self.storm_surface, (-offset_x, -offset_y))
         screen.blit(self.ice_surface, (-offset_x, -offset_y))
         screen.blit(self.lava_surface, (-offset_x, -offset_y))
+        screen.blit(self.gas_surface, (-offset_x, -offset_y))
         for platform in self.platforms:
             platform.draw(screen, offset_x, offset_y)
         for plant in self.healing_plants:
             plant.draw(screen, offset_x, offset_y)
+        for deposit in self.waste_deposits:
+            deposit.draw(screen, offset_x, offset_y)
         for creature in self.creatures:
             creature.draw(screen, offset_x, offset_y)
         for pickup in self.pickups:
