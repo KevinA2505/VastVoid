@@ -567,6 +567,7 @@ class PlanetSurface:
         """Draw several irregular craters that may contain rare minerals."""
         minerals = ["platino", "diamante", "iridio", "uranio", "palladium"]
         num_craters = random.randint(5, 10)
+        cave_entries: list[tuple[int, int]] = []
         for _ in range(num_craters):
             r = random.randint(20, 60)
             x = random.randint(r, self.width - r)
@@ -588,6 +589,55 @@ class PlanetSurface:
                         self.blocked[j][i] = True
             if random.random() < 0.3:
                 self.pickups.append(ItemPickup(random.choice(minerals), x, y))
+            if random.random() < 0.5:
+                cave_entries.append((x, y))
+        if cave_entries:
+            self._generate_caves(cave_entries)
+
+    def _generate_caves(self, entries: list[tuple[int, int]]) -> None:
+        """Carve simple tunnel networks starting from given entrance points."""
+        minerals = ["platino", "diamante", "iridio", "uranio", "palladium"]
+        for ex, ey in entries:
+            self._carve_circle(ex, ey, 15)
+            branch_points = [(ex, ey)]
+            for _ in range(random.randint(2, 4)):
+                if not branch_points:
+                    break
+                bx, by = branch_points.pop(0)
+                angle = random.uniform(0, 2 * math.pi)
+                length = random.randint(80, 160)
+                nx = bx + math.cos(angle) * length
+                ny = by + math.sin(angle) * length
+                self._carve_tunnel(bx, by, nx, ny, 12)
+                if random.random() < 0.5:
+                    branch_points.append((nx, ny))
+                if random.random() < 0.4:
+                    self.pickups.append(
+                        ItemPickup(random.choice(minerals), int(nx), int(ny))
+                    )
+                if random.random() < 0.3:
+                    self.creatures.append(
+                        Creature(int(nx), int(ny), self.width, self.height, hostile=True)
+                    )
+
+    def _carve_circle(self, x: float, y: float, radius: int) -> None:
+        """Remove collision in a circular region."""
+        pygame.draw.circle(self.surface, (50, 50, 50), (int(x), int(y)), radius)
+        pygame.draw.circle(self.collision_surface, (0, 0, 0, 0), (int(x), int(y)), radius)
+        rect = pygame.Rect(int(x - radius), int(y - radius), radius * 2, radius * 2)
+        for i in range(rect.left // self.cell, rect.right // self.cell + 1):
+            for j in range(rect.top // self.cell, rect.bottom // self.cell + 1):
+                if 0 <= i < self.cols and 0 <= j < self.rows:
+                    self.blocked[j][i] = False
+
+    def _carve_tunnel(self, x1: float, y1: float, x2: float, y2: float, radius: int) -> None:
+        """Draw a tunnel between two points clearing collisions."""
+        steps = int(max(abs(x2 - x1), abs(y2 - y1)) // 8)
+        for i in range(steps + 1):
+            t = i / steps
+            x = x1 + (x2 - x1) * t
+            y = y1 + (y2 - y1) * t
+            self._carve_circle(x, y, radius)
 
     def _draw_mountains(self) -> None:
         """Draw mountain ranges that block movement on the grid."""
