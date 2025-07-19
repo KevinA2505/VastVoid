@@ -29,6 +29,8 @@ EXPLORER_SPEED = 76  # walking speed on a planet surface
 # Boat movement slowed down by an additional 10%
 BOAT_SPEED_LAND = 43  # slow boat speed when on land
 BOAT_SPEED_WATER = 144  # slightly faster than walking when on water
+STORM_SLOW_FACTOR = 0.5  # movement multiplier when inside a storm
+STORM_COLOR = (180, 180, 220, 120)  # RGBA colour for storm overlays
 
 ORBIT_SPEED_FACTOR = 0.005  # base factor used to calculate orbital speed
 SHIP_ORBIT_SPEED = 1.5      # angular speed for attack orbits (radians per second)
