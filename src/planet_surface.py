@@ -149,9 +149,16 @@ class PlanetSurface:
         self.storm_surface.fill((0, 0, 0, 0))
         self.ice_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         self.ice_surface.fill((0, 0, 0, 0))
+        self.desert_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        self.desert_surface.fill((0, 0, 0, 0))
         self.collision_mask: pygame.mask.Mask | None = None
         self.storm_mask: pygame.mask.Mask | None = None
         self.ice_mask: pygame.mask.Mask | None = None
+        self.desert_storm_active = False
+        self.desert_storm_time = 0.0
+        self.desert_storm_cooldown = random.uniform(
+            config.DESERT_STORM_INTERVAL_MIN, config.DESERT_STORM_INTERVAL_MAX
+        )
         self.pickups: list[ItemPickup] = []
         self.platforms: list[FloatingPlatform] = []
         # grid resolution used for walkable map
@@ -550,6 +557,19 @@ class PlanetSurface:
             pygame.draw.ellipse(self.surface, (140, 150, 160), rect)
             self.pickups.append(ItemPickup("cristal de energia", x, y))
 
+    def _draw_ruins(self) -> None:
+        """Scatter small ruins containing valuable items."""
+        num = random.randint(3, 6)
+        for _ in range(num):
+            w = random.randint(60, 120)
+            h = random.randint(60, 120)
+            x = random.randint(0, self.width - w)
+            y = random.randint(0, self.height - h)
+            rect = pygame.Rect(x, y, w, h)
+            pygame.draw.rect(self.surface, (100, 90, 60), rect, 2)
+            pygame.draw.rect(self.collision_surface, (255, 255, 255), rect, 2)
+            self.pickups.append(ItemPickup("cofre antiguo", x + w // 2, y + h // 2))
+
     def _generate_map(self) -> None:
         """Create a map using 2D noise to assign biomes."""
         cell = self.cell
@@ -618,6 +638,8 @@ class PlanetSurface:
         if self.planet.environment == "rocky":
             self._draw_crater_field()
             self._draw_mountains()
+        if self.planet.environment == "desert":
+            self._draw_ruins()
         if self.planet.environment == "ice world":
             self._draw_ice_fields()
             self._draw_ice_caves()
@@ -703,6 +725,25 @@ class PlanetSurface:
             speed *= config.STORM_SLOW_FACTOR
         if self.is_on_ice(self.explorer.x, self.explorer.y):
             speed *= config.ICE_SLOW_FACTOR
+        if self.planet.environment == "desert":
+            if self.desert_storm_active:
+                self.desert_storm_time -= dt
+                if self.desert_storm_time <= 0:
+                    self.desert_storm_active = False
+                    self.desert_surface.fill((0, 0, 0, 0))
+                    self.desert_storm_cooldown = random.uniform(
+                        config.DESERT_STORM_INTERVAL_MIN,
+                        config.DESERT_STORM_INTERVAL_MAX,
+                    )
+            else:
+                self.desert_storm_cooldown -= dt
+                if self.desert_storm_cooldown <= 0:
+                    self.desert_storm_active = True
+                    self.desert_storm_time = random.uniform(
+                        config.DESERT_STORM_MIN_TIME,
+                        config.DESERT_STORM_MAX_TIME,
+                    )
+                    self.desert_surface.fill(config.DESERT_FILTER_COLOR)
         self.explorer.update(keys, dt, self.width, self.height, speed)
         if not self.is_walkable(self.explorer.x, self.explorer.y):
             self.explorer.x, self.explorer.y = old_x, old_y
@@ -754,6 +795,8 @@ class PlanetSurface:
         if self.boat_active and self.boat:
             self.boat.draw(screen, offset_x, offset_y)
         self.explorer.draw(screen, offset_x, offset_y)
+        if self.desert_storm_active:
+            screen.blit(self.desert_surface, (-offset_x, -offset_y))
         # exit button
         pygame.draw.rect(screen, (60, 60, 90), self.exit_rect)
         pygame.draw.rect(screen, (200, 200, 200), self.exit_rect, 1)

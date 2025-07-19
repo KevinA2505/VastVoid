@@ -33,6 +33,11 @@ STORM_SLOW_FACTOR = 0.5  # movement multiplier when inside a storm
 STORM_COLOR = (180, 180, 220, 120)  # RGBA colour for storm overlays
 ICE_SLOW_FACTOR = 0.7  # movement multiplier when walking on ice
 ICE_COLOR = (200, 230, 255, 100)  # RGBA colour for ice overlays
+DESERT_FILTER_COLOR = (230, 220, 170, 140)  # RGBA filter used during sandstorms
+DESERT_STORM_MIN_TIME = 5.0   # minimum duration for a desert storm
+DESERT_STORM_MAX_TIME = 10.0  # maximum duration for a desert storm
+DESERT_STORM_INTERVAL_MIN = 15.0  # minimum time between sandstorms
+DESERT_STORM_INTERVAL_MAX = 30.0  # maximum time between sandstorms
 
 ORBIT_SPEED_FACTOR = 0.005  # base factor used to calculate orbital speed
 SHIP_ORBIT_SPEED = 1.5      # angular speed for attack orbits (radians per second)
