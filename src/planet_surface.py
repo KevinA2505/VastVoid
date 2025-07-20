@@ -969,6 +969,42 @@ class PlanetSurface:
         pygame.draw.circle(self.ice_surface, config.ICE_COLOR, (int(x), int(y)), r)
         self._update_collision_masks()
 
+    def _shift_dunes(self) -> None:
+        """Randomly toggle some blocked cells to mimic shifting sand dunes."""
+        changes = random.randint(10, 20)
+        for _ in range(changes):
+            i = random.randrange(self.cols)
+            j = random.randrange(self.rows)
+            self.blocked[j][i] = not self.blocked[j][i]
+            rect = pygame.Rect(i * self.cell, j * self.cell, self.cell, self.cell)
+            color = ENV_COLORS["desert"]
+            if self.blocked[j][i]:
+                pygame.draw.rect(self.collision_surface, (255, 255, 255), rect)
+            else:
+                pygame.draw.rect(self.collision_surface, (0, 0, 0, 0), rect)
+            pygame.draw.rect(self.surface, color, rect)
+        self._update_collision_masks()
+
+    def _spawn_oasis(self) -> None:
+        """Create a small water patch with healing plants."""
+        r = random.randint(40, 80)
+        x = random.randint(r, self.width - r)
+        y = random.randint(r, self.height - r)
+        pygame.draw.circle(self.surface, ENV_COLORS["ocean world"], (x, y), r)
+        pygame.draw.circle(self.collision_surface, (255, 255, 255), (x, y), r)
+        for i in range((x - r) // self.cell, (x + r) // self.cell + 1):
+            for j in range((y - r) // self.cell, (y + r) // self.cell + 1):
+                if 0 <= i < self.cols and 0 <= j < self.rows:
+                    cx = i * self.cell + self.cell // 2
+                    cy = j * self.cell + self.cell // 2
+                    if math.hypot(cx - x, cy - y) <= r:
+                        self.blocked[j][i] = True
+        for _ in range(random.randint(1, 3)):
+            hx = random.randint(x - r // 2, x + r // 2)
+            hy = random.randint(y - r // 2, y + r // 2)
+            self.healing_plants.append(HealingPlant(hx, hy))
+        self._update_collision_masks()
+
     def _draw_ice_fields(self) -> None:
         """Overlay semi-transparent ice zones that affect movement."""
         num = random.randint(4, 8)
@@ -1272,6 +1308,9 @@ class PlanetSurface:
                 if self.desert_storm_time <= 0:
                     self.desert_storm_active = False
                     self.desert_surface.fill((0, 0, 0, 0))
+                    self._shift_dunes()
+                    if random.random() < 0.25:
+                        self._spawn_oasis()
                     self.desert_storm_cooldown = random.uniform(
                         config.DESERT_STORM_INTERVAL_MIN,
                         config.DESERT_STORM_INTERVAL_MAX,
