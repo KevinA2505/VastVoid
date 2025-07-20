@@ -26,6 +26,24 @@ ENV_COLORS = {
 }
 
 
+class LavaRiver:
+    """Represents a slowly drifting lava river."""
+
+    def __init__(
+        self,
+        points: list[tuple[int, int]],
+        width: int,
+        direction: tuple[int, int],
+        speed: float = config.LAVA_RIVER_SPEED,
+    ) -> None:
+        self.points = [(float(x), float(y)) for x, y in points]
+        self.width = width
+        self.direction = direction
+        self.speed = speed
+        self.last_points = list(points)
+
+
+
 class ItemPickup:
     """Collectible item placed on the surface."""
 
@@ -284,6 +302,13 @@ class PlanetSurface:
         # Store river segments along with their drawn width
         self.rivers: list[tuple[list[tuple[int, int]], int]] = []
         self.lava_geysers: list[dict] = []
+        self.moving_lava_rivers: list[LavaRiver] = []
+        self.tremor_timer = 0.0
+        self.tremor_cooldown = random.uniform(
+            config.TREMOR_INTERVAL_MIN, config.TREMOR_INTERVAL_MAX
+        )
+        self.tremor_offset_x = 0.0
+        self.tremor_offset_y = 0.0
         self.boat_active = False
         self.boat: Boat | None = None
         self._generate_map()
@@ -293,10 +318,11 @@ class PlanetSurface:
             self._spawn_underwater_creatures()
         if self.planet.environment == "lava":
             self._spawn_lava_geysers()
+            self._create_lava_rivers()
         self.ship_pos = (self.width // 2, self.height // 2)
         self.explorer = Explorer(*self.ship_pos)
-        self.camera_x = self.explorer.x
-        self.camera_y = self.explorer.y
+        self.camera_x = self.explorer.x + self.tremor_offset_x
+        self.camera_y = self.explorer.y + self.tremor_offset_y
         self.exit_rect = pygame.Rect(config.WINDOW_WIDTH - 110, 10, 100, 30)
         self.inventory_rect = pygame.Rect(10, 10, 100, 30)
 
@@ -387,7 +413,7 @@ class PlanetSurface:
         color: tuple[int, int, int] = (50, 100, 200),
         damage: bool = False,
         block: bool = True,
-    ) -> None:
+    ) -> tuple[list[tuple[int, int]], int, str]:
         """Draw a wavy line representing a river or lava flow."""
         length = random.randint(self.height // 2, self.height)
         # Rivers are drawn slightly thicker for better visibility
@@ -422,7 +448,7 @@ class PlanetSurface:
             )
         self.rivers.append((points, width))
         self._plant_trees_along_river(points, width)
-
+        return points, width, start_side
     def _draw_river_in_area(
         self,
         rect: pygame.Rect,
@@ -827,9 +853,24 @@ class PlanetSurface:
                 }
             )
 
+    def _create_lava_rivers(self) -> None:
+        """Generate slow moving lava rivers."""
+        count = random.randint(1, 2)
+        for _ in range(count):
+            points, width, side = self._draw_river(color=(180, 40, 40), damage=True)
+            if side == "top":
+                direction = (0, 1)
+            elif side == "bottom":
+                direction = (0, -1)
+            elif side == "left":
+                direction = (1, 0)
+            else:
+                direction = (-1, 0)
+            self.moving_lava_rivers.append(LavaRiver(points, width, direction))
+
     def _update_lava_geysers(self, dt: float) -> None:
         """Advance timers, erupt geysers and apply damage."""
-        self.lava_surface.fill((0, 0, 0, 0))
+        # surface will be cleared before drawing rivers and geysers
         for geyser in self.lava_geysers:
             geyser["timer"] -= dt
             if geyser["erupt"]:
@@ -838,6 +879,16 @@ class PlanetSurface:
                     geyser["timer"] = random.uniform(
                         config.LAVA_GEYSER_INTERVAL_MIN, config.LAVA_GEYSER_INTERVAL_MAX
                     )
+                    if random.random() < config.ERUPTION_CRYSTAL_CHANCE:
+                        dx = random.randint(-20, 20)
+                        dy = random.randint(-20, 20)
+                        self.pickups.append(
+                            ItemPickup(
+                                "cristal volcanico",
+                                geyser["x"] + dx,
+                                geyser["y"] + dy,
+                            )
+                        )
                 else:
                     pygame.draw.circle(
                         self.lava_surface,
@@ -854,6 +905,38 @@ class PlanetSurface:
                 if geyser["timer"] <= 0:
                     geyser["erupt"] = True
                     geyser["timer"] = config.LAVA_GEYSER_DURATION
+
+    def _update_lava_rivers(self, dt: float) -> None:
+        """Move lava rivers and update collision masks."""
+        for river in self.moving_lava_rivers:
+            # erase previous position from collision surface
+            pygame.draw.lines(
+                self.collision_surface,
+                (0, 0, 0, 0),
+                False,
+                river.last_points,
+                river.width,
+            )
+            river.last_points = []
+            for i, (x, y) in enumerate(river.points):
+                nx = x + river.direction[0] * river.speed * dt
+                ny = y + river.direction[1] * river.speed * dt
+                river.points[i] = (nx, ny)
+                river.last_points.append((int(nx), int(ny)))
+            pygame.draw.lines(
+                self.lava_surface,
+                (200, 60, 60, 180),
+                False,
+                river.last_points,
+                river.width,
+            )
+            pygame.draw.lines(
+                self.collision_surface,
+                (255, 255, 255),
+                False,
+                river.last_points,
+                river.width,
+            )
 
     def _draw_ice_fields(self) -> None:
         """Overlay semi-transparent ice zones that affect movement."""
@@ -987,6 +1070,12 @@ class PlanetSurface:
 
         self.collision_mask = pygame.mask.from_surface(self.collision_surface)
 
+    def _update_collision_masks(self) -> None:
+        """Recreate masks after dynamic terrain changes."""
+        if self.lava_surface.get_width():
+            self.lava_mask = pygame.mask.from_surface(self.lava_surface)
+        self.collision_mask = pygame.mask.from_surface(self.collision_surface)
+
     def is_walkable(self, x: float, y: float) -> bool:
         """Return ``True`` if the coordinates correspond to a walkable cell."""
         ix = int(x)
@@ -1063,6 +1152,24 @@ class PlanetSurface:
 
     def update(self, keys: pygame.key.ScancodeWrapper, dt: float) -> None:
         old_x, old_y = self.explorer.x, self.explorer.y
+        # Tremor handling
+        self.tremor_cooldown -= dt
+        if self.tremor_cooldown <= 0:
+            self.tremor_timer = config.TREMOR_DURATION
+            self.tremor_cooldown = random.uniform(
+                config.TREMOR_INTERVAL_MIN, config.TREMOR_INTERVAL_MAX
+            )
+            tx = self.explorer.x + random.randint(-40, 40)
+            ty = self.explorer.y + random.randint(-40, 40)
+            self._carve_circle(tx, ty, random.randint(10, 20))
+            self._update_collision_masks()
+        if self.tremor_timer > 0:
+            self.tremor_timer -= dt
+            self.tremor_offset_x = random.uniform(-config.TREMOR_SHAKE, config.TREMOR_SHAKE)
+            self.tremor_offset_y = random.uniform(-config.TREMOR_SHAKE, config.TREMOR_SHAKE)
+        else:
+            self.tremor_offset_x = 0.0
+            self.tremor_offset_y = 0.0
         speed = config.EXPLORER_SPEED
         wind_dx = 0.0
         if (
@@ -1084,7 +1191,10 @@ class PlanetSurface:
         if self.is_on_ice(self.explorer.x, self.explorer.y):
             speed *= config.ICE_SLOW_FACTOR
         if self.planet.environment == "lava":
+            self.lava_surface.fill((0, 0, 0, 0))
+            self._update_lava_rivers(dt)
             self._update_lava_geysers(dt)
+            self._update_collision_masks()
             if self.is_in_lava(self.explorer.x, self.explorer.y):
                 self.explorer.take_damage(config.LAVA_DAMAGE_RATE * dt)
         if self.planet.environment == "desert":
@@ -1125,8 +1235,8 @@ class PlanetSurface:
                         platform.radius,
                         min(self.width - platform.radius, platform.x + wind_dx),
                     )
-        self.camera_x = self.explorer.x
-        self.camera_y = self.explorer.y
+        self.camera_x = self.explorer.x + self.tremor_offset_x
+        self.camera_y = self.explorer.y + self.tremor_offset_y
         for creature in self.creatures:
             creature.update(self.explorer.x, self.explorer.y, dt)
             if creature.hostile and math.hypot(

@@ -45,6 +45,13 @@ LAVA_GEYSER_INTERVAL_MIN = 4.0  # minimum seconds between geyser eruptions
 LAVA_GEYSER_INTERVAL_MAX = 8.0  # maximum seconds between geyser eruptions
 LAVA_GEYSER_DURATION = 1.5       # duration of an eruption in seconds
 LAVA_GEYSER_DAMAGE = 40          # damage per second from erupting geysers
+LAVA_RIVER_SPEED = 10.0          # pixels per second that lava rivers drift
+ERUPTION_CRYSTAL_CHANCE = 0.1    # probability of crystals spawning after an eruption
+
+TREMOR_INTERVAL_MIN = 12.0  # shortest delay between random tremors
+TREMOR_INTERVAL_MAX = 25.0  # longest delay between random tremors
+TREMOR_DURATION = 0.8       # how long a tremor lasts
+TREMOR_SHAKE = 5            # camera shake intensity during a tremor
 TOXIC_GAS_COLOR = (100, 150, 80, 150)  # RGBA colour for poisonous clouds
 TOXIC_GAS_DAMAGE = 15            # damage per second inside toxic gas
 RESIDUE_EXTRACTION_DAMAGE = 10   # health lost when harvesting toxic waste
