@@ -275,6 +275,8 @@ class PlanetSurface:
         self.ice_surface.fill((0, 0, 0, 0))
         self.desert_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         self.desert_surface.fill((0, 0, 0, 0))
+        self.snow_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        self.snow_surface.fill((0, 0, 0, 0))
         self.lava_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         self.lava_surface.fill((0, 0, 0, 0))
         self.gas_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
@@ -289,6 +291,12 @@ class PlanetSurface:
         self.desert_storm_cooldown = random.uniform(
             config.DESERT_STORM_INTERVAL_MIN, config.DESERT_STORM_INTERVAL_MAX
         )
+        self.snow_storm_active = False
+        self.snow_storm_time = 0.0
+        self.snow_storm_cooldown = random.uniform(
+            config.SNOW_STORM_INTERVAL_MIN, config.SNOW_STORM_INTERVAL_MAX
+        )
+        self.ice_holes: list[dict] = []
         self.pickups: list[ItemPickup] = []
         self.healing_plants: list[HealingPlant] = []
         self.creatures: list[Creature] = []
@@ -938,6 +946,29 @@ class PlanetSurface:
                 river.width,
             )
 
+    def _open_ice_hole(self, x: float, y: float, radius: int) -> None:
+        """Create a temporary hole in the ice."""
+        pygame.draw.circle(self.surface, (30, 80, 160), (int(x), int(y)), radius)
+        pygame.draw.circle(self.collision_surface, (255, 255, 255), (int(x), int(y)), radius)
+        pygame.draw.circle(self.ice_surface, (0, 0, 0, 0), (int(x), int(y)), radius)
+        self.ice_holes.append({
+            "x": x,
+            "y": y,
+            "radius": radius,
+            "timer": config.ICE_HOLE_DURATION,
+        })
+        self._update_collision_masks()
+
+    def _close_ice_hole(self, hole: dict) -> None:
+        """Refreeze a previously cracked ice hole."""
+        x = hole["x"]
+        y = hole["y"]
+        r = hole["radius"]
+        pygame.draw.circle(self.surface, BIOMES["ice world"].color, (int(x), int(y)), r)
+        pygame.draw.circle(self.collision_surface, (0, 0, 0, 0), (int(x), int(y)), r)
+        pygame.draw.circle(self.ice_surface, config.ICE_COLOR, (int(x), int(y)), r)
+        self._update_collision_masks()
+
     def _draw_ice_fields(self) -> None:
         """Overlay semi-transparent ice zones that affect movement."""
         num = random.randint(4, 8)
@@ -1190,6 +1221,44 @@ class PlanetSurface:
             speed *= config.STORM_SLOW_FACTOR
         if self.is_on_ice(self.explorer.x, self.explorer.y):
             speed *= config.ICE_SLOW_FACTOR
+        if self.planet.environment == "ice world":
+            if self.snow_storm_active:
+                speed *= config.STORM_SLOW_FACTOR
+                self.snow_storm_time -= dt
+                if self.snow_storm_time <= 0:
+                    self.snow_storm_active = False
+                    self.snow_surface.fill((0, 0, 0, 0))
+                    self.snow_storm_cooldown = random.uniform(
+                        config.SNOW_STORM_INTERVAL_MIN, config.SNOW_STORM_INTERVAL_MAX
+                    )
+            else:
+                self.snow_storm_cooldown -= dt
+                if self.snow_storm_cooldown <= 0:
+                    if random.random() < config.SNOW_STORM_PROBABILITY:
+                        self.snow_storm_active = True
+                        self.snow_storm_time = random.uniform(
+                            config.SNOW_STORM_MIN_TIME, config.SNOW_STORM_MAX_TIME
+                        )
+                        self.snow_surface.fill(config.SNOW_STORM_COLOR)
+                    else:
+                        self.snow_storm_cooldown = random.uniform(
+                            config.SNOW_STORM_INTERVAL_MIN, config.SNOW_STORM_INTERVAL_MAX
+                        )
+            if (
+                self.is_on_ice(self.explorer.x, self.explorer.y)
+                and not self.boat_active
+                and random.random() < config.ICE_CRACK_PROBABILITY * dt
+            ):
+                self._open_ice_hole(
+                    self.explorer.x,
+                    self.explorer.y,
+                    random.randint(15, 25),
+                )
+            for hole in self.ice_holes[:]:
+                hole["timer"] -= dt
+                if hole["timer"] <= 0:
+                    self._close_ice_hole(hole)
+                    self.ice_holes.remove(hole)
         if self.planet.environment == "lava":
             self.lava_surface.fill((0, 0, 0, 0))
             self._update_lava_rivers(dt)
@@ -1310,6 +1379,8 @@ class PlanetSurface:
         self.explorer.draw(screen, offset_x, offset_y)
         if self.desert_storm_active:
             screen.blit(self.desert_surface, (-offset_x, -offset_y))
+        if self.snow_storm_active:
+            screen.blit(self.snow_surface, (-offset_x, -offset_y))
         # exit button
         pygame.draw.rect(screen, (60, 60, 90), self.exit_rect)
         pygame.draw.rect(screen, (200, 200, 200), self.exit_rect, 1)
